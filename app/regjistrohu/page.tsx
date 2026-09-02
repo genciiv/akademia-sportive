@@ -9,25 +9,41 @@ import { authClient } from "@/lib/auth-client";
 export default function Page() {
   const router = useRouter();
 
+  const [emri, setEmri] = useState("");
   const [email, setEmail] = useState("");
   const [fjalekalimi, setFjalekalimi] = useState("");
+  const [konfirmimi, setKonfirmimi] = useState("");
   const [gabimi, setGabimi] = useState("");
-  const [dukeHyrë, setDukeHyrë] = useState(false);
+  const [dukeRegjistruar, setDukeRegjistruar] = useState(false);
 
-  async function hyr(e: FormEvent<HTMLFormElement>) {
+  async function regjistrohu(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setGabimi("");
-    setDukeHyrë(true);
 
-    const { error } = await authClient.signIn.email({
+    if (fjalekalimi.length < 8) {
+      setGabimi("Fjalëkalimi duhet të ketë të paktën 8 karaktere.");
+      return;
+    }
+
+    if (fjalekalimi !== konfirmimi) {
+      setGabimi("Fjalëkalimet nuk përputhen.");
+      return;
+    }
+
+    setDukeRegjistruar(true);
+
+    const { error } = await authClient.signUp.email({
+      name: emri.trim(),
       email,
       password: fjalekalimi,
     });
 
     if (error) {
-      setGabimi("Email-i ose fjalëkalimi nuk është i saktë.");
-      setDukeHyrë(false);
+      setGabimi(
+        error.message || "Regjistrimi nuk mund të përfundohej."
+      );
+      setDukeRegjistruar(false);
       return;
     }
 
@@ -42,15 +58,27 @@ export default function Page() {
 
         <div className="mt-8">
           <h1 className="text-2xl font-bold text-slate-950">
-            Hyr në platformë
+            Krijo llogarinë
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Menaxho akademinë, ekipet dhe sportistët nga një vend i vetëm.
+            Regjistrohu për të nisur menaxhimin e akademisë sportive.
           </p>
         </div>
 
-        <form onSubmit={hyr} className="mt-7 space-y-4">
+        <form onSubmit={regjistrohu} className="mt-7 space-y-4">
+          <label className="block text-xs font-semibold text-slate-600">
+            Emri dhe mbiemri
+            <input
+              type="text"
+              required
+              value={emri}
+              onChange={(e) => setEmri(e.target.value)}
+              placeholder="Ardit Hoxha"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+            />
+          </label>
+
           <label className="block text-xs font-semibold text-slate-600">
             Email
             <input
@@ -70,7 +98,19 @@ export default function Page() {
               required
               value={fjalekalimi}
               onChange={(e) => setFjalekalimi(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Të paktën 8 karaktere"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+            />
+          </label>
+
+          <label className="block text-xs font-semibold text-slate-600">
+            Konfirmo fjalëkalimin
+            <input
+              type="password"
+              required
+              value={konfirmimi}
+              onChange={(e) => setKonfirmimi(e.target.value)}
+              placeholder="Përsërit fjalëkalimin"
               className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
             />
           </label>
@@ -83,20 +123,20 @@ export default function Page() {
 
           <button
             type="submit"
-            disabled={dukeHyrë}
+            disabled={dukeRegjistruar}
             className="w-full rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {dukeHyrë ? "Duke hyrë..." : "Hyr"}
+            {dukeRegjistruar ? "Duke u regjistruar..." : "Regjistrohu"}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-500">
-          Nuk ke ende llogari?{" "}
+          Ke tashmë llogari?{" "}
           <Link
-            href="/regjistrohu"
+            href="/hyrje"
             className="font-semibold text-blue-700 hover:text-blue-800"
           >
-            Regjistrohu
+            Hyr
           </Link>
         </p>
       </div>
