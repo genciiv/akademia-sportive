@@ -43,6 +43,7 @@ const groups: NavGroup[] = [
     items: [
       { label: "Ekipet", href: "/ekipet", icon: ShieldCheck },
       { label: "Sportistët", href: "/anetaret", icon: UsersRound },
+      { label: "Trajnerët", href: "/trajneret", icon: Dumbbell },
       { label: "Seancat stërvitore", href: "/seancat", icon: ClipboardCheck },
       { label: "Ndeshjet", href: "/ndeshjet", icon: Medal },
       { label: "Performanca", href: "/performanca", icon: BarChart3 },

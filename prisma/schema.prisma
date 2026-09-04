@@ -132,10 +132,12 @@ model Academy {
   memberships AcademyMembership[]
   branches    AcademyBranch[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  players   Player[]
-  teams     Team[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  players          Player[]
+  teams            Team[]
+  trainingSessions TrainingSession[]
+  coaches          Coach[]
 
   @@index([ownerId])
   @@index([status])
@@ -179,9 +181,10 @@ model AcademyBranch {
 
   isActive Boolean @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  teams     Team[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  teams            Team[]
+  trainingSessions TrainingSession[]
 
   @@index([academyId])
 }
@@ -246,7 +249,8 @@ model Player {
 
   status PlayerStatus @default(ACTIVE)
 
-  teams TeamPlayer[]
+  teams       TeamPlayer[]
+  attendances TrainingAttendance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -276,7 +280,9 @@ model Team {
 
   status TeamStatus @default(ACTIVE)
 
-  players TeamPlayer[]
+  players          TeamPlayer[]
+  coaches          CoachTeam[]
+  trainingSessions TrainingSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -306,5 +312,141 @@ model TeamPlayer {
 
   @@unique([teamId, playerId])
   @@index([teamId])
+  @@index([playerId])
+}
+
+enum CoachStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  LEFT
+}
+
+enum TrainingSessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+model Coach {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+
+  email String?
+  phone String?
+
+  dateOfBirth DateTime?
+  photo       String?
+
+  specialization String?
+  license        String?
+  notes          String?
+
+  status CoachStatus @default(ACTIVE)
+
+  teams    CoachTeam[]
+  sessions TrainingSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([academyId, lastName, firstName])
+}
+
+model CoachTeam {
+  id String @id @default(cuid())
+
+  coachId String
+  coach   Coach  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  isHeadCoach Boolean @default(false)
+  isActive    Boolean @default(true)
+
+  assignedAt DateTime  @default(now())
+  leftAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([coachId, teamId])
+  @@index([coachId])
+  @@index([teamId])
+}
+
+model TrainingSession {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  coachId String?
+  coach   Coach?  @relation(fields: [coachId], references: [id], onDelete: SetNull)
+
+  branchId String?
+  branch   AcademyBranch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  title String
+
+  startsAt DateTime
+  endsAt   DateTime?
+
+  location String?
+
+  description String?
+  notes       String?
+
+  status TrainingSessionStatus @default(SCHEDULED)
+
+  attendances TrainingAttendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([teamId])
+  @@index([coachId])
+  @@index([branchId])
+  @@index([academyId, startsAt])
+  @@index([academyId, status])
+}
+
+model TrainingAttendance {
+  id String @id @default(cuid())
+
+  trainingSessionId String
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  status AttendanceStatus @default(PRESENT)
+
+  note String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trainingSessionId, playerId])
+  @@index([trainingSessionId])
   @@index([playerId])
 }
