@@ -1,7 +1,15 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Plus, RefreshCw, UserRound } from "lucide-react";
+import {
+  Plus,
+  RefreshCw,
+  UserRound,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
+
 import { AppShell } from "@/components/app-shell";
 
 type Player = {
@@ -12,8 +20,12 @@ type Player = {
   gender: string;
   email: string | null;
   phone: string | null;
+  guardianName: string | null;
+  guardianPhone: string | null;
+  guardianEmail: string | null;
   position: string | null;
   jerseyNumber: number | null;
+  notes: string | null;
   status: string;
 };
 
@@ -29,22 +41,36 @@ function perkthimStatusi(status: string) {
   return statuset[status] || status;
 }
 
-function llogaritMoshen(dateOfBirth: string | null) {
-  if (!dateOfBirth) {
-    return "—";
+function klasaStatusit(status: string) {
+  if (status === "ACTIVE") {
+    return "bg-emerald-50 text-emerald-700";
   }
+
+  if (status === "INJURED") {
+    return "bg-orange-50 text-orange-700";
+  }
+
+  if (status === "SUSPENDED") {
+    return "bg-red-50 text-red-700";
+  }
+
+  return "bg-slate-100 text-slate-600";
+}
+
+function llogaritMoshen(dateOfBirth: string | null) {
+  if (!dateOfBirth) return "—";
 
   const sot = new Date();
   const lindja = new Date(dateOfBirth);
 
   let mosha = sot.getFullYear() - lindja.getFullYear();
 
-  const diferencaMuaj =
+  const muaj =
     sot.getMonth() - lindja.getMonth();
 
   if (
-    diferencaMuaj < 0 ||
-    (diferencaMuaj === 0 &&
+    muaj < 0 ||
+    (muaj === 0 &&
       sot.getDate() < lindja.getDate())
   ) {
     mosha--;
@@ -53,12 +79,28 @@ function llogaritMoshen(dateOfBirth: string | null) {
   return `${mosha} vjeç`;
 }
 
+function formatDateForInput(date: string | null) {
+  if (!date) return "";
+
+  return new Date(date).toISOString().split("T")[0];
+}
+
 export default function SportistetClient() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [dukeRuajtur, setDukeRuajtur] = useState(false);
-  const [shfaqFormularin, setShfaqFormularin] = useState(false);
   const [gabimi, setGabimi] = useState("");
+
+  const [shfaqFormularin, setShfaqFormularin] =
+    useState(false);
+
+  const [playerNeEditim, setPlayerNeEditim] =
+    useState<Player | null>(null);
+
+  const [playerPerFshirje, setPlayerPerFshirje] =
+    useState<Player | null>(null);
+
+  const [dukeFshire, setDukeFshire] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -68,6 +110,7 @@ export default function SportistetClient() {
   const [email, setEmail] = useState("");
   const [position, setPosition] = useState("");
   const [jerseyNumber, setJerseyNumber] = useState("");
+  const [status, setStatus] = useState("ACTIVE");
 
   async function merrSportistet() {
     setLoading(true);
@@ -82,7 +125,8 @@ export default function SportistetClient() {
 
       if (!response.ok) {
         setGabimi(
-          data.error || "Sportistët nuk mund të ngarkoheshin."
+          data.error ||
+            "Sportistët nuk mund të ngarkoheshin."
         );
         return;
       }
@@ -101,7 +145,47 @@ export default function SportistetClient() {
     merrSportistet();
   }, []);
 
-  async function shtoSportist(
+  function pastroFormularin() {
+    setFirstName("");
+    setLastName("");
+    setDateOfBirth("");
+    setGender("NOT_SPECIFIED");
+    setPhone("");
+    setEmail("");
+    setPosition("");
+    setJerseyNumber("");
+    setStatus("ACTIVE");
+    setPlayerNeEditim(null);
+  }
+
+  function hapShtimin() {
+    pastroFormularin();
+    setShfaqFormularin(true);
+  }
+
+  function hapEditimin(player: Player) {
+    setPlayerNeEditim(player);
+
+    setFirstName(player.firstName);
+    setLastName(player.lastName);
+    setDateOfBirth(
+      formatDateForInput(player.dateOfBirth)
+    );
+    setGender(player.gender || "NOT_SPECIFIED");
+    setPhone(player.phone || "");
+    setEmail(player.email || "");
+    setPosition(player.position || "");
+    setJerseyNumber(
+      player.jerseyNumber !== null
+        ? String(player.jerseyNumber)
+        : ""
+    );
+    setStatus(player.status);
+
+    setShfaqFormularin(true);
+  }
+
+  async function ruajSportistin(
     e: FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
@@ -110,8 +194,12 @@ export default function SportistetClient() {
     setDukeRuajtur(true);
 
     try {
-      const response = await fetch("/api/players", {
-        method: "POST",
+      const url = playerNeEditim
+        ? `/api/players/${playerNeEditim.id}`
+        : "/api/players";
+
+      const response = await fetch(url, {
+        method: playerNeEditim ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -124,6 +212,7 @@ export default function SportistetClient() {
           email,
           position,
           jerseyNumber,
+          status,
         }),
       });
 
@@ -131,29 +220,58 @@ export default function SportistetClient() {
 
       if (!response.ok) {
         setGabimi(
-          data.error || "Sportisti nuk mund të shtohej."
+          data.error ||
+            "Sportisti nuk mund të ruhej."
         );
         return;
       }
 
-      setFirstName("");
-      setLastName("");
-      setDateOfBirth("");
-      setGender("NOT_SPECIFIED");
-      setPhone("");
-      setEmail("");
-      setPosition("");
-      setJerseyNumber("");
-
       setShfaqFormularin(false);
+      pastroFormularin();
 
       await merrSportistet();
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë shtimit të sportistit."
+        "Ndodhi një problem gjatë ruajtjes së sportistit."
       );
     } finally {
       setDukeRuajtur(false);
+    }
+  }
+
+  async function fshiSportistin() {
+    if (!playerPerFshirje) return;
+
+    setDukeFshire(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/players/${playerPerFshirje.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Sportisti nuk mund të fshihej."
+        );
+        return;
+      }
+
+      setPlayerPerFshirje(null);
+
+      await merrSportistet();
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë fshirjes së sportistit."
+      );
+    } finally {
+      setDukeFshire(false);
     }
   }
 
@@ -171,9 +289,7 @@ export default function SportistetClient() {
         </div>
 
         <button
-          onClick={() =>
-            setShfaqFormularin((vlera) => !vlera)
-          }
+          onClick={hapShtimin}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
         >
           <Plus size={18} />
@@ -181,100 +297,174 @@ export default function SportistetClient() {
         </button>
       </div>
 
+      {gabimi && (
+        <div className="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          {gabimi}
+        </div>
+      )}
+
       {shfaqFormularin && (
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-950">
-            Sportist i ri
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-950">
+              {playerNeEditim
+                ? "Edito sportistin"
+                : "Sportist i ri"}
+            </h2>
+
+            <button
+              onClick={() => {
+                setShfaqFormularin(false);
+                pastroFormularin();
+              }}
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              aria-label="Mbyll"
+            >
+              <X size={19} />
+            </button>
+          </div>
 
           <form
-            onSubmit={shtoSportist}
-            className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            onSubmit={ruajSportistin}
+            className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
           >
-            <input
-              required
-              value={firstName}
-              onChange={(e) =>
-                setFirstName(e.target.value)
-              }
-              placeholder="Emri"
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Emri
+              <input
+                required
+                value={firstName}
+                onChange={(e) =>
+                  setFirstName(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <input
-              required
-              value={lastName}
-              onChange={(e) =>
-                setLastName(e.target.value)
-              }
-              placeholder="Mbiemri"
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Mbiemri
+              <input
+                required
+                value={lastName}
+                onChange={(e) =>
+                  setLastName(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <input
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) =>
-                setDateOfBirth(e.target.value)
-              }
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Datëlindja
+              <input
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) =>
+                  setDateOfBirth(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <select
-              value={gender}
-              onChange={(e) =>
-                setGender(e.target.value)
-              }
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            >
-              <option value="NOT_SPECIFIED">
-                Gjinia
-              </option>
-              <option value="MALE">Mashkull</option>
-              <option value="FEMALE">Femër</option>
-              <option value="OTHER">Tjetër</option>
-            </select>
+            <label className="text-xs font-semibold text-slate-600">
+              Gjinia
+              <select
+                value={gender}
+                onChange={(e) =>
+                  setGender(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              >
+                <option value="NOT_SPECIFIED">
+                  E papërcaktuar
+                </option>
+                <option value="MALE">
+                  Mashkull
+                </option>
+                <option value="FEMALE">
+                  Femër
+                </option>
+                <option value="OTHER">
+                  Tjetër
+                </option>
+              </select>
+            </label>
 
-            <input
-              value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value)
-              }
-              placeholder="Telefoni"
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Telefoni
+              <input
+                value={phone}
+                onChange={(e) =>
+                  setPhone(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <input
-              type="email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              placeholder="Email"
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Adresa elektronike
+              <input
+                type="email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <input
-              value={position}
-              onChange={(e) =>
-                setPosition(e.target.value)
-              }
-              placeholder="Pozicioni"
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Pozicioni
+              <input
+                value={position}
+                onChange={(e) =>
+                  setPosition(e.target.value)
+                }
+                placeholder="Mesfushor"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <input
-              type="number"
-              min="0"
-              value={jerseyNumber}
-              onChange={(e) =>
-                setJerseyNumber(e.target.value)
-              }
-              placeholder="Numri i fanellës"
-              className="rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-            />
+            <label className="text-xs font-semibold text-slate-600">
+              Numri i fanellës
+              <input
+                type="number"
+                min="0"
+                max="999"
+                value={jerseyNumber}
+                onChange={(e) =>
+                  setJerseyNumber(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </label>
 
-            <div className="sm:col-span-2 xl:col-span-4 flex justify-end">
+            <label className="text-xs font-semibold text-slate-600">
+              Statusi
+              <select
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value)
+                }
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              >
+                <option value="ACTIVE">
+                  Aktiv
+                </option>
+                <option value="INACTIVE">
+                  Joaktiv
+                </option>
+                <option value="INJURED">
+                  I dëmtuar
+                </option>
+                <option value="SUSPENDED">
+                  I pezulluar
+                </option>
+                <option value="LEFT">
+                  Larguar
+                </option>
+              </select>
+            </label>
+
+            <div className="flex justify-end sm:col-span-2 xl:col-span-3">
               <button
                 type="submit"
                 disabled={dukeRuajtur}
@@ -282,16 +472,12 @@ export default function SportistetClient() {
               >
                 {dukeRuajtur
                   ? "Duke ruajtur..."
-                  : "Ruaj sportistin"}
+                  : playerNeEditim
+                    ? "Ruaj ndryshimet"
+                    : "Ruaj sportistin"}
               </button>
             </div>
           </form>
-        </div>
-      )}
-
-      {gabimi && (
-        <div className="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-          {gabimi}
         </div>
       )}
 
@@ -323,7 +509,7 @@ export default function SportistetClient() {
         ) : players.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <UserRound
-              size={38}
+              size={40}
               className="text-slate-300"
             />
 
@@ -337,26 +523,29 @@ export default function SportistetClient() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] text-left">
-              <thead className="bg-slate-50 text-xs text-slate-500">
+            <table className="w-full min-w-[900px] text-left">
+              <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
                 <tr>
-                  <th className="px-5 py-3 font-semibold">
+                  <th className="px-5 py-3">
                     Sportisti
                   </th>
-                  <th className="px-5 py-3 font-semibold">
+                  <th className="px-5 py-3">
                     Mosha
                   </th>
-                  <th className="px-5 py-3 font-semibold">
+                  <th className="px-5 py-3">
                     Pozicioni
                   </th>
-                  <th className="px-5 py-3 font-semibold">
+                  <th className="px-5 py-3">
                     Fanella
                   </th>
-                  <th className="px-5 py-3 font-semibold">
+                  <th className="px-5 py-3">
                     Kontakti
                   </th>
-                  <th className="px-5 py-3 font-semibold">
+                  <th className="px-5 py-3">
                     Statusi
+                  </th>
+                  <th className="px-5 py-3 text-right">
+                    Veprime
                   </th>
                 </tr>
               </thead>
@@ -365,39 +554,69 @@ export default function SportistetClient() {
                 {players.map((player) => (
                   <tr
                     key={player.id}
-                    className="text-sm text-slate-600"
+                    className="text-sm"
                   >
-                    <td className="px-5 py-4 font-semibold text-slate-950">
+                    <td className="px-5 py-4 font-semibold text-slate-900">
                       {player.firstName}{" "}
                       {player.lastName}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-500">
                       {llogaritMoshen(
                         player.dateOfBirth
                       )}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-500">
                       {player.position || "—"}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-500">
                       {player.jerseyNumber ?? "—"}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-500">
                       {player.phone ||
                         player.email ||
                         "—"}
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${klasaStatusit(
+                          player.status
+                        )}`}
+                      >
                         {perkthimStatusi(
                           player.status
                         )}
                       </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() =>
+                            hapEditimin(player)
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                        >
+                          <Pencil size={14} />
+                          Edito
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            setPlayerPerFshirje(
+                              player
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                        >
+                          <Trash2 size={14} />
+                          Fshi
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -406,6 +625,48 @@ export default function SportistetClient() {
           </div>
         )}
       </div>
+
+      {playerPerFshirje && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-slate-950">
+              Fshi sportistin?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Je i sigurt që dëshiron të fshish{" "}
+              <strong className="text-slate-800">
+                {playerPerFshirje.firstName}{" "}
+                {playerPerFshirje.lastName}
+              </strong>
+              ? Ky veprim do ta heqë sportistin edhe
+              nga ekipet ku është regjistruar.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() =>
+                  setPlayerPerFshirje(null)
+                }
+                disabled={dukeFshire}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"
+              >
+                Anulo
+              </button>
+
+              <button
+                onClick={fshiSportistin}
+                disabled={dukeFshire}
+                className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {dukeFshire
+                  ? "Duke fshirë..."
+                  : "Po, fshi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
