@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PlatformRole {
+  PLATFORM_ADMIN
+  USER
+}
+
+enum AcademyRole {
+  OWNER
+  ADMIN
+  SPORTS_DIRECTOR
+  HEAD_COACH
+  COACH
+  ASSISTANT_COACH
+  FINANCE
+  RECEPTIONIST
+  MEMBER
+}
+
+enum AcademyStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+  REMOVED
+}
+
+model User {
+  id            String  @id @default(cuid())
+  name          String
+  firstName     String?
+  lastName      String?
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  phone         String?
+  image         String?
+
+  role PlatformRole @default(USER)
+
+  sessions Session[]
+  accounts Account[]
+
+  memberships    AcademyMembership[]
+  ownedAcademies Academy[]           @relation("AcademyOwner")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ipAddress String?
+  userAgent String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id         String @id
+  issuer     String
+  accountId  String
+  providerId String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([issuer, accountId], map: "account_issuer_accountId_uidx")
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Academy {
+  id      String  @id @default(cuid())
+  name    String
+  slug    String  @unique
+  email   String?
+  phone   String?
+  logo    String?
+  address String?
+  city    String?
+  country String?
+
+  status AcademyStatus @default(TRIAL)
+
+  ownerId String
+  owner   User   @relation("AcademyOwner", fields: [ownerId], references: [id])
+
+  memberships AcademyMembership[]
+  branches    AcademyBranch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model AcademyMembership {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  role   AcademyRole
+  status MembershipStatus @default(ACTIVE)
+
+  joinedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, academyId])
+  @@index([academyId])
+  @@index([userId])
+  @@index([academyId, role])
+}
+
+model AcademyBranch {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  name    String
+  address String?
+  city    String?
+  country String?
+  phone   String?
+  email   String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+}
