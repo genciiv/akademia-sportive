@@ -134,6 +134,8 @@ model Academy {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  players   Player[]
+  teams     Team[]
 
   @@index([ownerId])
   @@index([status])
@@ -179,6 +181,130 @@ model AcademyBranch {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  teams     Team[]
 
   @@index([academyId])
+}
+
+enum PlayerStatus {
+  ACTIVE
+  INACTIVE
+  INJURED
+  SUSPENDED
+  LEFT
+}
+
+enum TeamStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  NOT_SPECIFIED
+}
+
+enum SportType {
+  FOOTBALL
+  BASKETBALL
+  VOLLEYBALL
+  TENNIS
+  SWIMMING
+  HANDBALL
+  MARTIAL_ARTS
+  ATHLETICS
+  OTHER
+}
+
+model Player {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+
+  dateOfBirth DateTime?
+  gender      Gender    @default(NOT_SPECIFIED)
+
+  email String?
+  phone String?
+
+  guardianName  String?
+  guardianPhone String?
+  guardianEmail String?
+
+  position     String?
+  jerseyNumber Int?
+
+  photo String?
+  notes String?
+
+  status PlayerStatus @default(ACTIVE)
+
+  teams TeamPlayer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([academyId, lastName, firstName])
+}
+
+model Team {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  branchId String?
+  branch   AcademyBranch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  name String
+
+  sport SportType
+
+  ageGroup String?
+  season   String?
+
+  description String?
+
+  status TeamStatus @default(ACTIVE)
+
+  players TeamPlayer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([academyId, name])
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([branchId])
+}
+
+model TeamPlayer {
+  id String @id @default(cuid())
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, playerId])
+  @@index([teamId])
+  @@index([playerId])
 }
