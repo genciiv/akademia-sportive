@@ -22,12 +22,12 @@ export default function Page() {
     setGabimi("");
 
     if (fjalekalimi.length < 8) {
-      setGabimi("Fjalëkalimi duhet të ketë të paktën 8 karaktere.");
+      setGabimi("FjalÃ«kalimi duhet tÃ« ketÃ« tÃ« paktÃ«n 8 karaktere.");
       return;
     }
 
     if (fjalekalimi !== konfirmimi) {
-      setGabimi("Fjalëkalimet nuk përputhen.");
+      setGabimi("FjalÃ«kalimet nuk pÃ«rputhen.");
       return;
     }
 
@@ -41,13 +41,13 @@ export default function Page() {
 
     if (error) {
       setGabimi(
-        error.message || "Regjistrimi nuk mund të përfundohej."
+        error.message || "Regjistrimi nuk mund tÃ« pÃ«rfundohej."
       );
       setDukeRegjistruar(false);
       return;
     }
 
-    router.push("/");
+    router.push("/krijo-akademine");
     router.refresh();
   }
 
@@ -58,11 +58,11 @@ export default function Page() {
 
         <div className="mt-8">
           <h1 className="text-2xl font-bold text-slate-950">
-            Krijo llogarinë
+            Krijo llogarinÃ«
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Regjistrohu për të nisur menaxhimin e akademisë sportive.
+            Regjistrohu pÃ«r tÃ« nisur menaxhimin e akademisÃ« sportive.
           </p>
         </div>
 
@@ -92,25 +92,25 @@ export default function Page() {
           </label>
 
           <label className="block text-xs font-semibold text-slate-600">
-            Fjalëkalimi
+            FjalÃ«kalimi
             <input
               type="password"
               required
               value={fjalekalimi}
               onChange={(e) => setFjalekalimi(e.target.value)}
-              placeholder="Të paktën 8 karaktere"
+              placeholder="TÃ« paktÃ«n 8 karaktere"
               className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
             />
           </label>
 
           <label className="block text-xs font-semibold text-slate-600">
-            Konfirmo fjalëkalimin
+            Konfirmo fjalÃ«kalimin
             <input
               type="password"
               required
               value={konfirmimi}
               onChange={(e) => setKonfirmimi(e.target.value)}
-              placeholder="Përsërit fjalëkalimin"
+              placeholder="PÃ«rsÃ«rit fjalÃ«kalimin"
               className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
             />
           </label>
@@ -131,7 +131,7 @@ export default function Page() {
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-500">
-          Ke tashmë llogari?{" "}
+          Ke tashmÃ« llogari?{" "}
           <Link
             href="/hyrje"
             className="font-semibold text-blue-700 hover:text-blue-800"
