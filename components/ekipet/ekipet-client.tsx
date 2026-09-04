@@ -10,6 +10,8 @@ import {
   X,
   UserPlus,
   UserMinus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -62,10 +64,29 @@ const sportet = [
 ];
 
 function perkthimSporti(sport: string) {
-  return (
-    sportet.find((item) => item.value === sport)?.label ||
-    sport
-  );
+  return sportet.find((item) => item.value === sport)?.label || sport;
+}
+
+function perkthimStatusi(status: string) {
+  const statuset: Record<string, string> = {
+    ACTIVE: "Aktiv",
+    INACTIVE: "Joaktiv",
+    ARCHIVED: "Arkivuar",
+  };
+
+  return statuset[status] || status;
+}
+
+function klasaStatusit(status: string) {
+  if (status === "ACTIVE") {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "INACTIVE") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-slate-100 text-slate-600";
 }
 
 export default function EkipetClient() {
@@ -77,12 +98,17 @@ export default function EkipetClient() {
   const [shfaqFormularin, setShfaqFormularin] = useState(false);
   const [gabimi, setGabimi] = useState("");
 
+  const [ekipiNeEditim, setEkipiNeEditim] = useState<Team | null>(null);
+  const [ekipiPerFshirje, setEkipiPerFshirje] = useState<Team | null>(null);
+  const [dukeFshire, setDukeFshire] = useState(false);
+
   const [name, setName] = useState("");
   const [sport, setSport] = useState("FOOTBALL");
   const [ageGroup, setAgeGroup] = useState("");
   const [season, setSeason] = useState("2026/27");
   const [branchId, setBranchId] = useState("");
   const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("ACTIVE");
 
   const [ekipiAktiv, setEkipiAktiv] = useState<Team | null>(null);
   const [sportistet, setSportistet] = useState<TeamPlayer[]>([]);
@@ -104,18 +130,14 @@ export default function EkipetClient() {
       const data = await response.json();
 
       if (!response.ok) {
-        setGabimi(
-          data.error || "Ekipet nuk mund të ngarkoheshin."
-        );
+        setGabimi(data.error || "Ekipet nuk mund të ngarkoheshin.");
         return;
       }
 
       setTeams(data.teams || []);
       setBranches(data.branches || []);
     } catch {
-      setGabimi(
-        "Ndodhi një problem gjatë ngarkimit të ekipeve."
-      );
+      setGabimi("Ndodhi një problem gjatë ngarkimit të ekipeve.");
     } finally {
       setLoading(false);
     }
@@ -125,17 +147,47 @@ export default function EkipetClient() {
     merrEkipet();
   }, []);
 
-  async function shtoEkip(
-    e: FormEvent<HTMLFormElement>
-  ) {
+  function pastroFormularin() {
+    setName("");
+    setSport("FOOTBALL");
+    setAgeGroup("");
+    setSeason("2026/27");
+    setBranchId("");
+    setDescription("");
+    setStatus("ACTIVE");
+    setEkipiNeEditim(null);
+  }
+
+  function hapShtimin() {
+    pastroFormularin();
+    setShfaqFormularin(true);
+  }
+
+  function hapEditimin(team: Team) {
+    setEkipiNeEditim(team);
+    setName(team.name);
+    setSport(team.sport);
+    setAgeGroup(team.ageGroup || "");
+    setSeason(team.season || "");
+    setBranchId(team.branch?.id || "");
+    setDescription(team.description || "");
+    setStatus(team.status);
+    setShfaqFormularin(true);
+  }
+
+  async function ruajEkipin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setGabimi("");
     setDukeRuajtur(true);
 
     try {
-      const response = await fetch("/api/teams", {
-        method: "POST",
+      const url = ekipiNeEditim
+        ? `/api/teams/${ekipiNeEditim.id}`
+        : "/api/teams";
+
+      const response = await fetch(url, {
+        method: ekipiNeEditim ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -146,33 +198,60 @@ export default function EkipetClient() {
           season,
           branchId,
           description,
+          status,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setGabimi(
-          data.error || "Ekipi nuk mund të krijohej."
-        );
+        setGabimi(data.error || "Ekipi nuk mund të ruhej.");
         return;
       }
 
-      setName("");
-      setSport("FOOTBALL");
-      setAgeGroup("");
-      setSeason("2026/27");
-      setBranchId("");
-      setDescription("");
       setShfaqFormularin(false);
+      pastroFormularin();
 
       await merrEkipet();
     } catch {
-      setGabimi(
-        "Ndodhi një problem gjatë krijimit të ekipit."
-      );
+      setGabimi("Ndodhi një problem gjatë ruajtjes së ekipit.");
     } finally {
       setDukeRuajtur(false);
+    }
+  }
+
+  async function fshiEkipin() {
+    if (!ekipiPerFshirje) return;
+
+    setDukeFshire(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/teams/${ekipiPerFshirje.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(data.error || "Ekipi nuk mund të fshihej.");
+        return;
+      }
+
+      setEkipiPerFshirje(null);
+
+      if (ekipiAktiv?.id === ekipiPerFshirje.id) {
+        setEkipiAktiv(null);
+      }
+
+      await merrEkipet();
+    } catch {
+      setGabimi("Ndodhi një problem gjatë fshirjes së ekipit.");
+    } finally {
+      setDukeFshire(false);
     }
   }
 
@@ -194,8 +273,7 @@ export default function EkipetClient() {
 
       if (!response.ok) {
         setGabimiSportisteve(
-          data.error ||
-            "Sportistët nuk mund të ngarkoheshin."
+          data.error || "Sportistët nuk mund të ngarkoheshin."
         );
         return;
       }
@@ -225,9 +303,7 @@ export default function EkipetClient() {
     }
   }
 
-  async function ndryshoSportistin(
-    player: TeamPlayer
-  ) {
+  async function ndryshoSportistin(player: TeamPlayer) {
     if (!ekipiAktiv) return;
 
     setSportistiNeProces(player.id);
@@ -251,8 +327,7 @@ export default function EkipetClient() {
 
       if (!response.ok) {
         setGabimiSportisteve(
-          data.error ||
-            "Ndryshimi nuk mund të përfundohej."
+          data.error || "Ndryshimi nuk mund të përfundohej."
         );
         return;
       }
@@ -282,9 +357,7 @@ export default function EkipetClient() {
         </div>
 
         <button
-          onClick={() =>
-            setShfaqFormularin((vlera) => !vlera)
-          }
+          onClick={hapShtimin}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
         >
           <Plus size={18} />
@@ -292,14 +365,33 @@ export default function EkipetClient() {
         </button>
       </div>
 
+      {gabimi && (
+        <div className="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          {gabimi}
+        </div>
+      )}
+
       {shfaqFormularin && (
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-950">
-            Ekip i ri
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-950">
+              {ekipiNeEditim ? "Edito ekipin" : "Ekip i ri"}
+            </h2>
+
+            <button
+              onClick={() => {
+                setShfaqFormularin(false);
+                pastroFormularin();
+              }}
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              aria-label="Mbyll"
+            >
+              <X size={19} />
+            </button>
+          </div>
 
           <form
-            onSubmit={shtoEkip}
+            onSubmit={ruajEkipin}
             className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
           >
             <label className="text-xs font-semibold text-slate-600">
@@ -321,10 +413,7 @@ export default function EkipetClient() {
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
               >
                 {sportet.map((item) => (
-                  <option
-                    key={item.value}
-                    value={item.value}
-                  >
+                  <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
                 ))}
@@ -335,9 +424,7 @@ export default function EkipetClient() {
               Grupmosha
               <input
                 value={ageGroup}
-                onChange={(e) =>
-                  setAgeGroup(e.target.value)
-                }
+                onChange={(e) => setAgeGroup(e.target.value)}
                 placeholder="U17"
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
               />
@@ -347,9 +434,7 @@ export default function EkipetClient() {
               Sezoni
               <input
                 value={season}
-                onChange={(e) =>
-                  setSeason(e.target.value)
-                }
+                onChange={(e) => setSeason(e.target.value)}
                 placeholder="2026/27"
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
               />
@@ -359,20 +444,13 @@ export default function EkipetClient() {
               Dega
               <select
                 value={branchId}
-                onChange={(e) =>
-                  setBranchId(e.target.value)
-                }
+                onChange={(e) => setBranchId(e.target.value)}
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
               >
-                <option value="">
-                  Pa degë të përcaktuar
-                </option>
+                <option value="">Pa degë të përcaktuar</option>
 
                 {branches.map((branch) => (
-                  <option
-                    key={branch.id}
-                    value={branch.id}
-                  >
+                  <option key={branch.id} value={branch.id}>
                     {branch.name}
                   </option>
                 ))}
@@ -380,14 +458,26 @@ export default function EkipetClient() {
             </label>
 
             <label className="text-xs font-semibold text-slate-600">
-              Përshkrimi
-              <input
-                value={description}
-                onChange={(e) =>
-                  setDescription(e.target.value)
-                }
-                placeholder="Përshkrim i shkurtër"
+              Statusi
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+              >
+                <option value="ACTIVE">Aktiv</option>
+                <option value="INACTIVE">Joaktiv</option>
+                <option value="ARCHIVED">Arkivuar</option>
+              </select>
+            </label>
+
+            <label className="text-xs font-semibold text-slate-600 sm:col-span-2 xl:col-span-3">
+              Përshkrimi
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Përshkrim i shkurtër"
+                rows={3}
+                className="mt-1.5 w-full resize-none rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
               />
             </label>
 
@@ -399,16 +489,12 @@ export default function EkipetClient() {
               >
                 {dukeRuajtur
                   ? "Duke ruajtur..."
-                  : "Ruaj ekipin"}
+                  : ekipiNeEditim
+                    ? "Ruaj ndryshimet"
+                    : "Ruaj ekipin"}
               </button>
             </div>
           </form>
-        </div>
-      )}
-
-      {gabimi && (
-        <div className="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-          {gabimi}
         </div>
       )}
 
@@ -439,10 +525,7 @@ export default function EkipetClient() {
           </div>
         ) : teams.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <ShieldCheck
-              size={40}
-              className="text-slate-300"
-            />
+            <ShieldCheck size={40} className="text-slate-300" />
 
             <p className="mt-3 font-semibold text-slate-700">
               Nuk ka ende ekipe
@@ -470,8 +553,12 @@ export default function EkipetClient() {
                     </p>
                   </div>
 
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                    Aktiv
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${klasaStatusit(
+                      team.status
+                    )}`}
+                  >
+                    {perkthimStatusi(team.status)}
                   </span>
                 </div>
 
@@ -525,6 +612,24 @@ export default function EkipetClient() {
                 >
                   Menaxho sportistët
                 </button>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => hapEditimin(team)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+                  >
+                    <Pencil size={15} />
+                    Edito
+                  </button>
+
+                  <button
+                    onClick={() => setEkipiPerFshirje(team)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100"
+                  >
+                    <Trash2 size={15} />
+                    Fshi
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -602,9 +707,7 @@ export default function EkipetClient() {
 
                       <button
                         disabled={sportistiNeProces === player.id}
-                        onClick={() =>
-                          ndryshoSportistin(player)
-                        }
+                        onClick={() => ndryshoSportistin(player)}
                         className={
                           player.isInTeam
                             ? "inline-flex items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
@@ -627,6 +730,43 @@ export default function EkipetClient() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ekipiPerFshirje && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-slate-950">
+              Fshi ekipin?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Je i sigurt që dëshiron të fshish{" "}
+              <strong className="text-slate-800">
+                {ekipiPerFshirje.name}
+              </strong>
+              ? Sportistët nuk do të fshihen, por lidhjet e tyre me këtë ekip
+              do të hiqen.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setEkipiPerFshirje(null)}
+                disabled={dukeFshire}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"
+              >
+                Anulo
+              </button>
+
+              <button
+                onClick={fshiEkipin}
+                disabled={dukeFshire}
+                className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {dukeFshire ? "Duke fshirë..." : "Po, fshi"}
+              </button>
             </div>
           </div>
         </div>
