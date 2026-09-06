@@ -42,6 +42,35 @@ type BranchOption = {
   name: string;
 };
 
+type AttendanceStatus =
+  | "PRESENT"
+  | "ABSENT"
+  | "LATE"
+  | "EXCUSED";
+
+type AttendancePlayer = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  position: string | null;
+  jerseyNumber: number | null;
+  status: string;
+  attendance: {
+    id: string;
+    status: AttendanceStatus;
+    note: string | null;
+  } | null;
+};
+
+type AttendanceStatistics = {
+  total: number;
+  marked: number;
+  present: number;
+  absent: number;
+  late: number;
+  excused: number;
+};
+
 type TrainingSession = {
   id: string;
   title: string;
@@ -160,6 +189,18 @@ export default function SeancatClient() {
 
   const [seancaEDetajuar, setSeancaEDetajuar] =
     useState<TrainingSession | null>(null);
+
+  const [sportistetPjesemarrjes, setSportistetPjesemarrjes] =
+    useState<AttendancePlayer[]>([]);
+
+  const [statistikatPjesemarrjes, setStatistikatPjesemarrjes] =
+    useState<AttendanceStatistics | null>(null);
+
+  const [dukeNgarkuarPjesemarrjen, setDukeNgarkuarPjesemarrjen] =
+    useState(false);
+
+  const [sportistiNeProces, setSportistiNeProces] =
+    useState<string | null>(null);
 
   const [dukeRuajtur, setDukeRuajtur] = useState(false);
   const [dukeFshire, setDukeFshire] = useState(false);
@@ -356,6 +397,129 @@ export default function SeancatClient() {
     } finally {
       setDukeRuajtur(false);
     }
+  }
+
+  async function merrPjesemarrjen(sessionId: string) {
+    setDukeNgarkuarPjesemarrjen(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${sessionId}/attendance`,
+        { cache: "no-store" }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Pjesëmarrja nuk mund të ngarkohej."
+        );
+        return;
+      }
+
+      setSportistetPjesemarrjes(data.players || []);
+      setStatistikatPjesemarrjes(data.statistics || null);
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ngarkimit të pjesëmarrjes."
+      );
+    } finally {
+      setDukeNgarkuarPjesemarrjen(false);
+    }
+  }
+
+  async function ndryshoPjesemarrjen(
+    playerId: string,
+    attendanceStatus: AttendanceStatus
+  ) {
+    if (!seancaEDetajuar) return;
+
+    setSportistiNeProces(playerId);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/attendance`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            playerId,
+            status: attendanceStatus,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Pjesëmarrja nuk mund të përditësohej."
+        );
+        return;
+      }
+
+      await merrPjesemarrjen(seancaEDetajuar.id);
+      await merrSeancat();
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë përditësimit të pjesëmarrjes."
+      );
+    } finally {
+      setSportistiNeProces(null);
+    }
+  }
+
+  async function fshiPjesemarrjen(playerId: string) {
+    if (!seancaEDetajuar) return;
+
+    setSportistiNeProces(playerId);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/attendance`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ playerId }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Pjesëmarrja nuk mund të hiqej."
+        );
+        return;
+      }
+
+      await merrPjesemarrjen(seancaEDetajuar.id);
+      await merrSeancat();
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë heqjes së pjesëmarrjes."
+      );
+    } finally {
+      setSportistiNeProces(null);
+    }
+  }
+
+  async function hapDetajet(session: TrainingSession) {
+    setSeancaEDetajuar(session);
+    setSportistetPjesemarrjes([]);
+    setStatistikatPjesemarrjes(null);
+
+    await merrPjesemarrjen(session.id);
   }
 
   async function fshiSeancen() {
@@ -727,7 +891,7 @@ export default function SeancatClient() {
                         </button>
 
                         <button
-                          onClick={() => setSeancaEDetajuar(session)}
+                          onClick={() => hapDetajet(session)}
                           className="rounded-lg bg-slate-950 p-2 text-white transition group-hover:bg-blue-600"
                           aria-label="Hap detajet"
                         >
@@ -1073,6 +1237,132 @@ export default function SeancatClient() {
               )}
             </div>
 
+            <div className="border-t border-slate-100 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">
+                    Pjesëmarrja
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Regjistro praninë e sportistëve në këtë seancë.
+                  </p>
+                </div>
+
+                {statistikatPjesemarrjes && (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      {statistikatPjesemarrjes.present} të pranishëm
+                    </span>
+
+                    <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                      {statistikatPjesemarrjes.absent} mungesa
+                    </span>
+
+                    <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                      {statistikatPjesemarrjes.late} vonë
+                    </span>
+
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      {statistikatPjesemarrjes.excused} të justifikuar
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5">
+                {dukeNgarkuarPjesemarrjen ? (
+                  <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+                    Duke ngarkuar sportistët...
+                  </div>
+                ) : sportistetPjesemarrjes.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+                    Ky ekip nuk ka sportistë aktivë.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {sportistetPjesemarrjes.map((player) => (
+                      <div
+                        key={player.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                      >
+                        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                          <div>
+                            <p className="font-semibold text-slate-950">
+                              {player.firstName} {player.lastName}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              {player.position || "Pa pozicion"}
+                              {player.jerseyNumber !== null
+                                ? ` · #${player.jerseyNumber}`
+                                : ""}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <AttendanceButton
+                              active={player.attendance?.status === "PRESENT"}
+                              disabled={sportistiNeProces === player.id}
+                              label="I pranishëm"
+                              normalClass="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                              activeClass="border-emerald-600 bg-emerald-600 text-white"
+                              onClick={() =>
+                                ndryshoPjesemarrjen(player.id, "PRESENT")
+                              }
+                            />
+
+                            <AttendanceButton
+                              active={player.attendance?.status === "ABSENT"}
+                              disabled={sportistiNeProces === player.id}
+                              label="Mungon"
+                              normalClass="border-red-200 text-red-700 hover:bg-red-50"
+                              activeClass="border-red-600 bg-red-600 text-white"
+                              onClick={() =>
+                                ndryshoPjesemarrjen(player.id, "ABSENT")
+                              }
+                            />
+
+                            <AttendanceButton
+                              active={player.attendance?.status === "LATE"}
+                              disabled={sportistiNeProces === player.id}
+                              label="Vonë"
+                              normalClass="border-amber-200 text-amber-700 hover:bg-amber-50"
+                              activeClass="border-amber-500 bg-amber-500 text-white"
+                              onClick={() =>
+                                ndryshoPjesemarrjen(player.id, "LATE")
+                              }
+                            />
+
+                            <AttendanceButton
+                              active={player.attendance?.status === "EXCUSED"}
+                              disabled={sportistiNeProces === player.id}
+                              label="I justifikuar"
+                              normalClass="border-blue-200 text-blue-700 hover:bg-blue-50"
+                              activeClass="border-blue-600 bg-blue-600 text-white"
+                              onClick={() =>
+                                ndryshoPjesemarrjen(player.id, "EXCUSED")
+                              }
+                            />
+
+                            {player.attendance && (
+                              <button
+                                type="button"
+                                disabled={sportistiNeProces === player.id}
+                                onClick={() => fshiPjesemarrjen(player.id)}
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
+                              >
+                                Pastro
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
               <button
                 onClick={() => {
@@ -1214,6 +1504,35 @@ function InfoDark({
       <Icon size={15} />
       {text}
     </div>
+  );
+}
+
+function AttendanceButton({
+  active,
+  disabled,
+  label,
+  normalClass,
+  activeClass,
+  onClick,
+}: {
+  active: boolean;
+  disabled: boolean;
+  label: string;
+  normalClass: string;
+  activeClass: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:opacity-50 ${
+        active ? activeClass : normalClass
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
