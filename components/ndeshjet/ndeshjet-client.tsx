@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { PerformanceSection } from "@/components/ndeshjet/performance-section";
 
 type MatchStatus =
   | "SCHEDULED"
@@ -2014,8 +2015,8 @@ export default function NdeshjetClient() {
       )}
 
       {ndeshjaEDetajuar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[26px] bg-white shadow-2xl">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[24px] bg-white shadow-2xl">
             <div className="flex items-start justify-between border-b border-slate-100 p-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
@@ -2642,7 +2643,12 @@ export default function NdeshjetClient() {
 
 
 
-            <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+                        {ndeshjaEDetajuar && (
+              <PerformanceSection
+                matchId={ndeshjaEDetajuar.id}
+              />
+            )}
+<div className="flex justify-end gap-2 border-t border-slate-100 p-6">
               <button
                 type="button"
                 onClick={() => {
@@ -2978,7 +2984,8 @@ export default function NdeshjetClient() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+                        
+<div className="flex justify-end gap-2 border-t border-slate-100 p-6">
               <button
                 type="button"
                 onClick={mbyllEditiminESportistit}
