@@ -62,6 +62,42 @@ type AttendancePlayer = {
   } | null;
 };
 
+type SessionDrill = {
+  id: string;
+  drillId: string;
+  order: number;
+  durationMin: number | null;
+  notes: string | null;
+  drill: {
+    id: string;
+    name: string;
+    category: string | null;
+    sport: string | null;
+    objective: string | null;
+    durationMin: number | null;
+    difficulty: "EASY" | "MEDIUM" | "HARD";
+    equipment: string | null;
+    description: string | null;
+    isActive: boolean;
+  };
+};
+
+type AvailableDrill = {
+  id: string;
+  name: string;
+  category: string | null;
+  sport: string | null;
+  objective: string | null;
+  durationMin: number | null;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  equipment: string | null;
+};
+
+type TrainingPlanStatistics = {
+  totalDrills: number;
+  totalDurationMin: number;
+};
+
 type AttendanceStatistics = {
   total: number;
   marked: number;
@@ -201,6 +237,30 @@ export default function SeancatClient() {
 
   const [sportistiNeProces, setSportistiNeProces] =
     useState<string | null>(null);
+
+  const [ushtrimetESeances, setUshtrimetESeances] =
+    useState<SessionDrill[]>([]);
+
+  const [ushtrimetEDisponueshme, setUshtrimetEDisponueshme] =
+    useState<AvailableDrill[]>([]);
+
+  const [statistikatPlanit, setStatistikatPlanit] =
+    useState<TrainingPlanStatistics | null>(null);
+
+  const [dukeNgarkuarPlanin, setDukeNgarkuarPlanin] =
+    useState(false);
+
+  const [dukeRuajturPlanin, setDukeRuajturPlanin] =
+    useState(false);
+
+  const [drillIdPerShtim, setDrillIdPerShtim] =
+    useState("");
+
+  const [kohezgjatjaDrill, setKohezgjatjaDrill] =
+    useState("");
+
+  const [shenimiDrill, setShenimiDrill] =
+    useState("");
 
   const [dukeRuajtur, setDukeRuajtur] = useState(false);
   const [dukeFshire, setDukeFshire] = useState(false);
@@ -516,10 +576,246 @@ export default function SeancatClient() {
 
   async function hapDetajet(session: TrainingSession) {
     setSeancaEDetajuar(session);
+
     setSportistetPjesemarrjes([]);
     setStatistikatPjesemarrjes(null);
 
-    await merrPjesemarrjen(session.id);
+    setUshtrimetESeances([]);
+    setUshtrimetEDisponueshme([]);
+    setStatistikatPlanit(null);
+
+    setDrillIdPerShtim("");
+    setKohezgjatjaDrill("");
+    setShenimiDrill("");
+
+    await Promise.all([
+      merrPjesemarrjen(session.id),
+      merrPlaninEStervitjes(session.id),
+    ]);
+  }
+
+  async function merrPlaninEStervitjes(sessionId: string) {
+    setDukeNgarkuarPlanin(true);
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${sessionId}/drills`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Plani i stërvitjes nuk mund të ngarkohej."
+        );
+        return;
+      }
+
+      setUshtrimetESeances(data.sessionDrills || []);
+      setUshtrimetEDisponueshme(
+        data.availableDrills || []
+      );
+      setStatistikatPlanit(
+        data.statistics || null
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ngarkimit të planit të stërvitjes."
+      );
+    } finally {
+      setDukeNgarkuarPlanin(false);
+    }
+  }
+
+  async function shtoUshtrimNeSeance() {
+    if (!seancaEDetajuar || !drillIdPerShtim) {
+      return;
+    }
+
+    setDukeRuajturPlanin(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/drills`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            drillId: drillIdPerShtim,
+            durationMin: kohezgjatjaDrill,
+            notes: shenimiDrill,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ushtrimi nuk mund të shtohej në seancë."
+        );
+        return;
+      }
+
+      setDrillIdPerShtim("");
+      setKohezgjatjaDrill("");
+      setShenimiDrill("");
+
+      await merrPlaninEStervitjes(
+        seancaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë shtimit të ushtrimit."
+      );
+    } finally {
+      setDukeRuajturPlanin(false);
+    }
+  }
+
+  async function ndryshoRenditjen(
+    item: SessionDrill,
+    drejtimi: "UP" | "DOWN"
+  ) {
+    if (!seancaEDetajuar) return;
+
+    const index = ushtrimetESeances.findIndex(
+      (element) => element.id === item.id
+    );
+
+    const targetIndex =
+      drejtimi === "UP"
+        ? index - 1
+        : index + 1;
+
+    if (
+      index < 0 ||
+      targetIndex < 0 ||
+      targetIndex >= ushtrimetESeances.length
+    ) {
+      return;
+    }
+
+    const target = ushtrimetESeances[targetIndex];
+
+    setDukeRuajturPlanin(true);
+    setGabimi("");
+
+    try {
+      const firstResponse = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/drills`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionDrillId: item.id,
+            durationMin: item.durationMin,
+            notes: item.notes,
+            order: target.order,
+          }),
+        }
+      );
+
+      if (!firstResponse.ok) {
+        const data = await firstResponse.json();
+
+        setGabimi(
+          data.error ||
+            "Renditja nuk mund të ndryshohej."
+        );
+        return;
+      }
+
+      const secondResponse = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/drills`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionDrillId: target.id,
+            durationMin: target.durationMin,
+            notes: target.notes,
+            order: item.order,
+          }),
+        }
+      );
+
+      if (!secondResponse.ok) {
+        const data = await secondResponse.json();
+
+        setGabimi(
+          data.error ||
+            "Renditja nuk mund të ndryshohej."
+        );
+        return;
+      }
+
+      await merrPlaninEStervitjes(
+        seancaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ndryshimit të renditjes."
+      );
+    } finally {
+      setDukeRuajturPlanin(false);
+    }
+  }
+
+  async function hiqUshtrimNgaSeanca(
+    sessionDrillId: string
+  ) {
+    if (!seancaEDetajuar) return;
+
+    setDukeRuajturPlanin(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/drills`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionDrillId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ushtrimi nuk mund të hiqej nga seanca."
+        );
+        return;
+      }
+
+      await merrPlaninEStervitjes(
+        seancaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë heqjes së ushtrimit."
+      );
+    } finally {
+      setDukeRuajturPlanin(false);
+    }
   }
 
   async function fshiSeancen() {
@@ -1235,6 +1531,230 @@ export default function SeancatClient() {
                   </p>
                 </div>
               )}
+            </div>
+
+            <div className="border-t border-slate-100 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">
+                    Plani i stërvitjes
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Organizo ushtrimet sipas rendit të realizimit.
+                  </p>
+                </div>
+
+                {statistikatPlanit && (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      {statistikatPlanit.totalDrills} ushtrime
+                    </span>
+
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {statistikatPlanit.totalDurationMin} minuta
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <select
+                    value={drillIdPerShtim}
+                    onChange={(event) => {
+                      const value = event.target.value;
+
+                      setDrillIdPerShtim(value);
+
+                      const drill =
+                        ushtrimetEDisponueshme.find(
+                          (item) => item.id === value
+                        );
+
+                      setKohezgjatjaDrill(
+                        drill?.durationMin
+                          ? String(drill.durationMin)
+                          : ""
+                      );
+                    }}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                  >
+                    <option value="">
+                      Zgjidh ushtrimin
+                    </option>
+
+                    {ushtrimetEDisponueshme.map(
+                      (drill) => (
+                        <option
+                          key={drill.id}
+                          value={drill.id}
+                        >
+                          {drill.name}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                  <input
+                    type="number"
+                    min="1"
+                    value={kohezgjatjaDrill}
+                    onChange={(event) =>
+                      setKohezgjatjaDrill(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Kohëzgjatja në minuta"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                  />
+
+                  <textarea
+                    value={shenimiDrill}
+                    onChange={(event) =>
+                      setShenimiDrill(
+                        event.target.value
+                      )
+                    }
+                    rows={2}
+                    placeholder="Shënim për këtë ushtrim..."
+                    className="resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50 md:col-span-2"
+                  />
+                </div>
+
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={shtoUshtrimNeSeance}
+                    disabled={
+                      !drillIdPerShtim ||
+                      dukeRuajturPlanin
+                    }
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Plus size={16} />
+                    Shto në plan
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                {dukeNgarkuarPlanin ? (
+                  <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+                    Duke ngarkuar planin...
+                  </div>
+                ) : ushtrimetESeances.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+                    Kjo seancë nuk ka ende ushtrime në plan.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {ushtrimetESeances.map(
+                      (item, index) => (
+                        <div
+                          key={item.id}
+                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex min-w-0 gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-sm font-bold text-white">
+                                {item.order}
+                              </div>
+
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-950">
+                                  {item.drill.name}
+                                </p>
+
+                                <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
+                                  <span>
+                                    {item.durationMin ??
+                                      item.drill.durationMin ??
+                                      0}{" "}
+                                    min
+                                  </span>
+
+                                  {item.drill.category && (
+                                    <span>
+                                      · {item.drill.category}
+                                    </span>
+                                  )}
+
+                                  {item.drill.objective && (
+                                    <span>
+                                      · {item.drill.objective}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {item.notes && (
+                                  <p className="mt-2 text-xs leading-5 text-slate-600">
+                                    {item.notes}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex shrink-0 flex-wrap gap-2">
+                              <button
+                                type="button"
+                                disabled={
+                                  index === 0 ||
+                                  dukeRuajturPlanin
+                                }
+                                onClick={() =>
+                                  ndryshoRenditjen(
+                                    item,
+                                    "UP"
+                                  )
+                                }
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40"
+                              >
+                                Lart
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={
+                                  index ===
+                                    ushtrimetESeances.length -
+                                      1 ||
+                                  dukeRuajturPlanin
+                                }
+                                onClick={() =>
+                                  ndryshoRenditjen(
+                                    item,
+                                    "DOWN"
+                                  )
+                                }
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40"
+                              >
+                                Poshtë
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={
+                                  dukeRuajturPlanin
+                                }
+                                onClick={() =>
+                                  hiqUshtrimNgaSeanca(
+                                    item.id
+                                  )
+                                }
+                                className="rounded-lg border border-red-100 p-2 text-red-600 transition hover:bg-red-50 disabled:opacity-40"
+                                aria-label="Hiq nga plani"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="border-t border-slate-100 p-6">
