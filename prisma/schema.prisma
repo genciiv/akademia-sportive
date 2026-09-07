@@ -1,3 +1,9 @@
+enum DrillDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -114,6 +120,7 @@ model Verification {
 }
 
 model Academy {
+  drills  Drill[]
   id      String  @id @default(cuid())
   name    String
   slug    String  @unique
@@ -449,4 +456,33 @@ model TrainingAttendance {
   @@unique([trainingSessionId, playerId])
   @@index([trainingSessionId])
   @@index([playerId])
+}
+
+model Drill {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  name        String
+  category    String?
+  sport       String?
+  objective   String?
+  durationMin Int?
+  difficulty  DrillDifficulty @default(MEDIUM)
+
+  equipment   String?
+  description String?
+  notes       String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, isActive])
+  @@index([academyId, category])
+  @@index([academyId, sport])
+  @@index([academyId, name])
 }
