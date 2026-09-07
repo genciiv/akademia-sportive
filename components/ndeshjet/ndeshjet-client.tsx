@@ -99,6 +99,40 @@ type SquadStatistics = {
   substitutes: number;
 };
 
+type MatchEventType =
+  | "GOAL"
+  | "ASSIST"
+  | "YELLOW_CARD"
+  | "RED_CARD"
+  | "SUBSTITUTION_IN"
+  | "SUBSTITUTION_OUT";
+
+type MatchEventItem = {
+  id: string;
+  playerId: string;
+  type: MatchEventType;
+  minute: number;
+  extraMinute: number | null;
+  notes: string | null;
+  player: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    position: string | null;
+    jerseyNumber: number | null;
+  };
+};
+
+type MatchEventStatistics = {
+  total: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  substitutionsIn: number;
+  substitutionsOut: number;
+};
+
 const DITET_SHQIP = [
   "Die",
   "Hën",
@@ -265,6 +299,42 @@ export default function NdeshjetClient() {
 
   const [shenimetNeEditim, setShenimetNeEditim] =
     useState("");
+
+  const [ngjarjetENdeshjes, setNgjarjetENdeshjes] =
+    useState<MatchEventItem[]>([]);
+
+  const [statistikatENgjarjeve, setStatistikatENgjarjeve] =
+    useState<MatchEventStatistics | null>(null);
+
+  const [dukeNgarkuarNgjarjet, setDukeNgarkuarNgjarjet] =
+    useState(false);
+
+  const [modalNgjarjejeHapur, setModalNgjarjejeHapur] =
+    useState(false);
+
+  const [ngjarjaNeEditim, setNgjarjaNeEditim] =
+    useState<MatchEventItem | null>(null);
+
+  const [playerIdNgjarjeje, setPlayerIdNgjarjeje] =
+    useState("");
+
+  const [llojiNgjarjes, setLlojiNgjarjes] =
+    useState<MatchEventType>("GOAL");
+
+  const [minutaNgjarjes, setMinutaNgjarjes] =
+    useState("");
+
+  const [minutaShteseNgjarjes, setMinutaShteseNgjarjes] =
+    useState("");
+
+  const [shenimeNgjarjeje, setShenimeNgjarjeje] =
+    useState("");
+
+  const [dukeRuajturNgjarjen, setDukeRuajturNgjarjen] =
+    useState(false);
+
+  const [ngjarjaNeProces, setNgjarjaNeProces] =
+    useState<string | null>(null);
 
   const [teamId, setTeamId] =
     useState("");
@@ -489,10 +559,13 @@ export default function NdeshjetClient() {
 
     setSportistetEGrumbullimit([]);
     setStatistikatEGrumbullimit(null);
+    setNgjarjetENdeshjes([]);
+    setStatistikatENgjarjeve(null);
 
-    await merrGrumbullimin(
-      match.id
-    );
+    await Promise.all([
+      merrGrumbullimin(match.id),
+      merrNgjarjet(match.id),
+    ]);
   }
 
   async function shtoNeGrumbullim(
@@ -715,6 +788,279 @@ export default function NdeshjetClient() {
       );
     } finally {
       setSportistiNeProces(null);
+    }
+  }
+
+  async function merrNgjarjet(
+    matchId: string
+  ) {
+    setDukeNgarkuarNgjarjet(true);
+
+    try {
+      const response = await fetch(
+        `/api/matches/${matchId}/events`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ngjarjet e ndeshjes nuk mund të ngarkoheshin."
+        );
+        return;
+      }
+
+      setNgjarjetENdeshjes(
+        data.events || []
+      );
+
+      setStatistikatENgjarjeve(
+        data.statistics || null
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ngarkimit të ngjarjeve."
+      );
+    } finally {
+      setDukeNgarkuarNgjarjet(false);
+    }
+  }
+
+  function etiketaNgjarjes(
+    type: MatchEventType
+  ) {
+    switch (type) {
+      case "GOAL":
+        return "Gol";
+      case "ASSIST":
+        return "Asist";
+      case "YELLOW_CARD":
+        return "Karton i verdhë";
+      case "RED_CARD":
+        return "Karton i kuq";
+      case "SUBSTITUTION_IN":
+        return "Zëvendësim brenda";
+      case "SUBSTITUTION_OUT":
+        return "Zëvendësim jashtë";
+    }
+  }
+
+  function hapShtiminENgjarjes() {
+    setNgjarjaNeEditim(null);
+    setPlayerIdNgjarjeje("");
+    setLlojiNgjarjes("GOAL");
+    setMinutaNgjarjes("");
+    setMinutaShteseNgjarjes("");
+    setShenimeNgjarjeje("");
+    setGabimi("");
+    setModalNgjarjejeHapur(true);
+  }
+
+  function hapEditiminENgjarjes(
+    event: MatchEventItem
+  ) {
+    setNgjarjaNeEditim(event);
+    setPlayerIdNgjarjeje(
+      event.playerId
+    );
+    setLlojiNgjarjes(event.type);
+    setMinutaNgjarjes(
+      String(event.minute)
+    );
+    setMinutaShteseNgjarjes(
+      event.extraMinute === null
+        ? ""
+        : String(event.extraMinute)
+    );
+    setShenimeNgjarjeje(
+      event.notes || ""
+    );
+    setGabimi("");
+    setModalNgjarjejeHapur(true);
+  }
+
+  function mbyllModalinENgjarjes() {
+    if (dukeRuajturNgjarjen) {
+      return;
+    }
+
+    setModalNgjarjejeHapur(false);
+    setNgjarjaNeEditim(null);
+    setPlayerIdNgjarjeje("");
+    setLlojiNgjarjes("GOAL");
+    setMinutaNgjarjes("");
+    setMinutaShteseNgjarjes("");
+    setShenimeNgjarjeje("");
+  }
+
+  async function ruajNgjarjen() {
+    if (!ndeshjaEDetajuar) {
+      return;
+    }
+
+    if (!playerIdNgjarjeje) {
+      setGabimi(
+        "Zgjidh sportistin."
+      );
+      return;
+    }
+
+    const minute =
+      Number(minutaNgjarjes);
+
+    if (
+      !Number.isInteger(minute) ||
+      minute < 0 ||
+      minute > 200
+    ) {
+      setGabimi(
+        "Minuta e ngjarjes nuk është e vlefshme."
+      );
+      return;
+    }
+
+    const extraMinute =
+      minutaShteseNgjarjes.trim() === ""
+        ? null
+        : Number(
+            minutaShteseNgjarjes
+          );
+
+    if (
+      extraMinute !== null &&
+      (
+        !Number.isInteger(extraMinute) ||
+        extraMinute < 0 ||
+        extraMinute > 99
+      )
+    ) {
+      setGabimi(
+        "Minuta shtesë nuk është e vlefshme."
+      );
+      return;
+    }
+
+    setDukeRuajturNgjarjen(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/matches/${ndeshjaEDetajuar.id}/events`,
+        {
+          method: ngjarjaNeEditim
+            ? "PATCH"
+            : "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            ...(ngjarjaNeEditim
+              ? {
+                  eventId:
+                    ngjarjaNeEditim.id,
+                }
+              : {}),
+            playerId:
+              playerIdNgjarjeje,
+            type: llojiNgjarjes,
+            minute,
+            extraMinute,
+            notes:
+              shenimeNgjarjeje,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ngjarja nuk mund të ruhej."
+        );
+        return;
+      }
+
+      setModalNgjarjejeHapur(false);
+      setNgjarjaNeEditim(null);
+      setPlayerIdNgjarjeje("");
+      setLlojiNgjarjes("GOAL");
+      setMinutaNgjarjes("");
+      setMinutaShteseNgjarjes("");
+      setShenimeNgjarjeje("");
+
+      await merrNgjarjet(
+        ndeshjaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ruajtjes së ngjarjes."
+      );
+    } finally {
+      setDukeRuajturNgjarjen(false);
+    }
+  }
+
+  async function fshiNgjarjen(
+    event: MatchEventItem
+  ) {
+    if (!ndeshjaEDetajuar) {
+      return;
+    }
+
+    const konfirmuar =
+      window.confirm(
+        `Je i sigurt që dëshiron të fshish ngjarjen "${etiketaNgjarjes(event.type)}"?`
+      );
+
+    if (!konfirmuar) {
+      return;
+    }
+
+    setNgjarjaNeProces(event.id);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/matches/${ndeshjaEDetajuar.id}/events`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            eventId: event.id,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ngjarja nuk mund të fshihej."
+        );
+        return;
+      }
+
+      await merrNgjarjet(
+        ndeshjaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë fshirjes së ngjarjes."
+      );
+    } finally {
+      setNgjarjaNeProces(null);
     }
   }
 
@@ -1898,6 +2244,152 @@ export default function NdeshjetClient() {
                 )}
               </div>
             </div>
+            <div className="border-t border-slate-100 p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">
+                    Ngjarjet e ndeshjes
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Regjistro golat, asistet, kartonët dhe zëvendësimet.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={hapShtiminENgjarjes}
+                  disabled={
+                    !statistikatEGrumbullimit ||
+                    statistikatEGrumbullimit.selected === 0
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Plus size={16} />
+                  Shto ngjarje
+                </button>
+              </div>
+
+              {statistikatENgjarjeve && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {statistikatENgjarjeve.total} ngjarje
+                  </span>
+
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    {statistikatENgjarjeve.goals} gola
+                  </span>
+
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                    {statistikatENgjarjeve.assists} asiste
+                  </span>
+
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                    {statistikatENgjarjeve.yellowCards} kartonë të verdhë
+                  </span>
+
+                  <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                    {statistikatENgjarjeve.redCards} kartonë të kuq
+                  </span>
+                </div>
+              )}
+
+              <div className="mt-5">
+                {dukeNgarkuarNgjarjet ? (
+                  <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+                    Duke ngarkuar ngjarjet...
+                  </div>
+                ) : ngjarjetENdeshjes.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                    <p className="text-sm font-semibold text-slate-700">
+                      Nuk ka ngjarje të regjistruara.
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      Shto ngjarjen e parë të kësaj ndeshjeje.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {ngjarjetENdeshjes.map(
+                      (event) => (
+                        <div
+                          key={event.id}
+                          className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-slate-950 px-2.5 py-1 text-xs font-bold text-white">
+                                {event.minute}
+                                {event.extraMinute !==
+                                null
+                                  ? `+${event.extraMinute}`
+                                  : ""}
+                                &apos;
+                              </span>
+
+                              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                {etiketaNgjarjes(
+                                  event.type
+                                )}
+                              </span>
+                            </div>
+
+                            <p className="mt-2 font-semibold text-slate-950">
+                              {event.player.firstName}{" "}
+                              {event.player.lastName}
+                            </p>
+
+                            {event.notes && (
+                              <p className="mt-1 text-xs leading-5 text-slate-500">
+                                {event.notes}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex shrink-0 gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                hapEditiminENgjarjes(
+                                  event
+                                )
+                              }
+                              disabled={
+                                ngjarjaNeProces ===
+                                event.id
+                              }
+                              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                            >
+                              Edito
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void fshiNgjarjen(
+                                  event
+                                )
+                              }
+                              disabled={
+                                ngjarjaNeProces ===
+                                event.id
+                              }
+                              className="rounded-xl border border-red-100 p-2 text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                              aria-label="Fshi ngjarjen"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+
 
 
 
@@ -1935,6 +2427,181 @@ export default function NdeshjetClient() {
           </div>
         </div>
       )}
+      {modalNgjarjejeHapur && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg rounded-[24px] bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 p-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">
+                  {ngjarjaNeEditim
+                    ? "Edito ngjarjen"
+                    : "Shto ngjarje"}
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Regjistro një ngjarje të ndeshjes.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={mbyllModalinENgjarjes}
+                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+                aria-label="Mbyll"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4 p-6">
+              <Fusha label="Sportisti *">
+                <select
+                  value={playerIdNgjarjeje}
+                  onChange={(event) =>
+                    setPlayerIdNgjarjeje(
+                      event.target.value
+                    )
+                  }
+                  className={inputClass}
+                >
+                  <option value="">
+                    Zgjidh sportistin
+                  </option>
+
+                  {sportistetEGrumbullimit
+                    .filter(
+                      (player) =>
+                        player.selected
+                    )
+                    .map((player) => (
+                      <option
+                        key={player.id}
+                        value={player.id}
+                      >
+                        {player.firstName}{" "}
+                        {player.lastName}
+                      </option>
+                    ))}
+                </select>
+              </Fusha>
+
+              <Fusha label="Lloji i ngjarjes *">
+                <select
+                  value={llojiNgjarjes}
+                  onChange={(event) =>
+                    setLlojiNgjarjes(
+                      event.target
+                        .value as MatchEventType
+                    )
+                  }
+                  className={inputClass}
+                >
+                  <option value="GOAL">
+                    Gol
+                  </option>
+                  <option value="ASSIST">
+                    Asist
+                  </option>
+                  <option value="YELLOW_CARD">
+                    Karton i verdhë
+                  </option>
+                  <option value="RED_CARD">
+                    Karton i kuq
+                  </option>
+                  <option value="SUBSTITUTION_IN">
+                    Zëvendësim brenda
+                  </option>
+                  <option value="SUBSTITUTION_OUT">
+                    Zëvendësim jashtë
+                  </option>
+                </select>
+              </Fusha>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Fusha label="Minuta *">
+                  <input
+                    type="number"
+                    min="0"
+                    max="200"
+                    value={minutaNgjarjes}
+                    onChange={(event) =>
+                      setMinutaNgjarjes(
+                        event.target.value
+                      )
+                    }
+                    placeholder="P.sh. 45"
+                    className={inputClass}
+                  />
+                </Fusha>
+
+                <Fusha label="Minuta shtesë">
+                  <input
+                    type="number"
+                    min="0"
+                    max="99"
+                    value={
+                      minutaShteseNgjarjes
+                    }
+                    onChange={(event) =>
+                      setMinutaShteseNgjarjes(
+                        event.target.value
+                      )
+                    }
+                    placeholder="P.sh. 2"
+                    className={inputClass}
+                  />
+                </Fusha>
+              </div>
+
+              <Fusha label="Shënime">
+                <textarea
+                  rows={3}
+                  value={shenimeNgjarjeje}
+                  onChange={(event) =>
+                    setShenimeNgjarjeje(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Shënime për ngjarjen..."
+                  className={`${inputClass} resize-none`}
+                />
+              </Fusha>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+              <button
+                type="button"
+                onClick={mbyllModalinENgjarjes}
+                disabled={
+                  dukeRuajturNgjarjen
+                }
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+              >
+                Anulo
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void ruajNgjarjen()
+                }
+                disabled={
+                  dukeRuajturNgjarjen
+                }
+                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+              >
+                {dukeRuajturNgjarjen
+                  ? "Duke ruajtur..."
+                  : ngjarjaNeEditim
+                    ? "Ruaj ndryshimet"
+                    : "Shto ngjarjen"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {sportistiNeEditim && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg rounded-[24px] bg-white shadow-2xl">
