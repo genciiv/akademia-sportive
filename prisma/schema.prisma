@@ -398,7 +398,8 @@ model CoachTeam {
 }
 
 model TrainingSession {
-  id String @id @default(cuid())
+  sessionDrills TrainingSessionDrill[]
+  id            String                 @id @default(cuid())
 
   academyId String
   academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
@@ -459,7 +460,8 @@ model TrainingAttendance {
 }
 
 model Drill {
-  id String @id @default(cuid())
+  trainingSessions TrainingSessionDrill[]
+  id               String                 @id @default(cuid())
 
   academyId String
   academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
@@ -485,4 +487,26 @@ model Drill {
   @@index([academyId, category])
   @@index([academyId, sport])
   @@index([academyId, name])
+}
+
+model TrainingSessionDrill {
+  id String @id @default(cuid())
+
+  trainingSessionId String
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+
+  drillId String
+  drill   Drill  @relation(fields: [drillId], references: [id], onDelete: Cascade)
+
+  order       Int
+  durationMin Int?
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trainingSessionId, drillId])
+  @@index([trainingSessionId])
+  @@index([trainingSessionId, order])
+  @@index([drillId])
 }
