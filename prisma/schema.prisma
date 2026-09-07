@@ -231,7 +231,8 @@ enum SportType {
 }
 
 model Player {
-  id String @id @default(cuid())
+  matches MatchPlayer[]
+  id      String        @id @default(cuid())
 
   academyId String
   academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
@@ -529,7 +530,8 @@ enum MatchType {
 }
 
 model Match {
-  id String @id @default(cuid())
+  matchPlayers MatchPlayer[]
+  id           String        @id @default(cuid())
 
   academyId String
   academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
@@ -562,4 +564,33 @@ model Match {
   @@index([academyId, startsAt])
   @@index([academyId, status])
   @@index([teamId])
+}
+
+enum MatchPlayerRole {
+  STARTER
+  SUBSTITUTE
+}
+
+model MatchPlayer {
+  id String @id @default(cuid())
+
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  role MatchPlayerRole @default(SUBSTITUTE)
+
+  jerseyNumber Int?
+  position     String?
+  notes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([matchId, playerId])
+  @@index([matchId])
+  @@index([playerId])
+  @@index([matchId, role])
 }
