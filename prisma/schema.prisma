@@ -584,9 +584,10 @@ model MatchPlayer {
 
   role MatchPlayerRole @default(SUBSTITUTE)
 
-  jerseyNumber Int?
-  position     String?
-  notes        String?
+  jerseyNumber  Int?
+  position      String?
+  minutesPlayed Int     @default(0)
+  notes         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

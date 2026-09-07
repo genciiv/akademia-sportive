@@ -467,6 +467,27 @@ export async function PATCH(
     );
   }
 
+  const minutesPlayed =
+    body.minutesPlayed === undefined
+      ? existing.minutesPlayed
+      : Number(body.minutesPlayed);
+
+  if (
+    !Number.isInteger(minutesPlayed) ||
+    minutesPlayed < 0 ||
+    minutesPlayed > 300
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Minutat e luajtura nuk janë të vlefshme.",
+      },
+      { status: 400 }
+    );
+  }
+
+
+
   const matchPlayer =
     await prisma.matchPlayer.update({
       where: {
@@ -477,6 +498,7 @@ export async function PATCH(
           | "STARTER"
           | "SUBSTITUTE",
         jerseyNumber,
+        minutesPlayed,
         position:
           body.position === undefined
             ? existing.position

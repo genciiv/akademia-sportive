@@ -76,6 +76,7 @@ type SquadMatchPlayer = {
   role: MatchPlayerRole;
   jerseyNumber: number | null;
   position: string | null;
+  minutesPlayed: number;
   notes: string | null;
 };
 
@@ -131,6 +132,43 @@ type MatchEventStatistics = {
   redCards: number;
   substitutionsIn: number;
   substitutionsOut: number;
+};
+
+type PlayerMatchStatistics = {
+  matchPlayerId: string;
+  playerId: string;
+  role: MatchPlayerRole;
+  jerseyNumber: number | null;
+  position: string | null;
+  minutesPlayed: number;
+  started: boolean;
+  enteredFromBench: boolean;
+  substitutedOut: boolean;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  substitutionsIn: number;
+  substitutionsOut: number;
+  totalEvents: number;
+  player: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    position: string | null;
+    jerseyNumber: number | null;
+  };
+};
+
+type PlayerMatchTotals = {
+  players: number;
+  starters: number;
+  substitutes: number;
+  minutesPlayed: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
 };
 
 const DITET_SHQIP = [
@@ -299,6 +337,18 @@ export default function NdeshjetClient() {
 
   const [shenimetNeEditim, setShenimetNeEditim] =
     useState("");
+
+  const [minutatNeEditim, setMinutatNeEditim] =
+    useState("");
+
+  const [statistikatESportisteve, setStatistikatESportisteve] =
+    useState<PlayerMatchStatistics[]>([]);
+
+  const [totaliStatistikave, setTotaliStatistikave] =
+    useState<PlayerMatchTotals | null>(null);
+
+  const [dukeNgarkuarStatistikat, setDukeNgarkuarStatistikat] =
+    useState(false);
 
   const [ngjarjetENdeshjes, setNgjarjetENdeshjes] =
     useState<MatchEventItem[]>([]);
@@ -513,6 +563,45 @@ export default function NdeshjetClient() {
     };
   }, [ndeshjet]);
 
+  async function merrStatistikat(
+    matchId: string
+  ) {
+    setDukeNgarkuarStatistikat(true);
+
+    try {
+      const response = await fetch(
+        `/api/matches/${matchId}/stats`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Statistikat nuk mund të ngarkoheshin."
+        );
+        return;
+      }
+
+      setStatistikatESportisteve(
+        data.playerStatistics || []
+      );
+
+      setTotaliStatistikave(
+        data.totals || null
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ngarkimit të statistikave."
+      );
+    } finally {
+      setDukeNgarkuarStatistikat(false);
+    }
+  }
+
   async function merrGrumbullimin(
     matchId: string
   ) {
@@ -565,6 +654,7 @@ export default function NdeshjetClient() {
     await Promise.all([
       merrGrumbullimin(match.id),
       merrNgjarjet(match.id),
+      merrStatistikat(match.id),
     ]);
   }
 
@@ -653,6 +743,12 @@ export default function NdeshjetClient() {
       player.matchPlayer.notes || ""
     );
 
+    setMinutatNeEditim(
+      String(
+        player.matchPlayer.minutesPlayed ?? 0
+      )
+    );
+
     setGabimi("");
   }
 
@@ -662,6 +758,7 @@ export default function NdeshjetClient() {
     setFanellaNeEditim("");
     setPozicioniNeEditim("");
     setShenimetNeEditim("");
+    setMinutatNeEditim("");
   }
 
   async function ruajSportistinEGrumbulluar() {
@@ -687,6 +784,22 @@ export default function NdeshjetClient() {
     ) {
       setGabimi(
         "Numri i fanellës nuk është i vlefshëm."
+      );
+      return;
+    }
+
+    const minutesPlayed =
+      minutatNeEditim.trim() === ""
+        ? 0
+        : Number(minutatNeEditim);
+
+    if (
+      !Number.isInteger(minutesPlayed) ||
+      minutesPlayed < 0 ||
+      minutesPlayed > 300
+    ) {
+      setGabimi(
+        "Minutat e luajtura nuk janë të vlefshme."
       );
       return;
     }
@@ -2388,6 +2501,142 @@ export default function NdeshjetClient() {
                 )}
               </div>
             </div>
+            <div className="border-t border-slate-100 p-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-950">
+                  Statistikat e sportistëve
+                </h3>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Përmbledhja individuale për këtë ndeshje.
+                </p>
+              </div>
+
+              {totaliStatistikave && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {totaliStatistikave.players} sportistë
+                  </span>
+
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                    {totaliStatistikave.minutesPlayed} minuta
+                  </span>
+
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    {totaliStatistikave.goals} gola
+                  </span>
+
+                  <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                    {totaliStatistikave.assists} asiste
+                  </span>
+                </div>
+              )}
+
+              <div className="mt-5">
+                {dukeNgarkuarStatistikat ? (
+                  <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+                    Duke ngarkuar statistikat...
+                  </div>
+                ) : statistikatESportisteve.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+                    Nuk ka statistika për sportistët.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                    <table className="w-full min-w-[760px] text-left text-sm">
+                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">
+                            Sportisti
+                          </th>
+                          <th className="px-3 py-3">
+                            Roli
+                          </th>
+                          <th className="px-3 py-3 text-center">
+                            Min.
+                          </th>
+                          <th className="px-3 py-3 text-center">
+                            Gola
+                          </th>
+                          <th className="px-3 py-3 text-center">
+                            Asiste
+                          </th>
+                          <th className="px-3 py-3 text-center">
+                            Kart. verdhë
+                          </th>
+                          <th className="px-3 py-3 text-center">
+                            Kart. kuq
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-slate-100">
+                        {statistikatESportisteve.map(
+                          (stat) => (
+                            <tr
+                              key={
+                                stat.matchPlayerId
+                              }
+                              className="bg-white"
+                            >
+                              <td className="px-4 py-3">
+                                <p className="font-semibold text-slate-900">
+                                  {
+                                    stat.player
+                                      .firstName
+                                  }{" "}
+                                  {
+                                    stat.player
+                                      .lastName
+                                  }
+                                </p>
+
+                                {stat.position && (
+                                  <p className="mt-0.5 text-xs text-slate-500">
+                                    {stat.position}
+                                  </p>
+                                )}
+                              </td>
+
+                              <td className="px-3 py-3">
+                                {stat.role ===
+                                "STARTER"
+                                  ? "Titullar"
+                                  : "Rezervë"}
+                              </td>
+
+                              <td className="px-3 py-3 text-center font-semibold">
+                                {
+                                  stat.minutesPlayed
+                                }
+                              </td>
+
+                              <td className="px-3 py-3 text-center">
+                                {stat.goals}
+                              </td>
+
+                              <td className="px-3 py-3 text-center">
+                                {stat.assists}
+                              </td>
+
+                              <td className="px-3 py-3 text-center">
+                                {stat.yellowCards}
+                              </td>
+
+                              <td className="px-3 py-3 text-center">
+                                {stat.redCards}
+                              </td>
+                            </tr>
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+
 
 
 
@@ -2691,7 +2940,27 @@ export default function NdeshjetClient() {
               </div>
 
               <div>
+                <div className="mb-4">
                 <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  Minutat e luajtura
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  max="300"
+                  value={minutatNeEditim}
+                  onChange={(event) =>
+                    setMinutatNeEditim(
+                      event.target.value
+                    )
+                  }
+                  placeholder="P.sh. 90"
+                  className={inputClass}
+                />
+              </div>
+
+              <label className="mb-1.5 block text-sm font-semibold text-slate-700">
                   Shënime
                 </label>
 
