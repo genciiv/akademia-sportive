@@ -120,6 +120,7 @@ model Verification {
 }
 
 model Academy {
+  matches Match[]
   drills  Drill[]
   id      String  @id @default(cuid())
   name    String
@@ -293,6 +294,7 @@ model Team {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  matches   Match[]
 
   @@unique([academyId, name])
   @@index([academyId])
@@ -509,4 +511,55 @@ model TrainingSessionDrill {
   @@index([trainingSessionId])
   @@index([trainingSessionId, order])
   @@index([drillId])
+}
+
+enum MatchStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
+enum MatchType {
+  FRIENDLY
+  LEAGUE
+  CUP
+  TOURNAMENT
+  OTHER
+}
+
+model Match {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  opponentName String
+
+  matchType MatchType   @default(FRIENDLY)
+  status    MatchStatus @default(SCHEDULED)
+
+  startsAt DateTime
+  location String?
+  isHome   Boolean  @default(true)
+
+  ourScore      Int?
+  opponentScore Int?
+
+  competitionName String?
+  round           String?
+
+  description String?
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, startsAt])
+  @@index([academyId, status])
+  @@index([teamId])
 }
