@@ -141,7 +141,7 @@ type TrainingSession = {
 function statusiShqip(status: SessionStatus) {
   const labels: Record<SessionStatus, string> = {
     SCHEDULED: "Planifikuar",
-    COMPLETED: "Përfunduar",
+    COMPLETED: "PÃ«rfunduar",
     CANCELLED: "Anuluar",
   };
 
@@ -262,7 +262,16 @@ export default function SeancatClient() {
   const [shenimiDrill, setShenimiDrill] =
     useState("");
 
-  const [dukeRuajtur, setDukeRuajtur] = useState(false);
+
+  const [ushtrimiNeEditim, setUshtrimiNeEditim] =
+    useState<SessionDrill | null>(null);
+
+  const [kohezgjatjaNeEditim, setKohezgjatjaNeEditim] =
+    useState("");
+
+  const [shenimiNeEditim, setShenimiNeEditim] =
+    useState("");
+const [dukeRuajtur, setDukeRuajtur] = useState(false);
   const [dukeFshire, setDukeFshire] = useState(false);
 
   const [title, setTitle] = useState("");
@@ -294,7 +303,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Seancat nuk mund të ngarkoheshin."
+            "Seancat nuk mund tÃ« ngarkoheshin."
         );
         return;
       }
@@ -305,7 +314,7 @@ export default function SeancatClient() {
       setBranches(data.branches || []);
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë ngarkimit të seancave."
+        "Ndodhi njÃ« problem gjatÃ« ngarkimit tÃ« seancave."
       );
     } finally {
       setLoading(false);
@@ -442,7 +451,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Seanca nuk mund të ruhej."
+            "Seanca nuk mund tÃ« ruhej."
         );
         return;
       }
@@ -452,7 +461,7 @@ export default function SeancatClient() {
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë ruajtjes së seancës."
+        "Ndodhi njÃ« problem gjatÃ« ruajtjes sÃ« seancÃ«s."
       );
     } finally {
       setDukeRuajtur(false);
@@ -474,7 +483,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Pjesëmarrja nuk mund të ngarkohej."
+            "PjesÃ«marrja nuk mund tÃ« ngarkohej."
         );
         return;
       }
@@ -483,7 +492,7 @@ export default function SeancatClient() {
       setStatistikatPjesemarrjes(data.statistics || null);
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë ngarkimit të pjesëmarrjes."
+        "Ndodhi njÃ« problem gjatÃ« ngarkimit tÃ« pjesÃ«marrjes."
       );
     } finally {
       setDukeNgarkuarPjesemarrjen(false);
@@ -519,7 +528,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Pjesëmarrja nuk mund të përditësohej."
+            "PjesÃ«marrja nuk mund tÃ« pÃ«rditÃ«sohej."
         );
         return;
       }
@@ -528,7 +537,7 @@ export default function SeancatClient() {
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë përditësimit të pjesëmarrjes."
+        "Ndodhi njÃ« problem gjatÃ« pÃ«rditÃ«simit tÃ« pjesÃ«marrjes."
       );
     } finally {
       setSportistiNeProces(null);
@@ -558,7 +567,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Pjesëmarrja nuk mund të hiqej."
+            "PjesÃ«marrja nuk mund tÃ« hiqej."
         );
         return;
       }
@@ -567,7 +576,7 @@ export default function SeancatClient() {
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë heqjes së pjesëmarrjes."
+        "Ndodhi njÃ« problem gjatÃ« heqjes sÃ« pjesÃ«marrjes."
       );
     } finally {
       setSportistiNeProces(null);
@@ -610,7 +619,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Plani i stërvitjes nuk mund të ngarkohej."
+            "Plani i stÃ«rvitjes nuk mund tÃ« ngarkohej."
         );
         return;
       }
@@ -624,7 +633,7 @@ export default function SeancatClient() {
       );
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë ngarkimit të planit të stërvitjes."
+        "Ndodhi njÃ« problem gjatÃ« ngarkimit tÃ« planit tÃ« stÃ«rvitjes."
       );
     } finally {
       setDukeNgarkuarPlanin(false);
@@ -660,7 +669,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Ushtrimi nuk mund të shtohej në seancë."
+            "Ushtrimi nuk mund tÃ« shtohej nÃ« seancÃ«."
         );
         return;
       }
@@ -674,7 +683,95 @@ export default function SeancatClient() {
       );
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë shtimit të ushtrimit."
+        "Ndodhi njÃ« problem gjatÃ« shtimit tÃ« ushtrimit."
+      );
+    } finally {
+      setDukeRuajturPlanin(false);
+    }
+  }
+
+  function hapEditiminEUshtrimit(
+    item: SessionDrill
+  ) {
+    setUshtrimiNeEditim(item);
+
+    setKohezgjatjaNeEditim(
+      String(
+        item.durationMin ??
+          item.drill.durationMin ??
+          ""
+      )
+    );
+
+    setShenimiNeEditim(
+      item.notes ?? ""
+    );
+
+    setGabimi("");
+  }
+
+  function mbyllEditiminEUshtrimit() {
+    setUshtrimiNeEditim(null);
+    setKohezgjatjaNeEditim("");
+    setShenimiNeEditim("");
+  }
+
+  async function ruajNdryshimetEUshtrimit() {
+    if (!seancaEDetajuar || !ushtrimiNeEditim) {
+      return;
+    }
+
+    const durationMin = Number(
+      kohezgjatjaNeEditim
+    );
+
+    if (
+      !Number.isInteger(durationMin) ||
+      durationMin <= 0
+    ) {
+      setGabimi(
+        "KohÃ«zgjatja duhet tÃ« jetÃ« numÃ«r i plotÃ« pozitiv."
+      );
+      return;
+    }
+
+    setDukeRuajturPlanin(true);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/training-sessions/${seancaEDetajuar.id}/drills`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionDrillId: ushtrimiNeEditim.id,
+            durationMin,
+            notes: shenimiNeEditim,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ndryshimet nuk mund tÃ« ruheshin."
+        );
+        return;
+      }
+
+      mbyllEditiminEUshtrimit();
+
+      await merrPlaninEStervitjes(
+        seancaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi njÃ« problem gjatÃ« ruajtjes sÃ« ndryshimeve."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -731,7 +828,7 @@ export default function SeancatClient() {
 
         setGabimi(
           data.error ||
-            "Renditja nuk mund të ndryshohej."
+            "Renditja nuk mund tÃ« ndryshohej."
         );
         return;
       }
@@ -757,7 +854,7 @@ export default function SeancatClient() {
 
         setGabimi(
           data.error ||
-            "Renditja nuk mund të ndryshohej."
+            "Renditja nuk mund tÃ« ndryshohej."
         );
         return;
       }
@@ -767,7 +864,7 @@ export default function SeancatClient() {
       );
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë ndryshimit të renditjes."
+        "Ndodhi njÃ« problem gjatÃ« ndryshimit tÃ« renditjes."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -801,7 +898,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Ushtrimi nuk mund të hiqej nga seanca."
+            "Ushtrimi nuk mund tÃ« hiqej nga seanca."
         );
         return;
       }
@@ -811,7 +908,7 @@ export default function SeancatClient() {
       );
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë heqjes së ushtrimit."
+        "Ndodhi njÃ« problem gjatÃ« heqjes sÃ« ushtrimit."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -837,7 +934,7 @@ export default function SeancatClient() {
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Seanca nuk mund të fshihej."
+            "Seanca nuk mund tÃ« fshihej."
         );
         return;
       }
@@ -846,7 +943,7 @@ export default function SeancatClient() {
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi një problem gjatë fshirjes së seancës."
+        "Ndodhi njÃ« problem gjatÃ« fshirjes sÃ« seancÃ«s."
       );
     } finally {
       setDukeFshire(false);
@@ -860,7 +957,7 @@ export default function SeancatClient() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">
-                Seancat stërvitore
+                Seancat stÃ«rvitore
               </h1>
 
               <Sparkles
@@ -870,8 +967,8 @@ export default function SeancatClient() {
             </div>
 
             <p className="mt-1 text-sm text-slate-500">
-              Planifiko, organizo dhe monitoro stërvitjet e
-              akademisë.
+              Planifiko, organizo dhe monitoro stÃ«rvitjet e
+              akademisÃ«.
             </p>
           </div>
 
@@ -883,7 +980,7 @@ export default function SeancatClient() {
               size={18}
               className="transition group-hover:rotate-90"
             />
-            Planifiko seancë
+            Planifiko seancÃ«
           </button>
         </div>
 
@@ -895,23 +992,23 @@ export default function SeancatClient() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard
-            title="Të planifikuara"
+            title="TÃ« planifikuara"
             value={scheduledCount}
             subtitle="Seanca aktive"
             icon={CalendarDays}
           />
 
           <StatCard
-            title="Të përfunduara"
+            title="TÃ« pÃ«rfunduara"
             value={completedCount}
-            subtitle="Seanca të realizuara"
+            subtitle="Seanca tÃ« realizuara"
             icon={CheckCircle2}
           />
 
           <StatCard
-            title="Të anuluara"
+            title="TÃ« anuluara"
             value={cancelledCount}
-            subtitle="Seanca të anuluara"
+            subtitle="Seanca tÃ« anuluara"
             icon={TimerReset}
           />
         </div>
@@ -925,7 +1022,7 @@ export default function SeancatClient() {
               <div>
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 ring-1 ring-white/10">
                   <Clock3 size={14} />
-                  Seanca e radhës
+                  Seanca e radhÃ«s
                 </div>
 
                 <h2 className="text-2xl font-bold sm:text-3xl">
@@ -973,7 +1070,7 @@ export default function SeancatClient() {
 
                 {nextSession.endsAt && (
                   <p className="mt-2 text-xs text-slate-300">
-                    Përfundon në {ora(nextSession.endsAt)}
+                    PÃ«rfundon nÃ« {ora(nextSession.endsAt)}
                   </p>
                 )}
               </div>
@@ -985,11 +1082,11 @@ export default function SeancatClient() {
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="font-bold text-slate-950">
-                7 ditët e ardhshme
+                7 ditÃ«t e ardhshme
               </h2>
 
               <p className="mt-1 text-xs text-slate-500">
-                Pamje e shpejtë e ngarkesës stërvitore.
+                Pamje e shpejtÃ« e ngarkesÃ«s stÃ«rvitore.
               </p>
             </div>
 
@@ -1010,7 +1107,7 @@ export default function SeancatClient() {
                 }`}
               >
                 <p className="text-[10px] font-semibold uppercase text-slate-400">
-                  {["Die", "Hën", "Mar", "Mër", "Enj", "Pre", "Sht"][item.date.getDay()]}
+                  {["Die", "HÃ«n", "Mar", "MÃ«r", "Enj", "Pre", "Sht"][item.date.getDay()]}
                 </p>
 
                 <p className="mt-1 text-lg font-bold text-slate-900">
@@ -1035,7 +1132,7 @@ export default function SeancatClient() {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-950">
-                Të gjitha seancat
+                TÃ« gjitha seancat
               </h2>
 
               <p className="text-sm text-slate-500">
@@ -1067,14 +1164,14 @@ export default function SeancatClient() {
               </h3>
 
               <p className="mt-2 text-sm text-slate-500">
-                Planifiko seancën e parë të akademisë.
+                Planifiko seancÃ«n e parÃ« tÃ« akademisÃ«.
               </p>
 
               <button
                 onClick={hapShtimin}
                 className="mt-5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
               >
-                Planifiko seancë
+                Planifiko seancÃ«
               </button>
             </div>
           ) : (
@@ -1151,7 +1248,7 @@ export default function SeancatClient() {
                         value={
                           session.location ||
                           session.branch?.name ||
-                          "Pa përcaktuar"
+                          "Pa pÃ«rcaktuar"
                         }
                       />
                     </div>
@@ -1161,7 +1258,7 @@ export default function SeancatClient() {
                         <UsersRound size={14} />
 
                         <span>
-                          {session._count.attendances} pjesëmarrje
+                          {session._count.attendances} pjesÃ«marrje
                         </span>
                       </div>
 
@@ -1210,12 +1307,12 @@ export default function SeancatClient() {
               <div>
                 <h2 className="text-xl font-bold text-slate-950">
                   {seancaNeEditim
-                    ? "Edito seancën"
-                    : "Planifiko seancë"}
+                    ? "Edito seancÃ«n"
+                    : "Planifiko seancÃ«"}
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  Plotëso informacionin e stërvitjes.
+                  PlotÃ«so informacionin e stÃ«rvitjes.
                 </p>
               </div>
 
@@ -1234,14 +1331,14 @@ export default function SeancatClient() {
               onSubmit={ruajSeancen}
               className="grid gap-5 p-6 sm:grid-cols-2"
             >
-              <Field label="Titulli i seancës">
+              <Field label="Titulli i seancÃ«s">
                 <input
                   value={title}
                   onChange={(event) =>
                     setTitle(event.target.value)
                   }
                   required
-                  placeholder="p.sh. Teknikë dhe pasime"
+                  placeholder="p.sh. TeknikÃ« dhe pasime"
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 />
               </Field>
@@ -1279,7 +1376,7 @@ export default function SeancatClient() {
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="">
-                    Pa trajner të caktuar
+                    Pa trajner tÃ« caktuar
                   </option>
 
                   {coaches.map((coach) => (
@@ -1302,7 +1399,7 @@ export default function SeancatClient() {
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="">
-                    Pa degë të caktuar
+                    Pa degÃ« tÃ« caktuar
                   </option>
 
                   {branches.map((branch) => (
@@ -1328,7 +1425,7 @@ export default function SeancatClient() {
                 />
               </Field>
 
-              <Field label="Përfundimi">
+              <Field label="PÃ«rfundimi">
                 <input
                   type="datetime-local"
                   value={endsAt}
@@ -1365,7 +1462,7 @@ export default function SeancatClient() {
                   </option>
 
                   <option value="COMPLETED">
-                    Përfunduar
+                    PÃ«rfunduar
                   </option>
 
                   <option value="CANCELLED">
@@ -1375,28 +1472,28 @@ export default function SeancatClient() {
               </Field>
 
               <div className="sm:col-span-2">
-                <Field label="Përshkrimi">
+                <Field label="PÃ«rshkrimi">
                   <textarea
                     value={description}
                     onChange={(event) =>
                       setDescription(event.target.value)
                     }
                     rows={3}
-                    placeholder="Objektivi dhe përmbajtja e seancës..."
+                    placeholder="Objektivi dhe pÃ«rmbajtja e seancÃ«s..."
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 resize-none"
                   />
                 </Field>
               </div>
 
               <div className="sm:col-span-2">
-                <Field label="Shënime">
+                <Field label="ShÃ«nime">
                   <textarea
                     value={notes}
                     onChange={(event) =>
                       setNotes(event.target.value)
                     }
                     rows={3}
-                    placeholder="Shënime shtesë..."
+                    placeholder="ShÃ«nime shtesÃ«..."
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 resize-none"
                   />
                 </Field>
@@ -1422,7 +1519,7 @@ export default function SeancatClient() {
                     ? "Duke ruajtur..."
                     : seancaNeEditim
                       ? "Ruaj ndryshimet"
-                      : "Planifiko seancën"}
+                      : "Planifiko seancÃ«n"}
                 </button>
               </div>
             </form>
@@ -1502,14 +1599,14 @@ export default function SeancatClient() {
                 value={
                   seancaEDetajuar.location ||
                   seancaEDetajuar.branch?.name ||
-                  "Pa përcaktuar"
+                  "Pa pÃ«rcaktuar"
                 }
               />
 
               <MiniInfo
                 icon={UsersRound}
-                label="Pjesëmarrja"
-                value={`${seancaEDetajuar._count.attendances} sportistë`}
+                label="PjesÃ«marrja"
+                value={`${seancaEDetajuar._count.attendances} sportistÃ«`}
               />
 
               {seancaEDetajuar.branch && (
@@ -1523,7 +1620,7 @@ export default function SeancatClient() {
               {seancaEDetajuar.notes && (
                 <div className="sm:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                    Shënime
+                    ShÃ«nime
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -1537,11 +1634,11 @@ export default function SeancatClient() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-950">
-                    Plani i stërvitjes
+                    Plani i stÃ«rvitjes
                   </h3>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Organizo ushtrimet sipas rendit të realizimit.
+                    Organizo ushtrimet sipas rendit tÃ« realizimit.
                   </p>
                 </div>
 
@@ -1605,7 +1702,7 @@ export default function SeancatClient() {
                         event.target.value
                       )
                     }
-                    placeholder="Kohëzgjatja në minuta"
+                    placeholder="KohÃ«zgjatja nÃ« minuta"
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                   />
 
@@ -1617,7 +1714,7 @@ export default function SeancatClient() {
                       )
                     }
                     rows={2}
-                    placeholder="Shënim për këtë ushtrim..."
+                    placeholder="ShÃ«nim pÃ«r kÃ«tÃ« ushtrim..."
                     className="resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50 md:col-span-2"
                   />
                 </div>
@@ -1633,7 +1730,7 @@ export default function SeancatClient() {
                     className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus size={16} />
-                    Shto në plan
+                    Shto nÃ« plan
                   </button>
                 </div>
               </div>
@@ -1645,7 +1742,7 @@ export default function SeancatClient() {
                   </div>
                 ) : ushtrimetESeances.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                    Kjo seancë nuk ka ende ushtrime në plan.
+                    Kjo seancÃ« nuk ka ende ushtrime nÃ« plan.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1676,13 +1773,13 @@ export default function SeancatClient() {
 
                                   {item.drill.category && (
                                     <span>
-                                      · {item.drill.category}
+                                      Â· {item.drill.category}
                                     </span>
                                   )}
 
                                   {item.drill.objective && (
                                     <span>
-                                      · {item.drill.objective}
+                                      Â· {item.drill.objective}
                                     </span>
                                   )}
                                 </div>
@@ -1696,6 +1793,20 @@ export default function SeancatClient() {
                             </div>
 
                             <div className="flex shrink-0 flex-wrap gap-2">
+
+                              <button
+                                type="button"
+                                disabled={dukeRuajturPlanin}
+                                onClick={() =>
+                                  hapEditiminEUshtrimit(
+                                    item
+                                  )
+                                }
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                              >
+                                Edito
+                              </button>
+
                               <button
                                 type="button"
                                 disabled={
@@ -1729,7 +1840,7 @@ export default function SeancatClient() {
                                 }
                                 className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40"
                               >
-                                Poshtë
+                                PoshtÃ«
                               </button>
 
                               <button
@@ -1761,17 +1872,17 @@ export default function SeancatClient() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-950">
-                    Pjesëmarrja
+                    PjesÃ«marrja
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    Regjistro praninë e sportistëve në këtë seancë.
+                    Regjistro praninÃ« e sportistÃ«ve nÃ« kÃ«tÃ« seancÃ«.
                   </p>
                 </div>
 
                 {statistikatPjesemarrjes && (
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      {statistikatPjesemarrjes.present} të pranishëm
+                      {statistikatPjesemarrjes.present} tÃ« pranishÃ«m
                     </span>
 
                     <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
@@ -1779,11 +1890,11 @@ export default function SeancatClient() {
                     </span>
 
                     <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                      {statistikatPjesemarrjes.late} vonë
+                      {statistikatPjesemarrjes.late} vonÃ«
                     </span>
 
                     <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                      {statistikatPjesemarrjes.excused} të justifikuar
+                      {statistikatPjesemarrjes.excused} tÃ« justifikuar
                     </span>
                   </div>
                 )}
@@ -1792,11 +1903,11 @@ export default function SeancatClient() {
               <div className="mt-5">
                 {dukeNgarkuarPjesemarrjen ? (
                   <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
-                    Duke ngarkuar sportistët...
+                    Duke ngarkuar sportistÃ«t...
                   </div>
                 ) : sportistetPjesemarrjes.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                    Ky ekip nuk ka sportistë aktivë.
+                    Ky ekip nuk ka sportistÃ« aktivÃ«.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1814,7 +1925,7 @@ export default function SeancatClient() {
                             <p className="mt-1 text-xs text-slate-500">
                               {player.position || "Pa pozicion"}
                               {player.jerseyNumber !== null
-                                ? ` · #${player.jerseyNumber}`
+                                ? ` Â· #${player.jerseyNumber}`
                                 : ""}
                             </p>
                           </div>
@@ -1823,7 +1934,7 @@ export default function SeancatClient() {
                             <AttendanceButton
                               active={player.attendance?.status === "PRESENT"}
                               disabled={sportistiNeProces === player.id}
-                              label="I pranishëm"
+                              label="I pranishÃ«m"
                               normalClass="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                               activeClass="border-emerald-600 bg-emerald-600 text-white"
                               onClick={() =>
@@ -1845,7 +1956,7 @@ export default function SeancatClient() {
                             <AttendanceButton
                               active={player.attendance?.status === "LATE"}
                               disabled={sportistiNeProces === player.id}
-                              label="Vonë"
+                              label="VonÃ«"
                               normalClass="border-amber-200 text-amber-700 hover:bg-amber-50"
                               activeClass="border-amber-500 bg-amber-500 text-white"
                               onClick={() =>
@@ -1906,6 +2017,98 @@ export default function SeancatClient() {
           </div>
         </div>
       )}
+      {ushtrimiNeEditim && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg rounded-[24px] bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 p-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">
+                  Edito ushtrimin
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {ushtrimiNeEditim.drill.name}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={mbyllEditiminEUshtrimit}
+                disabled={dukeRuajturPlanin}
+                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                aria-label="Mbyll"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-6">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  KohÃ«zgjatja nÃ« minuta
+                </label>
+
+                <input
+                  type="number"
+                  min="1"
+                  value={kohezgjatjaNeEditim}
+                  onChange={(event) =>
+                    setKohezgjatjaNeEditim(
+                      event.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  ShÃ«nime
+                </label>
+
+                <textarea
+                  rows={4}
+                  value={shenimiNeEditim}
+                  onChange={(event) =>
+                    setShenimiNeEditim(
+                      event.target.value
+                    )
+                  }
+                  placeholder="ShÃ«nime pÃ«r kÃ«tÃ« ushtrim..."
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+              <button
+                type="button"
+                onClick={mbyllEditiminEUshtrimit}
+                disabled={dukeRuajturPlanin}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+              >
+                Anulo
+              </button>
+
+              <button
+                type="button"
+                onClick={ruajNdryshimetEUshtrimit}
+                disabled={
+                  dukeRuajturPlanin ||
+                  !kohezgjatjaNeEditim
+                }
+                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {dukeRuajturPlanin
+                  ? "Duke ruajtur..."
+                  : "Ruaj ndryshimet"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {seancaPerFshirje && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]">
@@ -1915,11 +2118,11 @@ export default function SeancatClient() {
             </div>
 
             <h2 className="mt-4 text-lg font-bold text-slate-950">
-              Fshi seancën
+              Fshi seancÃ«n
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Je i sigurt që dëshiron të fshish{" "}
+              Je i sigurt qÃ« dÃ«shiron tÃ« fshish{" "}
               <strong>
                 {seancaPerFshirje.title}
               </strong>
@@ -1942,7 +2145,7 @@ export default function SeancatClient() {
                 className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {dukeFshire
-                  ? "Duke fshirë..."
+                  ? "Duke fshirÃ«..."
                   : "Po, fshi"}
               </button>
             </div>
