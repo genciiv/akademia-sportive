@@ -66,6 +66,39 @@ type MatchItem = {
   team: TeamOption;
 };
 
+type MatchPlayerRole =
+  | "STARTER"
+  | "SUBSTITUTE";
+
+type SquadMatchPlayer = {
+  id: string;
+  playerId: string;
+  role: MatchPlayerRole;
+  jerseyNumber: number | null;
+  position: string | null;
+  notes: string | null;
+};
+
+type SquadPlayer = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  position: string | null;
+  jerseyNumber: number | null;
+  status: string;
+  teamPosition: string | null;
+  teamJerseyNumber: number | null;
+  selected: boolean;
+  matchPlayer: SquadMatchPlayer | null;
+};
+
+type SquadStatistics = {
+  totalTeamPlayers: number;
+  selected: number;
+  starters: number;
+  substitutes: number;
+};
+
 const DITET_SHQIP = [
   "Die",
   "Hën",
@@ -205,6 +238,33 @@ export default function NdeshjetClient() {
 
   const [ndeshjaEDetajuar, setNdeshjaEDetajuar] =
     useState<MatchItem | null>(null);
+
+  const [sportistetEGrumbullimit, setSportistetEGrumbullimit] =
+    useState<SquadPlayer[]>([]);
+
+  const [statistikatEGrumbullimit, setStatistikatEGrumbullimit] =
+    useState<SquadStatistics | null>(null);
+
+  const [dukeNgarkuarGrumbullimin, setDukeNgarkuarGrumbullimin] =
+    useState(false);
+
+  const [sportistiNeProces, setSportistiNeProces] =
+    useState<string | null>(null);
+
+  const [sportistiNeEditim, setSportistiNeEditim] =
+    useState<SquadMatchPlayer | null>(null);
+
+  const [roliNeEditim, setRoliNeEditim] =
+    useState<MatchPlayerRole>("SUBSTITUTE");
+
+  const [fanellaNeEditim, setFanellaNeEditim] =
+    useState("");
+
+  const [pozicioniNeEditim, setPozicioniNeEditim] =
+    useState("");
+
+  const [shenimetNeEditim, setShenimetNeEditim] =
+    useState("");
 
   const [teamId, setTeamId] =
     useState("");
@@ -382,6 +442,281 @@ export default function NdeshjetClient() {
       teArdhshme,
     };
   }, [ndeshjet]);
+
+  async function merrGrumbullimin(
+    matchId: string
+  ) {
+    setDukeNgarkuarGrumbullimin(true);
+
+    try {
+      const response = await fetch(
+        `/api/matches/${matchId}/players`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Grumbullimi nuk mund të ngarkohej."
+        );
+        return;
+      }
+
+      setSportistetEGrumbullimit(
+        data.players || []
+      );
+
+      setStatistikatEGrumbullimit(
+        data.statistics || null
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ngarkimit të grumbullimit."
+      );
+    } finally {
+      setDukeNgarkuarGrumbullimin(false);
+    }
+  }
+
+  async function hapDetajet(
+    match: MatchItem
+  ) {
+    setNdeshjaEDetajuar(match);
+
+    setSportistetEGrumbullimit([]);
+    setStatistikatEGrumbullimit(null);
+
+    await merrGrumbullimin(
+      match.id
+    );
+  }
+
+  async function shtoNeGrumbullim(
+    player: SquadPlayer
+  ) {
+    if (!ndeshjaEDetajuar) {
+      return;
+    }
+
+    setSportistiNeProces(player.id);
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/matches/${ndeshjaEDetajuar.id}/players`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            playerId: player.id,
+            role: "SUBSTITUTE",
+            jerseyNumber:
+              player.teamJerseyNumber ??
+              player.jerseyNumber,
+            position:
+              player.teamPosition ??
+              player.position,
+            notes: "",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Sportisti nuk mund të shtohej në grumbullim."
+        );
+        return;
+      }
+
+      await merrGrumbullimin(
+        ndeshjaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë shtimit të sportistit."
+      );
+    } finally {
+      setSportistiNeProces(null);
+    }
+  }
+
+  function hapEditiminESportistit(
+    player: SquadPlayer
+  ) {
+    if (!player.matchPlayer) {
+      return;
+    }
+
+    setSportistiNeEditim(
+      player.matchPlayer
+    );
+
+    setRoliNeEditim(
+      player.matchPlayer.role
+    );
+
+    setFanellaNeEditim(
+      player.matchPlayer.jerseyNumber === null
+        ? ""
+        : String(
+            player.matchPlayer.jerseyNumber
+          )
+    );
+
+    setPozicioniNeEditim(
+      player.matchPlayer.position || ""
+    );
+
+    setShenimetNeEditim(
+      player.matchPlayer.notes || ""
+    );
+
+    setGabimi("");
+  }
+
+  function mbyllEditiminESportistit() {
+    setSportistiNeEditim(null);
+    setRoliNeEditim("SUBSTITUTE");
+    setFanellaNeEditim("");
+    setPozicioniNeEditim("");
+    setShenimetNeEditim("");
+  }
+
+  async function ruajSportistinEGrumbulluar() {
+    if (
+      !ndeshjaEDetajuar ||
+      !sportistiNeEditim
+    ) {
+      return;
+    }
+
+    const jerseyNumber =
+      fanellaNeEditim.trim() === ""
+        ? null
+        : Number(fanellaNeEditim);
+
+    if (
+      jerseyNumber !== null &&
+      (
+        !Number.isInteger(jerseyNumber) ||
+        jerseyNumber < 0 ||
+        jerseyNumber > 999
+      )
+    ) {
+      setGabimi(
+        "Numri i fanellës nuk është i vlefshëm."
+      );
+      return;
+    }
+
+    setSportistiNeProces(
+      sportistiNeEditim.id
+    );
+
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/matches/${ndeshjaEDetajuar.id}/players`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            matchPlayerId:
+              sportistiNeEditim.id,
+            role: roliNeEditim,
+            jerseyNumber,
+            position:
+              pozicioniNeEditim,
+            notes:
+              shenimetNeEditim,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ndryshimet nuk mund të ruheshin."
+        );
+        return;
+      }
+
+      mbyllEditiminESportistit();
+
+      await merrGrumbullimin(
+        ndeshjaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë ruajtjes së sportistit."
+      );
+    } finally {
+      setSportistiNeProces(null);
+    }
+  }
+
+  async function hiqNgaGrumbullimi(
+    matchPlayerId: string
+  ) {
+    if (!ndeshjaEDetajuar) {
+      return;
+    }
+
+    setSportistiNeProces(
+      matchPlayerId
+    );
+
+    setGabimi("");
+
+    try {
+      const response = await fetch(
+        `/api/matches/${ndeshjaEDetajuar.id}/players`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            matchPlayerId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Sportisti nuk mund të hiqej nga grumbullimi."
+        );
+        return;
+      }
+
+      await merrGrumbullimin(
+        ndeshjaEDetajuar.id
+      );
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë heqjes së sportistit."
+      );
+    } finally {
+      setSportistiNeProces(null);
+    }
+  }
 
   function pastroFormularin() {
     setTeamId("");
@@ -869,7 +1204,7 @@ export default function NdeshjetClient() {
                         <button
                           type="button"
                           onClick={() =>
-                            setNdeshjaEDetajuar(
+                            void hapDetajet(
                               match
                             )
                           }
@@ -1221,7 +1556,7 @@ export default function NdeshjetClient() {
 
       {ndeshjaEDetajuar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-2xl rounded-[26px] bg-white shadow-2xl">
+          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[26px] bg-white shadow-2xl">
             <div className="flex items-start justify-between border-b border-slate-100 p-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
@@ -1387,6 +1722,184 @@ export default function NdeshjetClient() {
                 </div>
               )}
             </div>
+            <div className="border-t border-slate-100 p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">
+                    Grumbullimi
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Zgjidh sportistët që do të jenë pjesë e kësaj ndeshjeje.
+                  </p>
+                </div>
+
+                {statistikatEGrumbullimit && (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {statistikatEGrumbullimit.selected} të grumbulluar
+                    </span>
+
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      {statistikatEGrumbullimit.starters} titullarë
+                    </span>
+
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      {statistikatEGrumbullimit.substitutes} rezerva
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5">
+                {dukeNgarkuarGrumbullimin ? (
+                  <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+                    Duke ngarkuar grumbullimin...
+                  </div>
+                ) : sportistetEGrumbullimit.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+                    Ky ekip nuk ka sportistë aktivë.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {sportistetEGrumbullimit.map(
+                      (player) => (
+                        <div
+                          key={player.id}
+                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-semibold text-slate-950">
+                                  {player.firstName}{" "}
+                                  {player.lastName}
+                                </p>
+
+                                {player.matchPlayer && (
+                                  <span
+                                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                      player.matchPlayer.role ===
+                                      "STARTER"
+                                        ? "bg-emerald-50 text-emerald-700"
+                                        : "bg-blue-50 text-blue-700"
+                                    }`}
+                                  >
+                                    {player.matchPlayer.role ===
+                                    "STARTER"
+                                      ? "Titullar"
+                                      : "Rezervë"}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                                {(player.matchPlayer?.position ||
+                                  player.teamPosition ||
+                                  player.position) && (
+                                  <span>
+                                    Pozicioni:{" "}
+                                    {player.matchPlayer?.position ||
+                                      player.teamPosition ||
+                                      player.position}
+                                  </span>
+                                )}
+
+                                {(player.matchPlayer
+                                  ?.jerseyNumber ??
+                                  player.teamJerseyNumber ??
+                                  player.jerseyNumber) !==
+                                  null && (
+                                  <span>
+                                    Fanella:{" "}
+                                    {player.matchPlayer
+                                      ?.jerseyNumber ??
+                                      player.teamJerseyNumber ??
+                                      player.jerseyNumber}
+                                  </span>
+                                )}
+                              </div>
+
+                              {player.matchPlayer?.notes && (
+                                <p className="mt-2 text-xs leading-5 text-slate-600">
+                                  {
+                                    player.matchPlayer
+                                      .notes
+                                  }
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex shrink-0 gap-2">
+                              {!player.selected ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void shtoNeGrumbullim(
+                                      player
+                                    )
+                                  }
+                                  disabled={
+                                    sportistiNeProces ===
+                                    player.id
+                                  }
+                                  className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                  {sportistiNeProces ===
+                                  player.id
+                                    ? "Duke shtuar..."
+                                    : "Shto"}
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      hapEditiminESportistit(
+                                        player
+                                      )
+                                    }
+                                    disabled={
+                                      sportistiNeProces ===
+                                      player.matchPlayer?.id
+                                    }
+                                    className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                                  >
+                                    Edito
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      player.matchPlayer &&
+                                      void hiqNgaGrumbullimi(
+                                        player.matchPlayer.id
+                                      )
+                                    }
+                                    disabled={
+                                      sportistiNeProces ===
+                                      player.matchPlayer?.id
+                                    }
+                                    className="rounded-xl border border-red-100 p-2 text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                                    aria-label="Hiq nga grumbullimi"
+                                  >
+                                    <Trash2
+                                      size={15}
+                                    />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+
 
             <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
               <button
@@ -1422,6 +1935,144 @@ export default function NdeshjetClient() {
           </div>
         </div>
       )}
+      {sportistiNeEditim && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg rounded-[24px] bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 p-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">
+                  Edito sportistin
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Përcakto rolin dhe të dhënat për këtë ndeshje.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={mbyllEditiminESportistit}
+                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+                aria-label="Mbyll"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4 p-6">
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  Roli
+                </label>
+
+                <select
+                  value={roliNeEditim}
+                  onChange={(event) =>
+                    setRoliNeEditim(
+                      event.target
+                        .value as MatchPlayerRole
+                    )
+                  }
+                  className={inputClass}
+                >
+                  <option value="STARTER">
+                    Titullar
+                  </option>
+
+                  <option value="SUBSTITUTE">
+                    Rezervë
+                  </option>
+                </select>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                    Numri i fanellës
+                  </label>
+
+                  <input
+                    type="number"
+                    min="0"
+                    max="999"
+                    value={fanellaNeEditim}
+                    onChange={(event) =>
+                      setFanellaNeEditim(
+                        event.target.value
+                      )
+                    }
+                    className={inputClass}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                    Pozicioni
+                  </label>
+
+                  <input
+                    value={pozicioniNeEditim}
+                    onChange={(event) =>
+                      setPozicioniNeEditim(
+                        event.target.value
+                      )
+                    }
+                    placeholder="P.sh. Sulmues"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  Shënime
+                </label>
+
+                <textarea
+                  rows={3}
+                  value={shenimetNeEditim}
+                  onChange={(event) =>
+                    setShenimetNeEditim(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Shënime për sportistin..."
+                  className={`${inputClass} resize-none`}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+              <button
+                type="button"
+                onClick={mbyllEditiminESportistit}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Anulo
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void ruajSportistinEGrumbulluar()
+                }
+                disabled={
+                  sportistiNeProces ===
+                  sportistiNeEditim.id
+                }
+                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+              >
+                {sportistiNeProces ===
+                sportistiNeEditim.id
+                  ? "Duke ruajtur..."
+                  : "Ruaj ndryshimet"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {ndeshjaPerFshirje && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
