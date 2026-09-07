@@ -141,7 +141,7 @@ type TrainingSession = {
 function statusiShqip(status: SessionStatus) {
   const labels: Record<SessionStatus, string> = {
     SCHEDULED: "Planifikuar",
-    COMPLETED: "PÃ«rfunduar",
+    COMPLETED: "Përfunduar",
     CANCELLED: "Anuluar",
   };
 
@@ -172,27 +172,57 @@ function ikonaStatusit(status: SessionStatus) {
   return Clock3;
 }
 
+const DITET_SHQIP = [
+  "Die",
+  "Hën",
+  "Mar",
+  "Mër",
+  "Enj",
+  "Pre",
+  "Sht",
+];
+
+const MUAJT_SHQIP = [
+  "Jan",
+  "Shk",
+  "Mar",
+  "Pri",
+  "Maj",
+  "Qer",
+  "Kor",
+  "Gus",
+  "Sht",
+  "Tet",
+  "Nën",
+  "Dhj",
+];
+
+function dyShifror(value: number) {
+  return String(value).padStart(2, "0");
+}
+
 function dataShqip(value: string) {
-  return new Intl.DateTimeFormat("sq-AL", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+  const date = new Date(value);
+
+  return `${DITET_SHQIP[date.getDay()]}, ${dyShifror(
+    date.getDate()
+  )} ${MUAJT_SHQIP[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function vetemData(value: string) {
-  return new Intl.DateTimeFormat("sq-AL", {
-    day: "2-digit",
-    month: "short",
-  }).format(new Date(value));
+  const date = new Date(value);
+
+  return `${dyShifror(date.getDate())} ${
+    MUAJT_SHQIP[date.getMonth()]
+  }`;
 }
 
 function ora(value: string) {
-  return new Intl.DateTimeFormat("sq-AL", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+  const date = new Date(value);
+
+  return `${dyShifror(date.getHours())}:${dyShifror(
+    date.getMinutes()
+  )}`;
 }
 
 function dateTimeLocal(value: string | null) {
@@ -303,7 +333,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Seancat nuk mund tÃ« ngarkoheshin."
+            "Seancat nuk mund të ngarkoheshin."
         );
         return;
       }
@@ -314,7 +344,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       setBranches(data.branches || []);
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« ngarkimit tÃ« seancave."
+        "Ndodhi një problem gjatë ngarkimit të seancave."
       );
     } finally {
       setLoading(false);
@@ -451,7 +481,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Seanca nuk mund tÃ« ruhej."
+            "Seanca nuk mund të ruhej."
         );
         return;
       }
@@ -461,7 +491,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« ruajtjes sÃ« seancÃ«s."
+        "Ndodhi një problem gjatë ruajtjes së seancës."
       );
     } finally {
       setDukeRuajtur(false);
@@ -483,7 +513,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "PjesÃ«marrja nuk mund tÃ« ngarkohej."
+            "Pjesëmarrja nuk mund të ngarkohej."
         );
         return;
       }
@@ -492,7 +522,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       setStatistikatPjesemarrjes(data.statistics || null);
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« ngarkimit tÃ« pjesÃ«marrjes."
+        "Ndodhi një problem gjatë ngarkimit të pjesëmarrjes."
       );
     } finally {
       setDukeNgarkuarPjesemarrjen(false);
@@ -528,7 +558,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "PjesÃ«marrja nuk mund tÃ« pÃ«rditÃ«sohej."
+            "Pjesëmarrja nuk mund të përditësohej."
         );
         return;
       }
@@ -537,7 +567,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« pÃ«rditÃ«simit tÃ« pjesÃ«marrjes."
+        "Ndodhi një problem gjatë përditësimit të pjesëmarrjes."
       );
     } finally {
       setSportistiNeProces(null);
@@ -567,7 +597,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "PjesÃ«marrja nuk mund tÃ« hiqej."
+            "Pjesëmarrja nuk mund të hiqej."
         );
         return;
       }
@@ -576,7 +606,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« heqjes sÃ« pjesÃ«marrjes."
+        "Ndodhi një problem gjatë heqjes së pjesëmarrjes."
       );
     } finally {
       setSportistiNeProces(null);
@@ -619,7 +649,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Plani i stÃ«rvitjes nuk mund tÃ« ngarkohej."
+            "Plani i stërvitjes nuk mund të ngarkohej."
         );
         return;
       }
@@ -633,7 +663,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       );
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« ngarkimit tÃ« planit tÃ« stÃ«rvitjes."
+        "Ndodhi një problem gjatë ngarkimit të planit të stërvitjes."
       );
     } finally {
       setDukeNgarkuarPlanin(false);
@@ -669,7 +699,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Ushtrimi nuk mund tÃ« shtohej nÃ« seancÃ«."
+            "Ushtrimi nuk mund të shtohej në seancë."
         );
         return;
       }
@@ -683,7 +713,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       );
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« shtimit tÃ« ushtrimit."
+        "Ndodhi një problem gjatë shtimit të ushtrimit."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -730,7 +760,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       durationMin <= 0
     ) {
       setGabimi(
-        "KohÃ«zgjatja duhet tÃ« jetÃ« numÃ«r i plotÃ« pozitiv."
+        "Kohëzgjatja duhet të jetë numër i plotë pozitiv."
       );
       return;
     }
@@ -759,7 +789,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Ndryshimet nuk mund tÃ« ruheshin."
+            "Ndryshimet nuk mund të ruheshin."
         );
         return;
       }
@@ -771,7 +801,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       );
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« ruajtjes sÃ« ndryshimeve."
+        "Ndodhi një problem gjatë ruajtjes së ndryshimeve."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -828,7 +858,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
 
         setGabimi(
           data.error ||
-            "Renditja nuk mund tÃ« ndryshohej."
+            "Renditja nuk mund të ndryshohej."
         );
         return;
       }
@@ -854,7 +884,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
 
         setGabimi(
           data.error ||
-            "Renditja nuk mund tÃ« ndryshohej."
+            "Renditja nuk mund të ndryshohej."
         );
         return;
       }
@@ -864,7 +894,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       );
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« ndryshimit tÃ« renditjes."
+        "Ndodhi një problem gjatë ndryshimit të renditjes."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -898,7 +928,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Ushtrimi nuk mund tÃ« hiqej nga seanca."
+            "Ushtrimi nuk mund të hiqej nga seanca."
         );
         return;
       }
@@ -908,7 +938,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       );
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« heqjes sÃ« ushtrimit."
+        "Ndodhi një problem gjatë heqjes së ushtrimit."
       );
     } finally {
       setDukeRuajturPlanin(false);
@@ -934,7 +964,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       if (!response.ok) {
         setGabimi(
           data.error ||
-            "Seanca nuk mund tÃ« fshihej."
+            "Seanca nuk mund të fshihej."
         );
         return;
       }
@@ -943,7 +973,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       await merrSeancat();
     } catch {
       setGabimi(
-        "Ndodhi njÃ« problem gjatÃ« fshirjes sÃ« seancÃ«s."
+        "Ndodhi një problem gjatë fshirjes së seancës."
       );
     } finally {
       setDukeFshire(false);
@@ -957,7 +987,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">
-                Seancat stÃ«rvitore
+                Seancat stërvitore
               </h1>
 
               <Sparkles
@@ -967,8 +997,8 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
             </div>
 
             <p className="mt-1 text-sm text-slate-500">
-              Planifiko, organizo dhe monitoro stÃ«rvitjet e
-              akademisÃ«.
+              Planifiko, organizo dhe monitoro stërvitjet e
+              akademisë.
             </p>
           </div>
 
@@ -980,7 +1010,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               size={18}
               className="transition group-hover:rotate-90"
             />
-            Planifiko seancÃ«
+            Planifiko seancë
           </button>
         </div>
 
@@ -992,23 +1022,23 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
 
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard
-            title="TÃ« planifikuara"
+            title="Të planifikuara"
             value={scheduledCount}
             subtitle="Seanca aktive"
             icon={CalendarDays}
           />
 
           <StatCard
-            title="TÃ« pÃ«rfunduara"
+            title="Të përfunduara"
             value={completedCount}
-            subtitle="Seanca tÃ« realizuara"
+            subtitle="Seanca të realizuara"
             icon={CheckCircle2}
           />
 
           <StatCard
-            title="TÃ« anuluara"
+            title="Të anuluara"
             value={cancelledCount}
-            subtitle="Seanca tÃ« anuluara"
+            subtitle="Seanca të anuluara"
             icon={TimerReset}
           />
         </div>
@@ -1022,7 +1052,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               <div>
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 ring-1 ring-white/10">
                   <Clock3 size={14} />
-                  Seanca e radhÃ«s
+                  Seanca e radhës
                 </div>
 
                 <h2 className="text-2xl font-bold sm:text-3xl">
@@ -1070,7 +1100,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
 
                 {nextSession.endsAt && (
                   <p className="mt-2 text-xs text-slate-300">
-                    PÃ«rfundon nÃ« {ora(nextSession.endsAt)}
+                    Përfundon në {ora(nextSession.endsAt)}
                   </p>
                 )}
               </div>
@@ -1082,11 +1112,11 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="font-bold text-slate-950">
-                7 ditÃ«t e ardhshme
+                7 ditët e ardhshme
               </h2>
 
               <p className="mt-1 text-xs text-slate-500">
-                Pamje e shpejtÃ« e ngarkesÃ«s stÃ«rvitore.
+                Pamje e shpejtë e ngarkesës stërvitore.
               </p>
             </div>
 
@@ -1107,7 +1137,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                 }`}
               >
                 <p className="text-[10px] font-semibold uppercase text-slate-400">
-                  {["Die", "HÃ«n", "Mar", "MÃ«r", "Enj", "Pre", "Sht"][item.date.getDay()]}
+                  {["Die", "Hën", "Mar", "Mër", "Enj", "Pre", "Sht"][item.date.getDay()]}
                 </p>
 
                 <p className="mt-1 text-lg font-bold text-slate-900">
@@ -1132,7 +1162,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-950">
-                TÃ« gjitha seancat
+                Të gjitha seancat
               </h2>
 
               <p className="text-sm text-slate-500">
@@ -1164,14 +1194,14 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               </h3>
 
               <p className="mt-2 text-sm text-slate-500">
-                Planifiko seancÃ«n e parÃ« tÃ« akademisÃ«.
+                Planifiko seancën e parë të akademisë.
               </p>
 
               <button
                 onClick={hapShtimin}
                 className="mt-5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
               >
-                Planifiko seancÃ«
+                Planifiko seancë
               </button>
             </div>
           ) : (
@@ -1248,7 +1278,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                         value={
                           session.location ||
                           session.branch?.name ||
-                          "Pa pÃ«rcaktuar"
+                          "Pa përcaktuar"
                         }
                       />
                     </div>
@@ -1258,7 +1288,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                         <UsersRound size={14} />
 
                         <span>
-                          {session._count.attendances} pjesÃ«marrje
+                          {session._count.attendances} pjesëmarrje
                         </span>
                       </div>
 
@@ -1307,12 +1337,12 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               <div>
                 <h2 className="text-xl font-bold text-slate-950">
                   {seancaNeEditim
-                    ? "Edito seancÃ«n"
-                    : "Planifiko seancÃ«"}
+                    ? "Edito seancën"
+                    : "Planifiko seancë"}
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  PlotÃ«so informacionin e stÃ«rvitjes.
+                  Plotëso informacionin e stërvitjes.
                 </p>
               </div>
 
@@ -1331,14 +1361,14 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               onSubmit={ruajSeancen}
               className="grid gap-5 p-6 sm:grid-cols-2"
             >
-              <Field label="Titulli i seancÃ«s">
+              <Field label="Titulli i seancës">
                 <input
                   value={title}
                   onChange={(event) =>
                     setTitle(event.target.value)
                   }
                   required
-                  placeholder="p.sh. TeknikÃ« dhe pasime"
+                  placeholder="p.sh. Teknikë dhe pasime"
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 />
               </Field>
@@ -1376,7 +1406,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="">
-                    Pa trajner tÃ« caktuar
+                    Pa trajner të caktuar
                   </option>
 
                   {coaches.map((coach) => (
@@ -1399,7 +1429,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="">
-                    Pa degÃ« tÃ« caktuar
+                    Pa degë të caktuar
                   </option>
 
                   {branches.map((branch) => (
@@ -1425,7 +1455,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                 />
               </Field>
 
-              <Field label="PÃ«rfundimi">
+              <Field label="Përfundimi">
                 <input
                   type="datetime-local"
                   value={endsAt}
@@ -1462,7 +1492,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                   </option>
 
                   <option value="COMPLETED">
-                    PÃ«rfunduar
+                    Përfunduar
                   </option>
 
                   <option value="CANCELLED">
@@ -1472,28 +1502,28 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               </Field>
 
               <div className="sm:col-span-2">
-                <Field label="PÃ«rshkrimi">
+                <Field label="Përshkrimi">
                   <textarea
                     value={description}
                     onChange={(event) =>
                       setDescription(event.target.value)
                     }
                     rows={3}
-                    placeholder="Objektivi dhe pÃ«rmbajtja e seancÃ«s..."
+                    placeholder="Objektivi dhe përmbajtja e seancës..."
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 resize-none"
                   />
                 </Field>
               </div>
 
               <div className="sm:col-span-2">
-                <Field label="ShÃ«nime">
+                <Field label="Shënime">
                   <textarea
                     value={notes}
                     onChange={(event) =>
                       setNotes(event.target.value)
                     }
                     rows={3}
-                    placeholder="ShÃ«nime shtesÃ«..."
+                    placeholder="Shënime shtesë..."
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 resize-none"
                   />
                 </Field>
@@ -1519,7 +1549,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                     ? "Duke ruajtur..."
                     : seancaNeEditim
                       ? "Ruaj ndryshimet"
-                      : "Planifiko seancÃ«n"}
+                      : "Planifiko seancën"}
                 </button>
               </div>
             </form>
@@ -1599,14 +1629,14 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                 value={
                   seancaEDetajuar.location ||
                   seancaEDetajuar.branch?.name ||
-                  "Pa pÃ«rcaktuar"
+                  "Pa përcaktuar"
                 }
               />
 
               <MiniInfo
                 icon={UsersRound}
-                label="PjesÃ«marrja"
-                value={`${seancaEDetajuar._count.attendances} sportistÃ«`}
+                label="Pjesëmarrja"
+                value={`${seancaEDetajuar._count.attendances} sportistë`}
               />
 
               {seancaEDetajuar.branch && (
@@ -1620,7 +1650,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               {seancaEDetajuar.notes && (
                 <div className="sm:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                    ShÃ«nime
+                    Shënime
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -1634,11 +1664,11 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-950">
-                    Plani i stÃ«rvitjes
+                    Plani i stërvitjes
                   </h3>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Organizo ushtrimet sipas rendit tÃ« realizimit.
+                    Organizo ushtrimet sipas rendit të realizimit.
                   </p>
                 </div>
 
@@ -1702,7 +1732,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                         event.target.value
                       )
                     }
-                    placeholder="KohÃ«zgjatja nÃ« minuta"
+                    placeholder="Kohëzgjatja në minuta"
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                   />
 
@@ -1714,7 +1744,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                       )
                     }
                     rows={2}
-                    placeholder="ShÃ«nim pÃ«r kÃ«tÃ« ushtrim..."
+                    placeholder="Shënim për këtë ushtrim..."
                     className="resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50 md:col-span-2"
                   />
                 </div>
@@ -1730,7 +1760,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                     className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus size={16} />
-                    Shto nÃ« plan
+                    Shto në plan
                   </button>
                 </div>
               </div>
@@ -1742,7 +1772,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                   </div>
                 ) : ushtrimetESeances.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                    Kjo seancÃ« nuk ka ende ushtrime nÃ« plan.
+                    Kjo seancë nuk ka ende ushtrime në plan.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1840,7 +1870,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                                 }
                                 className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40"
                               >
-                                PoshtÃ«
+                                Poshtë
                               </button>
 
                               <button
@@ -1872,17 +1902,17 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-950">
-                    PjesÃ«marrja
+                    Pjesëmarrja
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    Regjistro praninÃ« e sportistÃ«ve nÃ« kÃ«tÃ« seancÃ«.
+                    Regjistro praninë e sportistëve në këtë seancë.
                   </p>
                 </div>
 
                 {statistikatPjesemarrjes && (
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      {statistikatPjesemarrjes.present} tÃ« pranishÃ«m
+                      {statistikatPjesemarrjes.present} të pranishëm
                     </span>
 
                     <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
@@ -1890,11 +1920,11 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                     </span>
 
                     <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                      {statistikatPjesemarrjes.late} vonÃ«
+                      {statistikatPjesemarrjes.late} vonë
                     </span>
 
                     <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                      {statistikatPjesemarrjes.excused} tÃ« justifikuar
+                      {statistikatPjesemarrjes.excused} të justifikuar
                     </span>
                   </div>
                 )}
@@ -1903,11 +1933,11 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
               <div className="mt-5">
                 {dukeNgarkuarPjesemarrjen ? (
                   <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
-                    Duke ngarkuar sportistÃ«t...
+                    Duke ngarkuar sportistët...
                   </div>
                 ) : sportistetPjesemarrjes.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                    Ky ekip nuk ka sportistÃ« aktivÃ«.
+                    Ky ekip nuk ka sportistë aktivë.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1934,7 +1964,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                             <AttendanceButton
                               active={player.attendance?.status === "PRESENT"}
                               disabled={sportistiNeProces === player.id}
-                              label="I pranishÃ«m"
+                              label="I pranishëm"
                               normalClass="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                               activeClass="border-emerald-600 bg-emerald-600 text-white"
                               onClick={() =>
@@ -1956,7 +1986,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                             <AttendanceButton
                               active={player.attendance?.status === "LATE"}
                               disabled={sportistiNeProces === player.id}
-                              label="VonÃ«"
+                              label="Vonë"
                               normalClass="border-amber-200 text-amber-700 hover:bg-amber-50"
                               activeClass="border-amber-500 bg-amber-500 text-white"
                               onClick={() =>
@@ -2045,7 +2075,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
             <div className="space-y-5 p-6">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  KohÃ«zgjatja nÃ« minuta
+                  Kohëzgjatja në minuta
                 </label>
 
                 <input
@@ -2063,7 +2093,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  ShÃ«nime
+                  Shënime
                 </label>
 
                 <textarea
@@ -2074,7 +2104,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                       event.target.value
                     )
                   }
-                  placeholder="ShÃ«nime pÃ«r kÃ«tÃ« ushtrim..."
+                  placeholder="Shënime për këtë ushtrim..."
                   className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 />
               </div>
@@ -2118,11 +2148,11 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
             </div>
 
             <h2 className="mt-4 text-lg font-bold text-slate-950">
-              Fshi seancÃ«n
+              Fshi seancën
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Je i sigurt qÃ« dÃ«shiron tÃ« fshish{" "}
+              Je i sigurt që dëshiron të fshish{" "}
               <strong>
                 {seancaPerFshirje.title}
               </strong>
@@ -2145,7 +2175,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                 className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {dukeFshire
-                  ? "Duke fshirÃ«..."
+                  ? "Duke fshirë..."
                   : "Po, fshi"}
               </button>
             </div>
