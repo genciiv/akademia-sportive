@@ -1,3 +1,8 @@
-import { AppShell } from "@/components/app-shell"; import { PageHeader } from "@/components/page-header";
-const days=["E Hënë","E Martë","E Mërkurë","E Enjte","E Premte","E Shtunë","E Diel"];
-export default function Page(){return <AppShell><PageHeader title="Kalendari" description="Orari i stërvitjeve, ndeshjeve dhe aktiviteteve."/><div className="grid gap-3 lg:grid-cols-7">{days.map((d,i)=><div key={d} className="min-h-[300px] rounded-2xl border border-slate-200 bg-white p-3"><p className="text-xs font-bold text-slate-700">{d}</p><p className="mt-1 text-2xl font-bold text-slate-950">{24+i}</p>{i<5&&<div className="mt-6 rounded-xl bg-blue-50 p-3 text-xs text-blue-800"><b>U17 · Stërvitje</b><p className="mt-1">18:00 · Fusha {i%3+1}</p></div>}{i===6&&<div className="mt-6 rounded-xl bg-lime-100 p-3 text-xs text-lime-800"><b>U19 · Ndeshje</b><p className="mt-1">17:00 · Stadiumi</p></div>}</div>)}</div></AppShell>}
+import CalendarClient from "@/components/kalendari/calendar-client";
+import { merrAkademineAktive } from "@/lib/academy-context";
+
+export default async function Page() {
+  await merrAkademineAktive();
+
+  return <CalendarClient />;
+}
