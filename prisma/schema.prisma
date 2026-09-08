@@ -147,6 +147,7 @@ model Academy {
   trainingSessions   TrainingSession[]
   coaches            Coach[]
   scoutingCandidates ScoutingCandidate[]
+  calendarEvents     CalendarEvent[]
 
   @@index([ownerId])
   @@index([status])
@@ -770,4 +771,40 @@ model ScoutingObservation {
 
   @@index([candidateId])
   @@index([candidateId, observedAt])
+}
+
+enum CalendarEventType {
+  MEETING
+  MEDICAL
+  TRIAL
+  TOURNAMENT
+  ADMINISTRATIVE
+  OTHER
+}
+
+model CalendarEvent {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  title String
+  type  CalendarEventType @default(OTHER)
+
+  startsAt DateTime
+  endsAt   DateTime?
+
+  location    String?
+  description String?
+  notes       String?
+
+  teamId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, startsAt])
+  @@index([academyId, type])
+  @@index([teamId])
 }
