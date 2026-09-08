@@ -148,6 +148,9 @@ model Academy {
   coaches            Coach[]
   scoutingCandidates ScoutingCandidate[]
   calendarEvents     CalendarEvent[]
+  playerFees         PlayerFee[]
+  playerCharges      PlayerCharge[]
+  cashPayments       CashPayment[]
 
   @@index([ownerId])
   @@index([status])
@@ -262,8 +265,11 @@ model Player {
 
   status PlayerStatus @default(ACTIVE)
 
-  teams       TeamPlayer[]
-  attendances TrainingAttendance[]
+  teams        TeamPlayer[]
+  attendances  TrainingAttendance[]
+  fees         PlayerFee[]
+  charges      PlayerCharge[]
+  cashPayments CashPayment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -432,7 +438,10 @@ model TrainingSession {
 
   status TrainingSessionStatus @default(SCHEDULED)
 
-  attendances TrainingAttendance[]
+  attendances  TrainingAttendance[]
+  fees         PlayerFee[]
+  charges      PlayerCharge[]
+  cashPayments CashPayment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -807,4 +816,105 @@ model CalendarEvent {
   @@index([academyId, startsAt])
   @@index([academyId, type])
   @@index([teamId])
+}
+
+enum PlayerChargeStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model PlayerFee {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  amountLek Int
+
+  description String?
+
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+
+  isActive Boolean @default(true)
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  trainingSession   TrainingSession? @relation(fields: [trainingSessionId], references: [id])
+  trainingSessionId String?
+
+  @@index([academyId])
+  @@index([playerId])
+  @@index([academyId, isActive])
+}
+
+model PlayerCharge {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  title String
+
+  amountLek Int
+
+  dueDate DateTime?
+
+  periodMonth Int?
+  periodYear  Int?
+
+  status PlayerChargeStatus @default(UNPAID)
+
+  notes String?
+
+  payments CashPayment[]
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  trainingSession   TrainingSession? @relation(fields: [trainingSessionId], references: [id])
+  trainingSessionId String?
+
+  @@index([academyId])
+  @@index([playerId])
+  @@index([academyId, status])
+  @@index([academyId, dueDate])
+  @@index([playerId, periodYear, periodMonth])
+}
+
+model CashPayment {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  chargeId String
+  charge   PlayerCharge @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+
+  amountLek Int
+
+  paidAt DateTime @default(now())
+
+  notes String?
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  trainingSession   TrainingSession? @relation(fields: [trainingSessionId], references: [id])
+  trainingSessionId String?
+
+  @@index([academyId])
+  @@index([playerId])
+  @@index([chargeId])
+  @@index([academyId, paidAt])
 }
