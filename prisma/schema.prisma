@@ -140,12 +140,13 @@ model Academy {
   memberships AcademyMembership[]
   branches    AcademyBranch[]
 
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  players          Player[]
-  teams            Team[]
-  trainingSessions TrainingSession[]
-  coaches          Coach[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  players            Player[]
+  teams              Team[]
+  trainingSessions   TrainingSession[]
+  coaches            Coach[]
+  scoutingCandidates ScoutingCandidate[]
 
   @@index([ownerId])
   @@index([status])
@@ -669,4 +670,104 @@ model MatchEvent {
   @@index([playerId])
   @@index([matchId, type])
   @@index([matchId, minute])
+}
+
+enum ScoutingStatus {
+  NEW
+  OBSERVING
+  SHORTLISTED
+  TRIAL
+  REJECTED
+  SIGNED
+}
+
+enum ScoutingPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model ScoutingCandidate {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+
+  dateOfBirth DateTime?
+  gender      Gender    @default(NOT_SPECIFIED)
+
+  sport SportType
+
+  position    String?
+  currentClub String?
+
+  nationality String?
+  city        String?
+
+  email String?
+  phone String?
+
+  guardianName  String?
+  guardianPhone String?
+  guardianEmail String?
+
+  photo String?
+
+  status   ScoutingStatus   @default(NEW)
+  priority ScoutingPriority @default(MEDIUM)
+
+  technicalRating Decimal?
+  physicalRating  Decimal?
+  tacticalRating  Decimal?
+  mentalRating    Decimal?
+  overallRating   Decimal?
+
+  strengths  String?
+  weaknesses String?
+  notes      String?
+
+  observations ScoutingObservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([academyId, priority])
+  @@index([academyId, sport])
+  @@index([academyId, lastName, firstName])
+}
+
+model ScoutingObservation {
+  id String @id @default(cuid())
+
+  candidateId String
+  candidate   ScoutingCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  observedAt DateTime @default(now())
+
+  eventName String?
+  location  String?
+
+  observerName String?
+
+  technicalRating Decimal?
+  physicalRating  Decimal?
+  tacticalRating  Decimal?
+  mentalRating    Decimal?
+  overallRating   Decimal?
+
+  strengths  String?
+  weaknesses String?
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([candidateId, observedAt])
 }
