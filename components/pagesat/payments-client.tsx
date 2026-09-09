@@ -12,7 +12,9 @@ import {
   CircleDollarSign,
   Loader2,
   Plus,
+  Pencil,
   Search,
+  Trash2,
   UserRound,
   WalletCards,
   X,
@@ -189,6 +191,31 @@ export default function PaymentsClient() {
       player: PlayerPayment;
       charge: Charge;
     } | null>(null);
+
+  const [modalNdryshoPagese, setModalNdryshoPagese] =
+    useState<{
+      player: PlayerPayment;
+      charge: Charge;
+      payment: Payment;
+    } | null>(null);
+
+  const [pagesePerFshirje, setPagesePerFshirje] =
+    useState<{
+      charge: Charge;
+      payment: Payment;
+    } | null>(null);
+
+  const [modalNdryshoDetyrim, setModalNdryshoDetyrim] =
+    useState<{
+      player: PlayerPayment;
+      charge: Charge;
+    } | null>(null);
+
+  const [detyrimPerFshirje, setDetyrimPerFshirje] =
+    useState<Charge | null>(null);
+
+  const [dukeFshire, setDukeFshire] =
+    useState(false);
 
   async function ngarko() {
     setLoading(true);
@@ -430,6 +457,28 @@ export default function PaymentsClient() {
               charge,
             })
           }
+          onEditPayment={(charge, payment) =>
+            setModalNdryshoPagese({
+              player: playerAktiv,
+              charge,
+              payment,
+            })
+          }
+          onDeletePayment={(charge, payment) =>
+            setPagesePerFshirje({
+              charge,
+              payment,
+            })
+          }
+          onEditCharge={(charge) =>
+            setModalNdryshoDetyrim({
+              player: playerAktiv,
+              charge,
+            })
+          }
+          onDeleteCharge={(charge) =>
+            setDetyrimPerFshirje(charge)
+          }
         />
       )}
 
@@ -469,6 +518,137 @@ export default function PaymentsClient() {
           onSaved={() => {
             setModalPagese(null);
             ngarko();
+          }}
+        />
+      )}
+
+      {modalNdryshoPagese && (
+        <EditPaymentModal
+          charge={modalNdryshoPagese.charge}
+          payment={modalNdryshoPagese.payment}
+          onClose={() =>
+            setModalNdryshoPagese(null)
+          }
+          onSaved={() => {
+            setModalNdryshoPagese(null);
+            ngarko();
+          }}
+        />
+      )}
+
+      {modalNdryshoDetyrim && (
+        <EditChargeModal
+          charge={modalNdryshoDetyrim.charge}
+          onClose={() =>
+            setModalNdryshoDetyrim(null)
+          }
+          onSaved={() => {
+            setModalNdryshoDetyrim(null);
+            ngarko();
+          }}
+        />
+      )}
+
+      {detyrimPerFshirje && (
+        <ConfirmModal
+          title="Fshi detyrimin"
+          description={
+            detyrimPerFshirje.payments.length > 0
+              ? "Ky detyrim ka pagesa të lidhura. Fshi fillimisht pagesat e regjistruara."
+              : `A je i sigurt që dëshiron të fshish detyrimin "${detyrimPerFshirje.title}"?`
+          }
+          confirmLabel="Fshi detyrimin"
+          loading={dukeFshire}
+          onClose={() =>
+            setDetyrimPerFshirje(null)
+          }
+          onConfirm={async () => {
+            if (
+              detyrimPerFshirje.payments.length > 0
+            ) {
+              setError(
+                "Fshi fillimisht pagesat e lidhura me këtë detyrim."
+              );
+              setDetyrimPerFshirje(null);
+              return;
+            }
+
+            setDukeFshire(true);
+
+            try {
+              const response = await fetch(
+                `/api/payments/charges/${detyrimPerFshirje.id}`,
+                {
+                  method: "DELETE",
+                }
+              );
+
+              const result =
+                await response.json();
+
+              if (!response.ok) {
+                throw new Error(
+                  result.error ||
+                    "Detyrimi nuk u fshi."
+                );
+              }
+
+              setDetyrimPerFshirje(null);
+              await ngarko();
+            } catch (error) {
+              setError(
+                error instanceof Error
+                  ? error.message
+                  : "Ndodhi një gabim."
+              );
+            } finally {
+              setDukeFshire(false);
+            }
+          }}
+        />
+      )}
+      {pagesePerFshirje && (
+        <ConfirmModal
+          title="Fshi pagesën"
+          description={`A je i sigurt që dëshiron të fshish pagesën prej ${lek(
+            pagesePerFshirje.payment.amountLek
+          )}? Totali dhe statusi i detyrimit do të rillogariten automatikisht.`}
+          confirmLabel="Fshi pagesën"
+          loading={dukeFshire}
+          onClose={() =>
+            setPagesePerFshirje(null)
+          }
+          onConfirm={async () => {
+            setDukeFshire(true);
+
+            try {
+              const response = await fetch(
+                `/api/payments/cash/${pagesePerFshirje.payment.id}`,
+                {
+                  method: "DELETE",
+                }
+              );
+
+              const result = await response.json();
+
+              if (!response.ok) {
+                throw new Error(
+                  result.error ||
+                    "Pagesa nuk u fshi."
+                );
+              }
+
+              setPagesePerFshirje(null);
+              await ngarko();
+            } catch (error) {
+              setError(
+                error instanceof Error
+                  ? error.message
+                  : "Ndodhi një gabim."
+              );
+            } finally {
+              setDukeFshire(false);
+            }
           }}
         />
       )}
@@ -530,12 +710,30 @@ function PlayerDetails({
   onFee,
   onCharge,
   onPayment,
+  onEditPayment,
+  onDeletePayment,
+  onEditCharge,
+  onDeleteCharge,
 }: {
   item: PlayerPayment;
   onClose: () => void;
   onFee: () => void;
   onCharge: () => void;
   onPayment: (
+    charge: Charge
+  ) => void;
+  onEditPayment: (
+    charge: Charge,
+    payment: Payment
+  ) => void;
+  onDeletePayment: (
+    charge: Charge,
+    payment: Payment
+  ) => void;
+  onEditCharge: (
+    charge: Charge
+  ) => void;
+  onDeleteCharge: (
     charge: Charge
   ) => void;
 }) {
@@ -676,15 +874,41 @@ function PlayerDetails({
                           )}
                       </div>
 
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusClasses(
-                          charge.status
-                        )}`}
-                      >
-                        {statusi(
-                          charge.status
-                        )}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusClasses(
+                            charge.status
+                          )}`}
+                        >
+                          {statusi(
+                            charge.status
+                          )}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onEditCharge(charge)
+                          }
+                          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+                          aria-label="Ndrysho detyrimin"
+                          title="Ndrysho detyrimin"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onDeleteCharge(charge)
+                          }
+                          className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
+                          aria-label="Fshi detyrimin"
+                          title="Fshi detyrimin"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-4 grid grid-cols-3 gap-2">
@@ -765,9 +989,41 @@ function PlayerDetails({
                                     </p>
                                   </div>
 
-                                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
-                                    Në dorë
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                                      Në dorë
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        onEditPayment(
+                                          charge,
+                                          payment
+                                        )
+                                      }
+                                      className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50"
+                                      aria-label="Ndrysho pagesën"
+                                      title="Ndrysho pagesën"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        onDeletePayment(
+                                          charge,
+                                          payment
+                                        )
+                                      }
+                                      className="rounded-lg border border-red-200 bg-white p-2 text-red-600 hover:bg-red-50"
+                                      aria-label="Fshi pagesën"
+                                      title="Fshi pagesën"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
                                 </div>
 
                                 {payment.notes && (
@@ -1417,6 +1673,481 @@ function CashModal({
   );
 }
 
+function EditChargeModal({
+  charge,
+  onClose,
+  onSaved,
+}: {
+  charge: Charge;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [title, setTitle] =
+    useState(charge.title);
+
+  const [amount, setAmount] =
+    useState(
+      String(charge.amountLek)
+    );
+
+  const [month, setMonth] =
+    useState(
+      charge.periodMonth
+        ? String(charge.periodMonth)
+        : ""
+    );
+
+  const [year, setYear] =
+    useState(
+      charge.periodYear
+        ? String(charge.periodYear)
+        : ""
+    );
+
+  const [notes, setNotes] =
+    useState(
+      charge.notes ?? ""
+    );
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  async function ruaj() {
+    const amountLek =
+      Number(amount);
+
+    if (!title.trim()) {
+      setError(
+        "Titulli është i detyrueshëm."
+      );
+      return;
+    }
+
+    if (
+      !Number.isInteger(amountLek) ||
+      amountLek <= 0
+    ) {
+      setError(
+        "Vendos një shumë të vlefshme në Lek."
+      );
+      return;
+    }
+
+    if (
+      amountLek <
+      charge.paidLek
+    ) {
+      setError(
+        `Shuma nuk mund të jetë më e vogël se ${lek(
+          charge.paidLek
+        )} që janë paguar tashmë.`
+      );
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/payments/charges/${charge.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            title: title.trim(),
+            amountLek,
+            periodMonth:
+              month
+                ? Number(month)
+                : null,
+            periodYear:
+              year
+                ? Number(year)
+                : null,
+            notes,
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            "Detyrimi nuk u ndryshua."
+        );
+      }
+
+      onSaved();
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Ndodhi një gabim."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal
+      title="Ndrysho detyrimin"
+      onClose={onClose}
+    >
+      {error && (
+        <ErrorBox text={error} />
+      )}
+
+      <label className="space-y-2">
+        <span className="text-sm font-semibold text-slate-700">
+          Titulli
+        </span>
+
+        <input
+          value={title}
+          onChange={(event) =>
+            setTitle(
+              event.target.value
+            )
+          }
+          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+        />
+      </label>
+
+      <label className="mt-4 block space-y-2">
+        <span className="text-sm font-semibold text-slate-700">
+          Shuma në Lek
+        </span>
+
+        <input
+          type="number"
+          min={charge.paidLek || 1}
+          step="1"
+          value={amount}
+          onChange={(event) =>
+            setAmount(
+              event.target.value
+            )
+          }
+          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+        />
+      </label>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <label className="space-y-2">
+          <span className="text-sm font-semibold text-slate-700">
+            Muaji
+          </span>
+
+          <select
+            value={month}
+            onChange={(event) =>
+              setMonth(
+                event.target.value
+              )
+            }
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+          >
+            <option value="">
+              Pa muaj
+            </option>
+
+            {MUAJT.map(
+              (muaj, index) => (
+                <option
+                  key={muaj}
+                  value={index + 1}
+                >
+                  {muaj}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-semibold text-slate-700">
+            Viti
+          </span>
+
+          <input
+            type="number"
+            value={year}
+            onChange={(event) =>
+              setYear(
+                event.target.value
+              )
+            }
+            className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          />
+        </label>
+      </div>
+
+      <label className="mt-4 block space-y-2">
+        <span className="text-sm font-semibold text-slate-700">
+          Shënime
+        </span>
+
+        <textarea
+          rows={3}
+          value={notes}
+          onChange={(event) =>
+            setNotes(
+              event.target.value
+            )
+          }
+          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
+        />
+      </label>
+
+      <ModalActions
+        saving={saving}
+        onClose={onClose}
+        onSave={ruaj}
+        saveLabel="Ruaj ndryshimet"
+      />
+    </Modal>
+  );
+}
+function EditPaymentModal({
+  charge,
+  payment,
+  onClose,
+  onSaved,
+}: {
+  charge: Charge;
+  payment: Payment;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const otherPaidLek =
+    charge.payments
+      .filter(
+        (item) =>
+          item.id !== payment.id
+      )
+      .reduce(
+        (sum, item) =>
+          sum + item.amountLek,
+        0
+      );
+
+  const maksimumi =
+    charge.amountLek -
+    otherPaidLek;
+
+  const [amount, setAmount] =
+    useState(
+      String(payment.amountLek)
+    );
+
+  const [notes, setNotes] =
+    useState(
+      payment.notes ?? ""
+    );
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  async function ruaj() {
+    const amountLek =
+      Number(amount);
+
+    if (
+      !Number.isInteger(amountLek) ||
+      amountLek <= 0
+    ) {
+      setError(
+        "Vendos një shumë të vlefshme në Lek."
+      );
+      return;
+    }
+
+    if (amountLek > maksimumi) {
+      setError(
+        `Shuma mund të jetë maksimumi ${lek(
+          maksimumi
+        )}.`
+      );
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/payments/cash/${payment.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            amountLek,
+            notes,
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            "Pagesa nuk u ndryshua."
+        );
+      }
+
+      onSaved();
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Ndodhi një gabim."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal
+      title="Ndrysho pagesën"
+      onClose={onClose}
+    >
+      <div className="rounded-xl bg-slate-50 p-3">
+        <p className="text-xs font-semibold text-slate-500">
+          Detyrimi
+        </p>
+
+        <p className="mt-1 font-bold text-slate-950">
+          {charge.title}
+        </p>
+
+        <p className="mt-1 text-xs text-slate-500">
+          Maksimumi i lejuar:{" "}
+          {lek(maksimumi)}
+        </p>
+      </div>
+
+      {error && (
+        <div className="mt-4">
+          <ErrorBox text={error} />
+        </div>
+      )}
+
+      <label className="mt-4 block space-y-2">
+        <span className="text-sm font-semibold text-slate-700">
+          Shuma në Lek
+        </span>
+
+        <input
+          type="number"
+          min="1"
+          max={maksimumi}
+          step="1"
+          value={amount}
+          onChange={(event) =>
+            setAmount(
+              event.target.value
+            )
+          }
+          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+        />
+      </label>
+
+      <label className="mt-4 block space-y-2">
+        <span className="text-sm font-semibold text-slate-700">
+          Shënime
+        </span>
+
+        <textarea
+          rows={3}
+          value={notes}
+          onChange={(event) =>
+            setNotes(
+              event.target.value
+            )
+          }
+          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none"
+        />
+      </label>
+
+      <ModalActions
+        saving={saving}
+        onClose={onClose}
+        onSave={ruaj}
+        saveLabel="Ruaj ndryshimet"
+      />
+    </Modal>
+  );
+}
+
+function ConfirmModal({
+  title,
+  description,
+  confirmLabel,
+  loading,
+  onClose,
+  onConfirm,
+}: {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  loading: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Modal
+      title={title}
+      onClose={onClose}
+    >
+      <p className="text-sm leading-6 text-slate-600">
+        {description}
+      </p>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        >
+          Anulo
+        </button>
+
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={loading}
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+        >
+          {loading && (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          )}
+
+          {confirmLabel}
+        </button>
+      </div>
+    </Modal>
+  );
+}
 function Modal({
   title,
   onClose,
