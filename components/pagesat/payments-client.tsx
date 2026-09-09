@@ -105,6 +105,31 @@ function lek(value: number) {
   return `${new Intl.NumberFormat("sq-AL").format(value)} Lek`;
 }
 
+function dataShqip(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  const ditet = [
+    "Die",
+    "Hën",
+    "Mar",
+    "Mër",
+    "Enj",
+    "Pre",
+    "Sht",
+  ];
+
+  return `${ditet[date.getDay()]}, ${date.getDate()} ${
+    MUAJT[date.getMonth()]
+  } ${date.getFullYear()} · ${String(
+    date.getHours()
+  ).padStart(2, "0")}:${String(
+    date.getMinutes()
+  ).padStart(2, "0")}`;
+}
 function statusi(status: Charge["status"]) {
   const labels: Record<Charge["status"], string> = {
     UNPAID: "Papaguar",
@@ -238,7 +263,7 @@ export default function PaymentsClient() {
     <AppShell>
       <PageHeader
         title="Pagesat"
-        description="Menaxhimi manual i tarifave dhe pagesave cash në Lek."
+        description="Menaxhimi manual i tarifave dhe pagesave në dorë, në Lek."
       />
 
       <div className="space-y-5">
@@ -699,7 +724,7 @@ function PlayerDetails({
                           className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"
                         >
                           <Banknote className="h-4 w-4" />
-                          Regjistro pagesë cash
+                          Regjistro pagesë në dorë
                         </button>
                       )}
 
@@ -710,10 +735,133 @@ function PlayerDetails({
                         Paguar plotësisht
                       </div>
                     )}
+
+                    {charge.payments.length > 0 && (
+                      <div className="mt-4 border-t border-slate-100 pt-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                          Pagesat e regjistruara
+                        </p>
+
+                        <div className="mt-3 space-y-2">
+                          {[...charge.payments]
+                            .sort(
+                              (a, b) =>
+                                new Date(b.paidAt).getTime() -
+                                new Date(a.paidAt).getTime()
+                            )
+                            .map((payment) => (
+                              <div
+                                key={payment.id}
+                                className="rounded-xl bg-emerald-50/60 p-3"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-bold text-emerald-900">
+                                      {lek(payment.amountLek)}
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      {dataShqip(payment.paidAt)}
+                                    </p>
+                                  </div>
+
+                                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                                    Në dorë
+                                  </span>
+                                </div>
+
+                                {payment.notes && (
+                                  <p className="mt-2 text-xs leading-5 text-slate-600">
+                                    {payment.notes}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               )}
             </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-slate-950">
+                  Historiku i pagesave
+                </h3>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Të gjitha pagesat në dorë të regjistruara për sportistin.
+                </p>
+              </div>
+
+              <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                {item.payments.length} pagesa
+              </span>
+            </div>
+
+            {item.payments.length === 0 ? (
+              <div className="mt-4 rounded-2xl border border-dashed border-slate-200 p-5 text-center text-sm text-slate-500">
+                Nuk ka pagesa të regjistruara.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {[...item.payments]
+                  .sort(
+                    (a, b) =>
+                      new Date(b.paidAt).getTime() -
+                      new Date(a.paidAt).getTime()
+                  )
+                  .map((payment) => {
+                    const charge = item.charges.find(
+                      (itemCharge) =>
+                        itemCharge.id === payment.chargeId
+                    );
+
+                    return (
+                      <div
+                        key={payment.id}
+                        className="rounded-2xl border border-slate-200 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-lg font-bold text-slate-950">
+                              {lek(payment.amountLek)}
+                            </p>
+
+                            <p className="mt-1 text-sm font-semibold text-slate-700">
+                              {charge?.title || "Detyrim"}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              {dataShqip(payment.paidAt)}
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
+                            <Banknote className="h-5 w-5" />
+                          </div>
+                        </div>
+
+                        {payment.notes && (
+                          <div className="mt-3 rounded-xl bg-slate-50 px-3 py-2">
+                            <p className="text-xs font-semibold text-slate-500">
+                              Shënime
+                            </p>
+
+                            <p className="mt-1 text-sm text-slate-700">
+                              {payment.notes}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1191,7 +1339,7 @@ function CashModal({
 
   return (
     <Modal
-      title="Regjistro pagesë cash"
+      title="Regjistro pagesë në dorë"
       onClose={onClose}
     >
       <p className="text-sm text-slate-500">
@@ -1223,7 +1371,7 @@ function CashModal({
 
       <label className="mt-4 block space-y-2">
         <span className="text-sm font-semibold text-slate-700">
-          Shuma e marrë cash
+          Shuma e marrë në dorë
         </span>
 
         <input
