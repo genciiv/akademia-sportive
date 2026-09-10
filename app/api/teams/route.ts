@@ -45,10 +45,23 @@ export async function GET() {
     );
   }
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: membership.academyId,
+        isActive: true,
+      },
+    });
+
   const [teams, branches] = await Promise.all([
     prisma.team.findMany({
       where: {
         academyId: membership.academyId,
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+            }
+          : {}),
       },
       include: {
         branch: true,
@@ -81,6 +94,7 @@ export async function GET() {
   return NextResponse.json({
     teams,
     branches,
+    activeSeason,
   });
 }
 
@@ -94,6 +108,24 @@ export async function POST(request: Request) {
     );
   }
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: membership.academyId,
+        isActive: true,
+      },
+    });
+
+  if (!activeSeason) {
+    return NextResponse.json(
+      {
+        error:
+          "Duhet të ketë një sezon aktiv para krijimit të ekipit.",
+      },
+      { status: 400 }
+    );
+  }
+
   const body = await request.json();
 
   const name = String(body.name || "").trim();
@@ -101,47 +133,65 @@ export async function POST(request: Request) {
 
   if (!name) {
     return NextResponse.json(
-      { error: "Emri i ekipit është i detyrueshëm." },
+      {
+        error:
+          "Emri i ekipit është i detyrueshëm.",
+      },
       { status: 400 }
     );
   }
 
-  if (!SPORTET.includes(sport as (typeof SPORTET)[number])) {
+  if (
+    !SPORTET.includes(
+      sport as (typeof SPORTET)[number]
+    )
+  ) {
     return NextResponse.json(
-      { error: "Sporti i zgjedhur nuk është i vlefshëm." },
+      {
+        error:
+          "Sporti i zgjedhur nuk është i vlefshëm.",
+      },
       { status: 400 }
     );
   }
 
   if (body.branchId) {
-    const branch = await prisma.academyBranch.findFirst({
-      where: {
-        id: String(body.branchId),
-        academyId: membership.academyId,
-        isActive: true,
-      },
-    });
+    const branch =
+      await prisma.academyBranch.findFirst({
+        where: {
+          id: String(body.branchId),
+          academyId: membership.academyId,
+          isActive: true,
+        },
+      });
 
     if (!branch) {
       return NextResponse.json(
-        { error: "Dega e zgjedhur nuk është e vlefshme." },
+        {
+          error:
+            "Dega e zgjedhur nuk është e vlefshme.",
+        },
         { status: 400 }
       );
     }
   }
 
-  const ekziston = await prisma.team.findUnique({
-    where: {
-      academyId_name: {
-        academyId: membership.academyId,
-        name,
+  const ekziston =
+    await prisma.team.findUnique({
+      where: {
+        academyId_name: {
+          academyId: membership.academyId,
+          name,
+        },
       },
-    },
-  });
+    });
 
   if (ekziston) {
     return NextResponse.json(
-      { error: "Ekziston tashmë një ekip me këtë emër." },
+      {
+        error:
+          "Ekziston tashmë një ekip me këtë emër.",
+      },
       { status: 409 }
     );
   }
@@ -151,10 +201,15 @@ export async function POST(request: Request) {
       academyId: membership.academyId,
       branchId: body.branchId || null,
       name,
-      sport: sport as (typeof SPORTET)[number],
-      ageGroup: String(body.ageGroup || "").trim() || null,
-      season: String(body.season || "").trim() || null,
-      description: String(body.description || "").trim() || null,
+      sport:
+        sport as (typeof SPORTET)[number],
+      ageGroup:
+        String(body.ageGroup || "").trim() ||
+        null,
+      season: activeSeason.name,
+      description:
+        String(body.description || "").trim() ||
+        null,
       status: "ACTIVE",
     },
   });
