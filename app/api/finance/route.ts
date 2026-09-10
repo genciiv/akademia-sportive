@@ -65,6 +65,9 @@ export async function GET() {
     charges,
     recentPayments,
     monthlyPayments,
+    allExpenses,
+    currentMonthExpenses,
+    monthlyExpenses,
   ] = await Promise.all([
     prisma.cashPayment.findMany({
       where: {
@@ -153,6 +156,48 @@ export async function GET() {
         paidAt: true,
       },
     }),
+
+    prisma.expense.findMany({
+      where: {
+        academyId:
+          membership.academyId,
+      },
+      select: {
+        id: true,
+        amountLek: true,
+        category: true,
+        title: true,
+        expenseDate: true,
+      },
+    }),
+
+    prisma.expense.findMany({
+      where: {
+        academyId:
+          membership.academyId,
+        expenseDate: {
+          gte: startOfMonth,
+          lt: startOfNextMonth,
+        },
+      },
+      select: {
+        amountLek: true,
+      },
+    }),
+
+    prisma.expense.findMany({
+      where: {
+        academyId:
+          membership.academyId,
+        expenseDate: {
+          gte: twelveMonthsAgo,
+        },
+      },
+      select: {
+        amountLek: true,
+        expenseDate: true,
+      },
+    }),
   ]);
 
   const totalCollected =
@@ -168,6 +213,27 @@ export async function GET() {
         sum + payment.amountLek,
       0
     );
+
+  const totalExpenses =
+    allExpenses.reduce(
+      (sum, expense) =>
+        sum + expense.amountLek,
+      0
+    );
+
+  const expensesThisMonth =
+    currentMonthExpenses.reduce(
+      (sum, expense) =>
+        sum + expense.amountLek,
+      0
+    );
+
+  const netProfit =
+    totalCollected - totalExpenses;
+
+  const netProfitThisMonth =
+    collectedThisMonth -
+    expensesThisMonth;
 
   const totalCharges =
     charges.reduce(
@@ -237,7 +303,9 @@ export async function GET() {
         year: date.getFullYear(),
         month:
           date.getMonth() + 1,
-        totalLek: 0,
+        collectedLek: 0,
+        expensesLek: 0,
+        netLek: 0,
       };
     }
   );
@@ -256,10 +324,78 @@ export async function GET() {
       );
 
     if (target) {
-      target.totalLek +=
+      target.collectedLek +=
         payment.amountLek;
     }
   }
+
+  for (const expense of monthlyExpenses) {
+    const date =
+      new Date(
+        expense.expenseDate
+      );
+
+    const target =
+      months.find(
+        (item) =>
+          item.year ===
+            date.getFullYear() &&
+          item.month ===
+            date.getMonth() + 1
+      );
+
+    if (target) {
+      target.expensesLek +=
+        expense.amountLek;
+    }
+  }
+
+  for (const month of months) {
+    month.netLek =
+      month.collectedLek -
+      month.expensesLek;
+  }
+
+  const expenseCategoriesMap =
+    new Map<
+      string,
+      {
+        category: string;
+        totalLek: number;
+        count: number;
+      }
+    >();
+
+  for (const expense of allExpenses) {
+    const current =
+      expenseCategoriesMap.get(
+        expense.category
+      ) ?? {
+        category:
+          expense.category,
+        totalLek: 0,
+        count: 0,
+      };
+
+    current.totalLek +=
+      expense.amountLek;
+
+    current.count += 1;
+
+    expenseCategoriesMap.set(
+      expense.category,
+      current
+    );
+  }
+
+  const expenseCategories =
+    Array.from(
+      expenseCategoriesMap.values()
+    ).sort(
+      (a, b) =>
+        b.totalLek -
+        a.totalLek
+    );
 
   const debts = charges
     .map((charge) => {
@@ -304,13 +440,23 @@ export async function GET() {
     summary: {
       totalCollected,
       collectedThisMonth,
+      totalExpenses,
+      expensesThisMonth,
+      netProfit,
+      netProfitThisMonth,
       totalCharges,
       totalOutstanding,
       paymentCount:
         allPayments.length,
+      expenseCount:
+        allExpenses.length,
       playersWithDebt,
     },
+
     monthly: months,
+
+    expenseCategories,
+
     recentPayments:
       recentPayments.map(
         (payment) => ({
@@ -327,6 +473,7 @@ export async function GET() {
             payment.charge,
         })
       ),
+
     debts,
   });
 }
