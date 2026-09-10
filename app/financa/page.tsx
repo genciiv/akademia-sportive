@@ -1,2 +1,8 @@
-import { AppShell } from "@/components/app-shell"; import { PageHeader } from "@/components/page-header"; import { Panel, StatCard } from "@/components/ui";
-export default function Page(){return <AppShell><PageHeader title="Financa" description="Pasqyrë e të ardhurave, shpenzimeve dhe detyrimeve."/><div className="grid gap-4 md:grid-cols-3"><StatCard title="Të ardhurat këtë muaj" value="1,080,000 ALL" hint="+8.4% nga muaji i kaluar" accent/><StatCard title="Shpenzimet" value="700,000 ALL" hint="Paga, fusha dhe pajisje"/><StatCard title="Fitimi neto" value="380,000 ALL" hint="Pas shpenzimeve" accent/></div><div className="mt-5 grid gap-5 lg:grid-cols-2"><Panel title="Të ardhurat"><div className="space-y-3 text-sm"><p className="flex justify-between"><span>Tarifa mujore</span><b>890,000 ALL</b></p><p className="flex justify-between"><span>Stërvitje individuale</span><b>110,000 ALL</b></p><p className="flex justify-between"><span>Aktivitete & turne</span><b>80,000 ALL</b></p></div></Panel><Panel title="Shpenzimet"><div className="space-y-3 text-sm"><p className="flex justify-between"><span>Pagat e trajnerëve</span><b>420,000 ALL</b></p><p className="flex justify-between"><span>Qira fushe</span><b>150,000 ALL</b></p><p className="flex justify-between"><span>Pajisje</span><b>80,000 ALL</b></p><p className="flex justify-between"><span>Të tjera</span><b>50,000 ALL</b></p></div></Panel></div></AppShell>}
+import FinanceDashboardClient from "@/components/financa/finance-dashboard-client";
+import { merrAkademineAktive } from "@/lib/academy-context";
+
+export default async function Page() {
+  await merrAkademineAktive();
+
+  return <FinanceDashboardClient />;
+}
