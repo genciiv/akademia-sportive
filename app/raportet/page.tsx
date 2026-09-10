@@ -1,4 +1,8 @@
-import { CardsPage } from "@/components/cards-page";
-export default function Page(){return <CardsPage title="Raportet" description="Raporte operative dhe analitike të akademisë." button="Krijo raport" items={[
-{title:"Raporti i sportistëve",meta:"Pjesëmarrje, performancë, pagesa",stat:"214",note:"sportistë në raport"},{title:"Raporti i ekipeve",meta:"Seanca, rezultate dhe progres",stat:"12",note:"ekipe aktive"},{title:"Raporti financiar",meta:"Të ardhura, shpenzime dhe detyrime",stat:"1.08M",note:"ALL të ardhura"},{title:"Raporti i pjesëmarrjes",meta:"Analizë mujore sipas ekipeve",stat:"92%",note:"mesatarja e akademisë"},{title:"Raporti i trajnerëve",meta:"Ngarkesa dhe rezultatet",stat:"18",note:"trajnerë aktivë"},{title:"Raporti i ndeshjeve",meta:"Rezultate dhe statistika",stat:"38",note:"ndeshje këtë sezon"}
-]}/>}
+import ReportsClient from "@/components/raportet/reports-client";
+import { merrAkademineAktive } from "@/lib/academy-context";
+
+export default async function Page() {
+  await merrAkademineAktive();
+
+  return <ReportsClient />;
+}
