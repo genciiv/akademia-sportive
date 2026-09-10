@@ -151,6 +151,7 @@ model Academy {
   playerFees         PlayerFee[]
   playerCharges      PlayerCharge[]
   cashPayments       CashPayment[]
+  expenses           Expense[]
 
   @@index([ownerId])
   @@index([status])
@@ -888,6 +889,36 @@ model PlayerCharge {
   @@index([academyId, status])
   @@index([academyId, dueDate])
   @@index([playerId, periodYear, periodMonth])
+}
+
+enum ExpenseCategory {
+  SALARY
+  RENT
+  EQUIPMENT
+  TRANSPORT
+  MEDICAL
+  TOURNAMENT
+  UTILITIES
+  MARKETING
+  OTHER
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  academyId   String
+  academy     Academy         @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  category    ExpenseCategory @default(OTHER)
+  title       String
+  amountLek   Int
+  expenseDate DateTime        @default(now())
+  description String?
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, expenseDate])
+  @@index([academyId, category])
 }
 
 model CashPayment {
