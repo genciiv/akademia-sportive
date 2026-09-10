@@ -1,2 +1,28 @@
-import { AppShell } from "@/components/app-shell"; import { PageHeader } from "@/components/page-header";
-export default function Page(){return <AppShell><PageHeader title="Cilësimet" description="Konfigurimi bazë i akademisë dhe platformës."/><div className="grid gap-5 lg:grid-cols-2"><section className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold">Të dhënat e akademisë</h2><div className="mt-5 space-y-4"><label className="block text-xs font-semibold text-slate-500">Emri<input defaultValue="Akademia Sportive" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label><label className="block text-xs font-semibold text-slate-500">Qyteti<input defaultValue="Fier" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label><label className="block text-xs font-semibold text-slate-500">Sporti kryesor<input defaultValue="Futboll" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"/></label><button className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white">Ruaj ndryshimet</button></div></section><section className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold">Preferencat</h2><div className="mt-5 space-y-4 text-sm"><label className="flex items-center justify-between"><span>Njoftime me email</span><input type="checkbox" defaultChecked/></label><label className="flex items-center justify-between"><span>Kujtesa për pagesat</span><input type="checkbox" defaultChecked/></label><label className="flex items-center justify-between"><span>Raport javor automatik</span><input type="checkbox" defaultChecked/></label></div></section></div></AppShell>}
+import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/page-header";
+import { SeasonsSettings } from "@/components/cilesimet/seasons-settings";
+
+export default function Page() {
+  return (
+    <AppShell>
+      <PageHeader
+        title="Cilësimet"
+        description="Konfigurimi i akademisë dhe sezonit aktiv."
+      />
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <SeasonsSettings />
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="font-bold text-slate-900">
+            Preferencat
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Preferencat e tjera të akademisë do të menaxhohen këtu.
+          </p>
+        </section>
+      </div>
+    </AppShell>
+  );
+}

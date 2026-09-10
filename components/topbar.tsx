@@ -3,14 +3,15 @@
 import Link from "next/link";
 import {
   Bell,
+  Check,
   ChevronDown,
+  Dumbbell,
   LogOut,
   Menu,
   Search,
+  Shield,
   UserRound,
   UsersRound,
-  Dumbbell,
-  Shield,
   X,
 } from "lucide-react";
 import {
@@ -29,6 +30,14 @@ type SearchResult = {
   title: string;
   subtitle: string;
   href: string;
+};
+
+type Season = {
+  id: string;
+  name: string;
+  startsAt: string;
+  endsAt: string;
+  isActive: boolean;
 };
 
 function inicialet(name?: string | null) {
@@ -83,6 +92,9 @@ export function Topbar({
   const [menuOpen, setMenuOpen] =
     useState(false);
 
+  const [seasonOpen, setSeasonOpen] =
+    useState(false);
+
   const [dukeDale, setDukeDale] =
     useState(false);
 
@@ -98,11 +110,57 @@ export function Topbar({
   const [searching, setSearching] =
     useState(false);
 
+  const [seasons, setSeasons] =
+    useState<Season[]>([]);
+
+  const [loadingSeasons, setLoadingSeasons] =
+    useState(true);
+
+  const [changingSeasonId, setChangingSeasonId] =
+    useState<string | null>(null);
+
   const menuRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const seasonRef =
     useRef<HTMLDivElement | null>(null);
 
   const searchRef =
     useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    async function merrSezonet() {
+      try {
+        const response = await fetch(
+          "/api/seasons",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              "Sezonet nuk mund të ngarkoheshin."
+          );
+        }
+
+        setSeasons(
+          Array.isArray(data.seasons)
+            ? data.seasons
+            : []
+        );
+      } catch {
+        setSeasons([]);
+      } finally {
+        setLoadingSeasons(false);
+      }
+    }
+
+    void merrSezonet();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(
@@ -116,6 +174,13 @@ export function Topbar({
         !menuRef.current.contains(target)
       ) {
         setMenuOpen(false);
+      }
+
+      if (
+        seasonRef.current &&
+        !seasonRef.current.contains(target)
+      ) {
+        setSeasonOpen(false);
       }
 
       if (
@@ -145,7 +210,6 @@ export function Topbar({
     if (value.length < 2) {
       setResults([]);
       setSearching(false);
-
       return;
     }
 
@@ -188,8 +252,7 @@ export function Topbar({
         } catch (error) {
           if (
             error instanceof Error &&
-            error.name ===
-              "AbortError"
+            error.name === "AbortError"
           ) {
             return;
           }
@@ -207,6 +270,51 @@ export function Topbar({
       controller.abort();
     };
   }, [query]);
+
+  async function ndryshoSezonin(
+    seasonId: string
+  ) {
+    setChangingSeasonId(seasonId);
+
+    try {
+      const response = await fetch(
+        `/api/seasons/${seasonId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            isActive: true,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Sezoni nuk mund të aktivizohej."
+        );
+      }
+
+      setSeasons((current) =>
+        current.map((season) => ({
+          ...season,
+          isActive:
+            season.id === seasonId,
+        }))
+      );
+
+      setSeasonOpen(false);
+      router.refresh();
+    } finally {
+      setChangingSeasonId(null);
+    }
+  }
 
   async function dil() {
     setDukeDale(true);
@@ -231,6 +339,11 @@ export function Topbar({
     session?.user?.name ||
     "Përdorues";
 
+  const activeSeason =
+    seasons.find(
+      (season) => season.isActive
+    ) ?? null;
+
   const groupedResults =
     useMemo(() => results, [results]);
 
@@ -245,6 +358,70 @@ export function Topbar({
         >
           <Menu size={21} />
         </button>
+
+        <div
+          ref={seasonRef}
+          className="relative hidden sm:block"
+        >
+          <button
+            type="button"
+            onClick={() =>
+              setSeasonOpen(
+                (value) => !value
+              )
+            }
+            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            {loadingSeasons
+              ? "Duke ngarkuar..."
+              : activeSeason?.name ||
+                "Pa sezon aktiv"}
+
+            <ChevronDown size={14} />
+          </button>
+
+          {seasonOpen ? (
+            <div className="absolute left-0 top-[46px] z-50 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+              <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                Sezonet e akademisë
+              </p>
+
+              {seasons.length === 0 ? (
+                <div className="px-3 py-3 text-sm text-slate-500">
+                  Nuk ka ende sezone.
+                </div>
+              ) : (
+                seasons.map((season) => (
+                  <button
+                    key={season.id}
+                    type="button"
+                    onClick={() =>
+                      ndryshoSezonin(
+                        season.id
+                      )
+                    }
+                    disabled={
+                      changingSeasonId !==
+                      null
+                    }
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    <span>
+                      {season.name}
+                    </span>
+
+                    {season.isActive ? (
+                      <Check
+                        size={15}
+                        className="text-emerald-600"
+                      />
+                    ) : null}
+                  </button>
+                ))
+              )}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div
