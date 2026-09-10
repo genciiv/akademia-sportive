@@ -18,6 +18,36 @@ export default async function Page() {
 
   const tani = new Date();
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: academy.id,
+        isActive: true,
+      },
+    });
+
+  const seasonRange = activeSeason
+    ? {
+        gte: activeSeason.startsAt,
+        lte: activeSeason.endsAt,
+      }
+    : undefined;
+
+  const upcomingStart =
+    activeSeason &&
+    activeSeason.startsAt > tani
+      ? activeSeason.startsAt
+      : tani;
+
+  const upcomingRange = activeSeason
+    ? {
+        gte: upcomingStart,
+        lte: activeSeason.endsAt,
+      }
+    : {
+        gte: tani,
+      };
+
   const [
     drillsCount,
     sessionsCount,
@@ -37,6 +67,7 @@ export default async function Page() {
     prisma.trainingSession.count({
       where: {
         academyId: academy.id,
+        startsAt: seasonRange,
       },
     }),
 
@@ -44,6 +75,20 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         status: "ACTIVE",
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId: academy.id,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
       },
     }),
 
@@ -51,12 +96,27 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         status: "ACTIVE",
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId: academy.id,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
       },
     }),
 
     prisma.trainingSession.findMany({
       where: {
         academyId: academy.id,
+        startsAt: seasonRange,
         attendances: {
           some: {},
         },
@@ -79,6 +139,7 @@ export default async function Page() {
     prisma.match.findMany({
       where: {
         academyId: academy.id,
+        startsAt: seasonRange,
         performances: {
           some: {},
         },
@@ -101,9 +162,7 @@ export default async function Page() {
     prisma.trainingSession.findMany({
       where: {
         academyId: academy.id,
-        startsAt: {
-          gte: tani,
-        },
+        startsAt: upcomingRange,
         status: "SCHEDULED",
       },
       orderBy: {
@@ -127,9 +186,7 @@ export default async function Page() {
     prisma.match.findMany({
       where: {
         academyId: academy.id,
-        startsAt: {
-          gte: tani,
-        },
+        startsAt: upcomingRange,
         status: {
           in: ["SCHEDULED", "POSTPONED"],
         },
@@ -152,7 +209,6 @@ export default async function Page() {
       },
     }),
   ]);
-
   const attendanceData = attendanceSessions
     .reverse()
     .map((trainingSession) => {

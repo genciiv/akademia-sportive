@@ -105,7 +105,6 @@ export default function EkipetClient() {
   const [name, setName] = useState("");
   const [sport, setSport] = useState("FOOTBALL");
   const [ageGroup, setAgeGroup] = useState("");
-  const [season, setSeason] = useState("2026/27");
   const [branchId, setBranchId] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("ACTIVE");
@@ -151,7 +150,6 @@ export default function EkipetClient() {
     setName("");
     setSport("FOOTBALL");
     setAgeGroup("");
-    setSeason("2026/27");
     setBranchId("");
     setDescription("");
     setStatus("ACTIVE");
@@ -168,7 +166,6 @@ export default function EkipetClient() {
     setName(team.name);
     setSport(team.sport);
     setAgeGroup(team.ageGroup || "");
-    setSeason(team.season || "");
     setBranchId(team.branch?.id || "");
     setDescription(team.description || "");
     setStatus(team.status);
@@ -195,7 +192,6 @@ export default function EkipetClient() {
           name,
           sport,
           ageGroup,
-          season,
           branchId,
           description,
           status,
@@ -426,16 +422,6 @@ export default function EkipetClient() {
                 value={ageGroup}
                 onChange={(e) => setAgeGroup(e.target.value)}
                 placeholder="U17"
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
-              />
-            </label>
-
-            <label className="text-xs font-semibold text-slate-600">
-              Sezoni
-              <input
-                value={season}
-                onChange={(e) => setSeason(e.target.value)}
-                placeholder="2026/27"
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
               />
             </label>

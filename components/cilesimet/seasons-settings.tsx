@@ -43,9 +43,9 @@ export function SeasonsSettings() {
     useState("");
 
   const [form, setForm] = useState({
-    name: "2026/27",
-    startsAt: "2026-07-01",
-    endsAt: "2027-06-30",
+    name: "",
+    startsAt: "",
+    endsAt: "",
     isActive: true,
   });
 
@@ -226,7 +226,7 @@ export function SeasonsSettings() {
                   event.target.value,
               })
             }
-            placeholder="2026/27"
+            placeholder="p.sh. 2026/27"
             className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
             required
           />

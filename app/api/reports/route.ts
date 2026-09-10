@@ -42,6 +42,14 @@ export async function GET() {
   const academyId =
     membership.academyId;
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId,
+        isActive: true,
+      },
+    });
+
   const now = new Date();
 
   const startOfMonth = new Date(
@@ -55,6 +63,13 @@ export async function GET() {
     now.getMonth() + 1,
     1
   );
+
+  const seasonDateRange = activeSeason
+    ? {
+        gte: activeSeason.startsAt,
+        lte: activeSeason.endsAt,
+      }
+    : undefined;
 
   const [
     players,
@@ -77,6 +92,11 @@ export async function GET() {
     prisma.team.count({
       where: {
         academyId,
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+            }
+          : {}),
       },
     }),
 
@@ -89,12 +109,22 @@ export async function GET() {
     prisma.trainingSession.count({
       where: {
         academyId,
+        ...(seasonDateRange
+          ? {
+              startsAt: seasonDateRange,
+            }
+          : {}),
       },
     }),
 
     prisma.match.count({
       where: {
         academyId,
+        ...(seasonDateRange
+          ? {
+              startsAt: seasonDateRange,
+            }
+          : {}),
       },
     }),
 
@@ -243,6 +273,17 @@ export async function GET() {
   return NextResponse.json({
     generatedAt:
       new Date().toISOString(),
+
+    activeSeason: activeSeason
+      ? {
+          id: activeSeason.id,
+          name: activeSeason.name,
+          startsAt:
+            activeSeason.startsAt.toISOString(),
+          endsAt:
+            activeSeason.endsAt.toISOString(),
+        }
+      : null,
 
     sports: {
       players,

@@ -39,9 +39,25 @@ export async function GET() {
     );
   }
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: membership.academyId,
+        isActive: true,
+      },
+    });
+
   const sessions = await prisma.trainingSession.findMany({
     where: {
       academyId: membership.academyId,
+      ...(activeSeason
+        ? {
+            startsAt: {
+              gte: activeSeason.startsAt,
+              lte: activeSeason.endsAt,
+            },
+          }
+        : {}),
     },
     include: {
       team: {
@@ -163,14 +179,20 @@ export async function POST(request: Request) {
 
   if (!body.startsAt) {
     return NextResponse.json(
-      { error: "Data dhe ora e fillimit janë të detyrueshme." },
+      {
+        error:
+          "Data dhe ora e fillimit janë të detyrueshme.",
+      },
       { status: 400 }
     );
   }
 
   if (!STATUSET.includes(status as (typeof STATUSET)[number])) {
     return NextResponse.json(
-      { error: "Statusi i seancës nuk është i vlefshëm." },
+      {
+        error:
+          "Statusi i seancës nuk është i vlefshëm.",
+      },
       { status: 400 }
     );
   }
@@ -179,7 +201,34 @@ export async function POST(request: Request) {
 
   if (Number.isNaN(startsAt.getTime())) {
     return NextResponse.json(
-      { error: "Data e fillimit nuk është e vlefshme." },
+      {
+        error:
+          "Data e fillimit nuk është e vlefshme.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: membership.academyId,
+        isActive: true,
+      },
+    });
+
+  if (
+    activeSeason &&
+    (
+      startsAt < activeSeason.startsAt ||
+      startsAt > activeSeason.endsAt
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Data e seancës duhet të jetë brenda sezonit aktiv.",
+      },
       { status: 400 }
     );
   }
@@ -191,14 +240,33 @@ export async function POST(request: Request) {
 
     if (Number.isNaN(endsAt.getTime())) {
       return NextResponse.json(
-        { error: "Data e përfundimit nuk është e vlefshme." },
+        {
+          error:
+            "Data e përfundimit nuk është e vlefshme.",
+        },
         { status: 400 }
       );
     }
 
     if (endsAt <= startsAt) {
       return NextResponse.json(
-        { error: "Ora e përfundimit duhet të jetë pas fillimit." },
+        {
+          error:
+            "Ora e përfundimit duhet të jetë pas fillimit.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      activeSeason &&
+      endsAt > activeSeason.endsAt
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Data e përfundimit duhet të jetë brenda sezonit aktiv.",
+        },
         { status: 400 }
       );
     }
@@ -250,21 +318,22 @@ export async function POST(request: Request) {
     }
   }
 
-  const trainingSession = await prisma.trainingSession.create({
-    data: {
-      academyId: membership.academyId,
-      teamId,
-      coachId,
-      branchId,
-      title,
-      startsAt,
-      endsAt,
-      location,
-      description,
-      notes,
-      status: status as (typeof STATUSET)[number],
-    },
-  });
+  const trainingSession =
+    await prisma.trainingSession.create({
+      data: {
+        academyId: membership.academyId,
+        teamId,
+        coachId,
+        branchId,
+        title,
+        startsAt,
+        endsAt,
+        location,
+        description,
+        notes,
+        status: status as (typeof STATUSET)[number],
+      },
+    });
 
   return NextResponse.json(
     { trainingSession },

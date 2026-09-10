@@ -115,11 +115,6 @@ export function Sidebar({ mobile = false, onClose }: { mobile?: boolean; onClose
           </div>
         ))}
       </nav>
-
-      <div className="mt-4 rounded-2xl bg-slate-950 p-4 text-white">
-        <p className="text-xs font-semibold">Sezoni 2026/27</p>
-        <p className="mt-1 text-[11px] leading-5 text-slate-300">Platforma është në fazën e parë të zhvillimit.</p>
-      </div>
     </aside>
   );
 }

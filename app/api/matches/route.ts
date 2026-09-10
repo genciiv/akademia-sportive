@@ -49,10 +49,7 @@ function rezultatValid(value: unknown) {
 
   const number = Number(value);
 
-  return (
-    Number.isInteger(number) &&
-    number >= 0
-  );
+  return Number.isInteger(number) && number >= 0;
 }
 
 export async function GET() {
@@ -65,9 +62,25 @@ export async function GET() {
     );
   }
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: membership.academyId,
+        isActive: true,
+      },
+    });
+
   const matches = await prisma.match.findMany({
     where: {
       academyId: membership.academyId,
+      ...(activeSeason
+        ? {
+            startsAt: {
+              gte: activeSeason.startsAt,
+              lte: activeSeason.endsAt,
+            },
+          }
+        : {}),
     },
     include: {
       team: {
@@ -175,6 +188,30 @@ export async function POST(request: Request) {
       {
         error:
           "Data dhe ora e ndeshjes nuk janë të vlefshme.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId: membership.academyId,
+        isActive: true,
+      },
+    });
+
+  if (
+    activeSeason &&
+    (
+      startsAtDate < activeSeason.startsAt ||
+      startsAtDate > activeSeason.endsAt
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Data e ndeshjes duhet të jetë brenda sezonit aktiv.",
       },
       { status: 400 }
     );
