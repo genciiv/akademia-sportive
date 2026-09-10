@@ -152,6 +152,8 @@ model Academy {
   playerCharges      PlayerCharge[]
   cashPayments       CashPayment[]
   expenses           Expense[]
+  guardians          Guardian[]
+  playerGuardians    PlayerGuardian[]
 
   @@index([ownerId])
   @@index([status])
@@ -271,6 +273,7 @@ model Player {
   fees         PlayerFee[]
   charges      PlayerCharge[]
   cashPayments CashPayment[]
+  guardians    PlayerGuardian[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -278,6 +281,58 @@ model Player {
   @@index([academyId])
   @@index([academyId, status])
   @@index([academyId, lastName, firstName])
+}
+
+model Guardian {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+
+  phone String?
+  email String?
+
+  address String?
+  notes   String?
+
+  players PlayerGuardian[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, lastName, firstName])
+  @@index([academyId, phone])
+  @@index([academyId, email])
+}
+
+model PlayerGuardian {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  guardianId String
+  guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+
+  relationship String?
+  isPrimary    Boolean @default(false)
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  trainingSession   TrainingSession? @relation(fields: [trainingSessionId], references: [id])
+  trainingSessionId String?
+
+  @@unique([playerId, guardianId])
+  @@index([academyId])
+  @@index([playerId])
+  @@index([guardianId])
 }
 
 model Team {
@@ -443,6 +498,7 @@ model TrainingSession {
   fees         PlayerFee[]
   charges      PlayerCharge[]
   cashPayments CashPayment[]
+  guardians    PlayerGuardian[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
