@@ -154,6 +154,7 @@ model Academy {
   expenses           Expense[]
   guardians          Guardian[]
   playerGuardians    PlayerGuardian[]
+  notifications      Notification[]
 
   @@index([ownerId])
   @@index([status])
@@ -359,14 +360,60 @@ model Team {
   coaches          CoachTeam[]
   trainingSessions TrainingSession[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  matches   Match[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  matches       Match[]
+  notifications Notification[]
 
   @@unique([academyId, name])
   @@index([academyId])
   @@index([academyId, status])
   @@index([branchId])
+}
+
+enum NotificationAudience {
+  ALL
+  TEAM
+}
+
+enum NotificationPriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+enum NotificationStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  title   String
+  message String
+
+  audience NotificationAudience @default(ALL)
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  priority NotificationPriority @default(NORMAL)
+  status   NotificationStatus   @default(ACTIVE)
+
+  publishedAt DateTime  @default(now())
+  expiresAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([academyId, publishedAt])
+  @@index([teamId])
 }
 
 model TeamPlayer {
