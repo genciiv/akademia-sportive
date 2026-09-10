@@ -1,80 +1,92 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   CalendarDays,
   ChevronRight,
   MapPin,
-  ThumbsDown,
-  ThumbsUp,
-  CircleHelp,
 } from "lucide-react";
 
 import { AppShell } from "./app-shell";
-import { AttendanceChart, PerformanceChart } from "./dashboard-charts";
+import {
+  AttendanceChart,
+  PerformanceChart,
+} from "./dashboard-charts";
 import { Panel, StatCard } from "./ui";
+
+type Activity = {
+  id: string;
+  type: "TRAINING" | "MATCH";
+  title: string;
+  teamName: string;
+  startsAt: string;
+  endsAt: string | null;
+  location: string | null;
+  status: string;
+};
 
 type DashboardProps = {
   academyName: string;
   userName: string;
   role: string;
+
+  stats: {
+    drills: number;
+    sessions: number;
+    players: number;
+    coaches: number;
+  };
+
+  chartData: {
+    performance: {
+      emri: string;
+      vlera: number;
+    }[];
+
+    attendance: {
+      emri: string;
+      prezent: number;
+      mungon: number;
+    }[];
+  };
+
+  activities: Activity[];
 };
 
-const events = [
-  {
-    type: "Seancë stërvitore",
-    team: "U19",
-    date: "Mërkurë, 17 Prill, 18:40",
-    time: "19:00–20:00",
-    place: "Fusha stërvitore 2",
-    badge: "blue",
-    stats: [14, 1, 2, 3],
-  },
-  {
-    type: "Seancë stërvitore",
-    team: "U19",
-    date: "Premte, 19 Prill, 18:40",
-    time: "19:00–20:00",
-    place: "Fusha stërvitore 2",
-    badge: "blue",
-    stats: [17, 0, 0, 1],
-  },
-  {
-    type: "Ndeshje",
-    team: "U19 kundër Akademisë Tirana",
-    date: "E diel, 21 Prill, 14:00",
-    time: "15:00–17:00",
-    place: "Stadiumi i Akademisë",
-    badge: "green",
-    stats: [12, 3, 2, 1],
-  },
-  {
-    type: "Seancë stërvitore",
-    team: "U19",
-    date: "Mërkurë, 24 Prill, 18:40",
-    time: "19:00–20:00",
-    place: "Fusha stërvitore 2",
-    badge: "blue",
-    stats: [18, 0, 0, 0],
-  },
-  {
-    type: "Ndeshje",
-    team: "U19 kundër Yjeve të Fierit",
-    date: "E diel, 28 Prill, 14:00",
-    time: "15:00–17:00",
-    place: "Arena Sportive",
-    badge: "green",
-    stats: [18, 0, 0, 0],
-  },
+const DITET = [
+  "E diel",
+  "E hënë",
+  "E martë",
+  "E mërkurë",
+  "E enjte",
+  "E premte",
+  "E shtunë",
+];
+
+const MUAJT = [
+  "Janar",
+  "Shkurt",
+  "Mars",
+  "Prill",
+  "Maj",
+  "Qershor",
+  "Korrik",
+  "Gusht",
+  "Shtator",
+  "Tetor",
+  "Nëntor",
+  "Dhjetor",
 ];
 
 function perkthimRoli(role: string) {
   const rolet: Record<string, string> = {
     OWNER: "Pronar",
     ADMIN: "Administrator",
-    SPORTS_DIRECTOR: "Drejtor Sportiv",
+    SPORTS_DIRECTOR: "Drejtor sportiv",
     HEAD_COACH: "Kryetrajner",
     COACH: "Trajner",
-    ASSISTANT_COACH: "Ndihmës Trajner",
+    ASSISTANT_COACH: "Ndihmës trajner",
     FINANCE: "Financë",
     RECEPTIONIST: "Recepsion",
     MEMBER: "Anëtar",
@@ -83,10 +95,39 @@ function perkthimRoli(role: string) {
   return rolet[role] || role;
 }
 
+function dataDheOra(value: string) {
+  const date = new Date(value);
+
+  const ora = String(
+    date.getHours()
+  ).padStart(2, "0");
+
+  const minuta = String(
+    date.getMinutes()
+  ).padStart(2, "0");
+
+  return `${DITET[date.getDay()]}, ${date.getDate()} ${
+    MUAJT[date.getMonth()]
+  }, ${ora}:${minuta}`;
+}
+
+function ora(value: string) {
+  const date = new Date(value);
+
+  return `${String(
+    date.getHours()
+  ).padStart(2, "0")}:${String(
+    date.getMinutes()
+  ).padStart(2, "0")}`;
+}
+
 export function Dashboard({
   academyName,
   userName,
   role,
+  stats,
+  chartData,
+  activities,
 }: DashboardProps) {
   return (
     <AppShell>
@@ -121,113 +162,146 @@ export function Dashboard({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Ushtrimet e akademisë"
-          value="37"
-          hint="Të dhëna demo"
+          value={String(stats.drills)}
+          hint="Të dhëna reale"
           accent
         />
 
         <StatCard
           title="Seancat"
-          value="51"
-          hint="Të dhëna demo"
+          value={String(stats.sessions)}
+          hint="Të dhëna reale"
           accent
         />
 
         <StatCard
-          title="Sportistët"
-          value="214"
-          hint="Të dhëna demo"
+          title="Sportistët aktivë"
+          value={String(stats.players)}
+          hint="Të dhëna reale"
           accent
         />
 
         <StatCard
-          title="Anëtarët aktivë"
-          value="314"
-          hint="Të dhëna demo"
+          title="Trajnerët aktivë"
+          value={String(stats.coaches)}
+          hint="Të dhëna reale"
           accent
         />
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.08fr_.92fr]">
         <Panel title="Aktivitetet e ardhshme">
-          <div className="divide-y divide-slate-100">
-            {events.map((event, index) => (
-              <div
-                key={index}
-                className="py-4 first:pt-0 last:pb-0"
-              >
-                <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                  <div className="min-w-0">
-                    <div
-                      className={
-                        event.badge === "green"
-                          ? "inline-flex rounded-md bg-lime-100 px-2 py-1 text-[10px] font-bold text-lime-700"
-                          : "inline-flex rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700"
-                      }
-                    >
-                      {event.type} · {event.team}
+          {activities.length === 0 ? (
+            <div className="flex min-h-[220px] flex-col items-center justify-center text-center">
+              <CalendarDays className="h-8 w-8 text-slate-300" />
+
+              <p className="mt-3 text-sm font-semibold text-slate-600">
+                Nuk ka aktivitete të ardhshme.
+              </p>
+
+              <p className="mt-1 text-xs text-slate-400">
+                Seancat dhe ndeshjet e reja do të shfaqen këtu.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {activities.map((activity) => (
+                <Link
+                  key={`${activity.type}-${activity.id}`}
+                  href={
+                    activity.type === "MATCH"
+                      ? "/ndeshjet"
+                      : "/seancat"
+                  }
+                  className="block py-4 first:pt-0 last:pb-0"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div
+                        className={
+                          activity.type === "MATCH"
+                            ? "inline-flex rounded-md bg-lime-100 px-2 py-1 text-[10px] font-bold text-lime-700"
+                            : "inline-flex rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700"
+                        }
+                      >
+                        {activity.type === "MATCH"
+                          ? "Ndeshje"
+                          : "Seancë stërvitore"}{" "}
+                        · {activity.teamName}
+                      </div>
+
+                      <p className="mt-2 text-[15px] font-bold text-slate-950">
+                        {activity.title}
+                      </p>
+
+                      <p className="mt-1 text-xs font-semibold text-slate-700">
+                        {dataDheOra(activity.startsAt)}
+                      </p>
+
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                        {activity.endsAt ? (
+                          <>
+                            <span>
+                              {ora(activity.startsAt)}–{ora(activity.endsAt)}
+                            </span>
+
+                            <span>•</span>
+                          </>
+                        ) : null}
+
+                        {activity.location ? (
+                          <span className="flex items-center gap-1">
+                            <MapPin size={11} />
+                            {activity.location}
+                          </span>
+                        ) : (
+                          <span>Vendndodhja nuk është përcaktuar</span>
+                        )}
+
+                        {activity.status === "POSTPONED" ? (
+                          <>
+                            <span>•</span>
+                            <span className="font-semibold text-amber-600">
+                              E shtyrë
+                            </span>
+                          </>
+                        ) : null}
+                      </div>
                     </div>
 
-                    <p className="mt-2 text-[15px] font-bold text-slate-950">
-                      {event.date}
-                    </p>
-
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                      <span>{event.time}</span>
-                      <span>•</span>
-
-                      <span className="flex items-center gap-1">
-                        <MapPin size={11} />
-                        {event.place}
-                      </span>
-                    </div>
+                    <ChevronRight className="mt-2 h-4 w-4 shrink-0 text-slate-400" />
                   </div>
+                </Link>
+              ))}
+            </div>
+          )}
 
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span className="flex flex-col items-center gap-1">
-                      <ThumbsUp size={15} />
-                      {event.stats[0]}
-                    </span>
-
-                    <span className="flex flex-col items-center gap-1">
-                      <CircleHelp size={15} />
-                      {event.stats[1]}
-                    </span>
-
-                    <span className="flex flex-col items-center gap-1">
-                      <ThumbsDown size={15} />
-                      {event.stats[2]}
-                    </span>
-
-                    <span className="flex flex-col items-center gap-1">
-                      <CalendarDays size={15} />
-                      {event.stats[3]}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="mt-5 flex items-center gap-1 text-xs font-semibold text-blue-700">
-            Shiko të gjitha
+          <Link
+            href="/kalendari"
+            className="mt-5 flex items-center gap-1 text-xs font-semibold text-blue-700"
+          >
+            Shiko kalendarin
             <ChevronRight size={14} />
-          </button>
+          </Link>
         </Panel>
 
         <div className="space-y-5">
           <Panel
-            title="Performanca e ekipit"
-            subtitle="10 seancat e fundit · U17"
+            title="Vlerësimi në ndeshje"
+            subtitle="Deri në 10 ndeshjet e fundit"
           >
-            <PerformanceChart />
+            <PerformanceChart
+              data={chartData.performance}
+            />
           </Panel>
 
           <Panel
-            title="Pjesëmarrja e ekipit"
-            subtitle="10 seancat e fundit · U17"
+            title="Pjesëmarrja në stërvitje"
+            subtitle="Deri në 10 seancat e fundit"
           >
-            <AttendanceChart />
+            <AttendanceChart
+              data={chartData.attendance}
+            />
           </Panel>
         </div>
       </div>
