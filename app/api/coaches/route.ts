@@ -40,9 +40,30 @@ export async function GET() {
     );
   }
 
+  const activeSeason = await prisma.academySeason.findFirst({
+    where: {
+      academyId: membership.academyId,
+      isActive: true,
+    },
+  });
+
   const coaches = await prisma.coach.findMany({
     where: {
       academyId: membership.academyId,
+      ...(activeSeason
+        ? {
+            teams: {
+              some: {
+                isActive: true,
+                team: {
+                  academyId: membership.academyId,
+                  season: activeSeason.name,
+                  status: "ACTIVE",
+                },
+              },
+            },
+          }
+        : {}),
     },
     include: {
       teams: {
