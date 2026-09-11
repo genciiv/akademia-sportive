@@ -190,12 +190,13 @@ model AcademyMembership {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   academyId String
-  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
-
-  role   AcademyRole
-  status MembershipStatus @default(ACTIVE)
+  academy   Academy          @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  role      AcademyRole
+  status    MembershipStatus @default(ACTIVE)
 
   joinedAt DateTime @default(now())
+
+  coachProfile Coach?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -483,6 +484,9 @@ enum AttendanceStatus {
 
 model Coach {
   id String @id @default(cuid())
+
+  membershipId String?            @unique
+  membership   AcademyMembership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
 
   academyId String
   academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
