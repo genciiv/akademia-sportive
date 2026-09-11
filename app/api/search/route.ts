@@ -44,6 +44,14 @@ export async function GET(
   const academyId =
     membership.academyId;
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId,
+        isActive: true,
+      },
+    });
+
   const { searchParams } =
     new URL(request.url);
 
@@ -66,6 +74,20 @@ export async function GET(
     prisma.player.findMany({
       where: {
         academyId,
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
         OR: [
           {
             firstName: {
@@ -112,6 +134,20 @@ export async function GET(
     prisma.coach.findMany({
       where: {
         academyId,
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
         OR: [
           {
             firstName: {
@@ -158,6 +194,12 @@ export async function GET(
     prisma.team.findMany({
       where: {
         academyId,
+        status: "ACTIVE",
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+            }
+          : {}),
         name: {
           contains: query,
           mode: "insensitive",
