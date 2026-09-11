@@ -1,122 +1,207 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
-
 export async function GET() {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.PLAYERS_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
-  const activeSeason = await prisma.academySeason.findFirst({
-    where: {
-      academyId: membership.academyId,
-      isActive: true,
-    },
-  });
+  const {
+    academyId,
+  } = access;
 
-  const players = await prisma.player.findMany({
-    where: {
-      academyId: membership.academyId,
-      ...(activeSeason
-        ? {
-            teams: {
-              some: {
-                isActive: true,
-                team: {
-                  academyId: membership.academyId,
-                  season: activeSeason.name,
-                  status: "ACTIVE",
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId,
+        isActive: true,
+      },
+    });
+
+  const teamScope =
+    await getActiveTeamScope(access);
+
+  const players =
+    await prisma.player.findMany({
+      where: {
+        academyId,
+
+        ...(activeSeason ||
+        teamScope.isScoped
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+
+                  ...(teamScope.isScoped
+                    ? {
+                        teamId: {
+                          in:
+                            teamScope.teamIds,
+                        },
+                      }
+                    : {}),
+
+                  ...(activeSeason
+                    ? {
+                        team: {
+                          academyId,
+                          season:
+                            activeSeason.name,
+                          status:
+                            "ACTIVE",
+                        },
+                      }
+                    : {}),
                 },
               },
-            },
-          }
-        : {}),
-    },
-    orderBy: [
-      { lastName: "asc" },
-      { firstName: "asc" },
-    ],
-  });
+            }
+          : {}),
+      },
 
-  return NextResponse.json({ players });
+      orderBy: [
+        {
+          lastName: "asc",
+        },
+        {
+          firstName: "asc",
+        },
+      ],
+    });
+
+  return NextResponse.json({
+    players,
+  });
 }
 
-export async function POST(request: Request) {
-  const membership = await merrAkademineAktive();
+export async function POST(
+  request: Request
+) {
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.PLAYERS_CREATE
+    );
 
-  if (!membership) {
+  if (!access.ok) {
+    return access.response;
+  }
+
+  const {
+    academyId,
+  } = access;
+
+  /*
+   * Krijimi i sportistit është academy-level.
+   * Lidhja me ekipin do të trajtohet nga roster-i.
+   *
+   * Roleve të kufizuara sipas ekipit nuk u japim
+   * PLAYERS_CREATE në matricën aktuale.
+   */
+
+  const body =
+    await request.json();
+
+  const firstName =
+    String(
+      body.firstName || ""
+    ).trim();
+
+  const lastName =
+    String(
+      body.lastName || ""
+    ).trim();
+
+  if (
+    !firstName ||
+    !lastName
+  ) {
     return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+      {
+        error:
+          "Emri dhe mbiemri janë të detyrueshëm.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  const body = await request.json();
+  const player =
+    await prisma.player.create({
+      data: {
+        academyId,
+        firstName,
+        lastName,
 
-  const firstName = String(body.firstName || "").trim();
-  const lastName = String(body.lastName || "").trim();
+        dateOfBirth:
+          body.dateOfBirth
+            ? new Date(
+                body.dateOfBirth
+              )
+            : null,
 
-  if (!firstName || !lastName) {
-    return NextResponse.json(
-      { error: "Emri dhe mbiemri janë të detyrueshëm." },
-      { status: 400 }
-    );
-  }
+        gender:
+          body.gender ||
+          "NOT_SPECIFIED",
 
-  const player = await prisma.player.create({
-    data: {
-      academyId: membership.academyId,
-      firstName,
-      lastName,
-      dateOfBirth: body.dateOfBirth
-        ? new Date(body.dateOfBirth)
-        : null,
-      gender: body.gender || "NOT_SPECIFIED",
-      email: body.email || null,
-      phone: body.phone || null,
-      guardianName: body.guardianName || null,
-      guardianPhone: body.guardianPhone || null,
-      guardianEmail: body.guardianEmail || null,
-      position: body.position || null,
-      jerseyNumber:
-        body.jerseyNumber !== undefined &&
-        body.jerseyNumber !== null &&
-        body.jerseyNumber !== ""
-          ? Number(body.jerseyNumber)
-          : null,
-      notes: body.notes || null,
-      status: body.status || "ACTIVE",
-    },
-  });
+        email:
+          body.email || null,
+
+        phone:
+          body.phone || null,
+
+        guardianName:
+          body.guardianName || null,
+
+        guardianPhone:
+          body.guardianPhone || null,
+
+        guardianEmail:
+          body.guardianEmail || null,
+
+        position:
+          body.position || null,
+
+        jerseyNumber:
+          body.jerseyNumber !==
+            undefined &&
+          body.jerseyNumber !== null &&
+          body.jerseyNumber !== ""
+            ? Number(
+                body.jerseyNumber
+              )
+            : null,
+
+        notes:
+          body.notes || null,
+
+        status:
+          body.status ||
+          "ACTIVE",
+      },
+    });
 
   return NextResponse.json(
-    { player },
-    { status: 201 }
+    {
+      player,
+    },
+    {
+      status: 201,
+    }
   );
 }
