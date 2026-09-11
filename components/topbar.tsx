@@ -310,7 +310,7 @@ export function Topbar({
       );
 
       setSeasonOpen(false);
-      router.refresh();
+      window.location.reload();
     } finally {
       setChangingSeasonId(null);
     }
