@@ -40,6 +40,14 @@ export async function GET() {
 
   const academyId = membership.academyId;
 
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId,
+        isActive: true,
+      },
+    });
+
   const [notifications, teams] = await Promise.all([
     prisma.notification.findMany({
       where: {
@@ -62,6 +70,11 @@ export async function GET() {
       where: {
         academyId,
         status: "ACTIVE",
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+            }
+          : {}),
       },
       orderBy: {
         name: "asc",
@@ -116,6 +129,15 @@ export async function POST(request: Request) {
   }
 
   const academyId = membership.academyId;
+
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId,
+        isActive: true,
+      },
+    });
+
 
   const body = await request.json();
 
@@ -193,6 +215,12 @@ export async function POST(request: Request) {
       where: {
         id: teamId,
         academyId,
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+              status: "ACTIVE",
+            }
+          : {}),
       },
       select: {
         id: true,
