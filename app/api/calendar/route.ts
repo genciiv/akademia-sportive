@@ -66,6 +66,13 @@ export async function GET(request: Request) {
     );
   }
 
+  const activeSeason = await prisma.academySeason.findFirst({
+    where: {
+      academyId: membership.academyId,
+      isActive: true,
+    },
+  });
+
   const { searchParams } = new URL(request.url);
 
   const fromRaw = searchParams.get("from");
@@ -128,17 +135,40 @@ export async function GET(request: Request) {
     }
   }
 
+  const seasonFrom = activeSeason?.startsAt ?? null;
+  const seasonTo = activeSeason?.endsAt ?? null;
+
+  const effectiveFrom =
+    seasonFrom && from
+      ? new Date(
+          Math.max(
+            seasonFrom.getTime(),
+            from.getTime()
+          )
+        )
+      : seasonFrom || from;
+
+  const effectiveTo =
+    seasonTo && to
+      ? new Date(
+          Math.min(
+            seasonTo.getTime(),
+            to.getTime()
+          )
+        )
+      : seasonTo || to;
+
   const dateFilter =
-    from || to
+    effectiveFrom || effectiveTo
       ? {
-          ...(from
+          ...(effectiveFrom
             ? {
-                gte: from,
+                gte: effectiveFrom,
               }
             : {}),
-          ...(to
+          ...(effectiveTo
             ? {
-                lte: to,
+                lte: effectiveTo,
               }
             : {}),
         }
@@ -154,6 +184,11 @@ export async function GET(request: Request) {
       where: {
         academyId: membership.academyId,
         status: "ACTIVE",
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+            }
+          : {}),
       },
       orderBy: {
         name: "asc",

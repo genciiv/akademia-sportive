@@ -66,6 +66,13 @@ export async function GET(request: Request) {
     );
   }
 
+  const activeSeason = await prisma.academySeason.findFirst({
+    where: {
+      academyId: membership.academyId,
+      isActive: true,
+    },
+  });
+
   const { searchParams } = new URL(request.url);
 
   const teamId = String(
@@ -116,11 +123,40 @@ export async function GET(request: Request) {
     );
   }
 
+  const seasonFrom = activeSeason?.startsAt ?? null;
+  const seasonTo = activeSeason?.endsAt ?? null;
+
+  const effectiveFrom =
+    seasonFrom && from
+      ? new Date(
+          Math.max(
+            seasonFrom.getTime(),
+            from.getTime()
+          )
+        )
+      : seasonFrom || from;
+
+  const effectiveTo =
+    seasonTo && to
+      ? new Date(
+          Math.min(
+            seasonTo.getTime(),
+            to.getTime()
+          )
+        )
+      : seasonTo || to;
+
   if (teamId) {
     const team = await prisma.team.findFirst({
       where: {
         id: teamId,
         academyId: membership.academyId,
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+              status: "ACTIVE",
+            }
+          : {}),
       },
       select: {
         id: true,
@@ -144,6 +180,20 @@ export async function GET(request: Request) {
       where: {
         id: playerId,
         academyId: membership.academyId,
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId: membership.academyId,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
       },
       select: {
         id: true,
@@ -170,18 +220,18 @@ export async function GET(request: Request) {
         }
       : {}),
 
-    ...(from || to
+    ...(effectiveFrom || effectiveTo
       ? {
           startsAt: {
-            ...(from
+            ...(effectiveFrom
               ? {
-                  gte: from,
+                  gte: effectiveFrom,
                 }
               : {}),
 
-            ...(to
+            ...(effectiveTo
               ? {
-                  lte: to,
+                  lte: effectiveTo,
                 }
               : {}),
           },
@@ -200,6 +250,11 @@ export async function GET(request: Request) {
       where: {
         academyId: membership.academyId,
         status: "ACTIVE",
+        ...(activeSeason
+          ? {
+              season: activeSeason.name,
+            }
+          : {}),
       },
       select: {
         id: true,
@@ -214,6 +269,21 @@ export async function GET(request: Request) {
     prisma.player.findMany({
       where: {
         academyId: membership.academyId,
+
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId: membership.academyId,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
 
         ...(playerId
           ? {
