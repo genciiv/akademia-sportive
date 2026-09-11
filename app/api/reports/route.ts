@@ -86,12 +86,27 @@ export async function GET() {
     prisma.player.count({
       where: {
         academyId,
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
       },
     }),
 
     prisma.team.count({
       where: {
         academyId,
+        status: "ACTIVE",
         ...(activeSeason
           ? {
               season: activeSeason.name,
@@ -103,6 +118,20 @@ export async function GET() {
     prisma.coach.count({
       where: {
         academyId,
+        ...(activeSeason
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  team: {
+                    academyId,
+                    season: activeSeason.name,
+                    status: "ACTIVE",
+                  },
+                },
+              },
+            }
+          : {}),
       },
     }),
 
