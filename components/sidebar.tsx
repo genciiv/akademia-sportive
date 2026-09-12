@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Target,
   UsersRound,
+  UserCog,
   WalletCards,
   X
 } from "lucide-react";
@@ -58,6 +59,7 @@ const groups: NavGroup[] = [
   {
     title: "ADMINISTRIMI",
     items: [
+      { label: "Stafi", href: "/stafi", icon: UserCog },
       { label: "Pagesat", href: "/pagesat", icon: ReceiptText },
       { label: "Financa", href: "/financa", icon: CircleDollarSign },
       { label: "Shpenzimet", href: "/shpenzimet", icon: WalletCards },

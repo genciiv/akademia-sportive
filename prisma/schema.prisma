@@ -59,8 +59,9 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  memberships    AcademyMembership[]
-  ownedAcademies Academy[]           @relation("AcademyOwner")
+  memberships            AcademyMembership[]
+  sentAcademyInvitations AcademyInvitation[] @relation("AcademyInvitationSender")
+  ownedAcademies         Academy[]           @relation("AcademyOwner")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,6 +157,7 @@ model Academy {
   playerGuardians    PlayerGuardian[]
   notifications      Notification[]
   academySeasons     AcademySeason[]
+  invitations        AcademyInvitation[]
 
   @@index([ownerId])
   @@index([status])
@@ -205,6 +207,33 @@ model AcademyMembership {
   @@index([academyId])
   @@index([userId])
   @@index([academyId, role])
+}
+
+model AcademyInvitation {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  email String
+  role  AcademyRole
+
+  token String @unique
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  invitedByUserId String?
+  invitedByUser   User?   @relation("AcademyInvitationSender", fields: [invitedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId, email])
+  @@index([academyId, createdAt])
+  @@index([invitedByUserId])
+  @@index([expiresAt])
 }
 
 model AcademyBranch {
