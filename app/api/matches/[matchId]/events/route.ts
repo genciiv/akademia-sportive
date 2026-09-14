@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessMatch,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const EVENT_TYPES = [
@@ -14,26 +21,6 @@ const EVENT_TYPES = [
 
 type MatchEventTypeValue =
   (typeof EVENT_TYPES)[number];
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 async function merrNdeshjen(
   matchId: string,
@@ -86,25 +73,41 @@ export async function GET(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const match = await merrNdeshjen(
     params.matchId,
-    membership.academyId
+    academyId
   );
 
   if (!match) {
     return NextResponse.json(
       { error: "Ndeshja nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      match.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
     );
   }
 
@@ -214,25 +217,41 @@ export async function POST(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCH_EVENTS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const match = await merrNdeshjen(
     params.matchId,
-    membership.academyId
+    academyId
   );
 
   if (!match) {
     return NextResponse.json(
       { error: "Ndeshja nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      match.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
     );
   }
 
@@ -312,7 +331,7 @@ export async function POST(
         playerId,
         player: {
           academyId:
-            membership.academyId,
+            academyId,
         },
       },
       select: {
@@ -365,25 +384,41 @@ export async function PATCH(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCH_EVENTS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const match = await merrNdeshjen(
     params.matchId,
-    membership.academyId
+    academyId
   );
 
   if (!match) {
     return NextResponse.json(
       { error: "Ndeshja nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      match.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
     );
   }
 
@@ -497,7 +532,7 @@ export async function PATCH(
         playerId,
         player: {
           academyId:
-            membership.academyId,
+            academyId,
         },
       },
       select: {
@@ -555,25 +590,41 @@ export async function DELETE(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCH_EVENTS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const match = await merrNdeshjen(
     params.matchId,
-    membership.academyId
+    academyId
   );
 
   if (!match) {
     return NextResponse.json(
       { error: "Ndeshja nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      match.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
     );
   }
 

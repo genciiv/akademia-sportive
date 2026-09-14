@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTeam,
+  canAccessTrainingSession,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -9,43 +17,25 @@ const STATUSET = [
   "CANCELLED",
 ] as const;
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
-
 export async function PATCH(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_UPDATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const existing = await prisma.trainingSession.findFirst({
     where: {
       id: params.sessionId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -53,6 +43,23 @@ export async function PATCH(
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      existing.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
@@ -69,14 +76,14 @@ export async function PATCH(
 
   if (!title || !teamId || !body.startsAt) {
     return NextResponse.json(
-      { error: "Titulli, ekipi dhe fillimi janë të detyrueshme." },
+      { error: "Titulli, ekipi dhe fillimi janÃ« tÃ« detyrueshme." },
       { status: 400 }
     );
   }
 
   if (!STATUSET.includes(status as (typeof STATUSET)[number])) {
     return NextResponse.json(
-      { error: "Statusi i seancës nuk është i vlefshëm." },
+      { error: "Statusi i seancÃ«s nuk Ã«shtÃ« i vlefshÃ«m." },
       { status: 400 }
     );
   }
@@ -85,7 +92,7 @@ export async function PATCH(
 
   if (Number.isNaN(startsAt.getTime())) {
     return NextResponse.json(
-      { error: "Data e fillimit nuk është e vlefshme." },
+      { error: "Data e fillimit nuk Ã«shtÃ« e vlefshme." },
       { status: 400 }
     );
   }
@@ -97,7 +104,7 @@ export async function PATCH(
 
     if (Number.isNaN(endsAt.getTime()) || endsAt <= startsAt) {
       return NextResponse.json(
-        { error: "Ora e përfundimit nuk është e vlefshme." },
+        { error: "Ora e pÃ«rfundimit nuk Ã«shtÃ« e vlefshme." },
         { status: 400 }
       );
     }
@@ -106,7 +113,7 @@ export async function PATCH(
   const team = await prisma.team.findFirst({
     where: {
       id: teamId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -116,12 +123,29 @@ export async function PATCH(
       { status: 404 }
     );
   }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
 
   if (coachId) {
     const coach = await prisma.coach.findFirst({
       where: {
         id: coachId,
-        academyId: membership.academyId,
+        academyId: academyId,
       },
     });
 
@@ -137,7 +161,7 @@ export async function PATCH(
     const branch = await prisma.academyBranch.findFirst({
       where: {
         id: branchId,
-        academyId: membership.academyId,
+        academyId: academyId,
         isActive: true,
       },
     });
@@ -177,19 +201,21 @@ export async function DELETE(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_DELETE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const existing = await prisma.trainingSession.findFirst({
     where: {
       id: params.sessionId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -197,6 +223,23 @@ export async function DELETE(
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      existing.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 

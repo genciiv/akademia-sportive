@@ -1,27 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTrainingSession,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 async function merrSeancen(
   sessionId: string,
@@ -43,24 +30,41 @@ export async function GET(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const trainingSession = await merrSeancen(
     params.sessionId,
-    membership.academyId
+    academyId
   );
 
   if (!trainingSession) {
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      { status: 403 }
     );
   }
 
@@ -96,7 +100,7 @@ export async function GET(
 
   const availableDrills = await prisma.drill.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
       isActive: true,
       id: {
         notIn: usedDrillIds,
@@ -141,24 +145,41 @@ export async function POST(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_UPDATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const trainingSession = await merrSeancen(
     params.sessionId,
-    membership.academyId
+    academyId
   );
 
   if (!trainingSession) {
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      { status: 403 }
     );
   }
 
@@ -198,7 +219,7 @@ export async function POST(
   const drill = await prisma.drill.findFirst({
     where: {
       id: drillId,
-      academyId: membership.academyId,
+      academyId: academyId,
       isActive: true,
     },
   });
@@ -273,24 +294,41 @@ export async function PATCH(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_UPDATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const trainingSession = await merrSeancen(
     params.sessionId,
-    membership.academyId
+    academyId
   );
 
   if (!trainingSession) {
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      { status: 403 }
     );
   }
 
@@ -399,24 +437,41 @@ export async function DELETE(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_UPDATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const trainingSession = await merrSeancen(
     params.sessionId,
-    membership.academyId
+    academyId
   );
 
   if (!trainingSession) {
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      { status: 403 }
     );
   }
 

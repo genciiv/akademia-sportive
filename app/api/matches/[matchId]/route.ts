@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessMatch,
+  canAccessTeam,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const MATCH_TYPES = [
@@ -17,26 +25,6 @@ const MATCH_STATUSES = [
   "CANCELLED",
   "POSTPONED",
 ] as const;
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 function rezultatValid(value: unknown) {
   if (
@@ -59,19 +47,21 @@ export async function GET(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const match = await prisma.match.findFirst({
     where: {
       id: params.matchId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
     include: {
       team: {
@@ -92,6 +82,21 @@ export async function GET(
       { status: 404 }
     );
   }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      params.matchId
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
+    );
+  }
 
   return NextResponse.json({
     match,
@@ -102,19 +107,21 @@ export async function PATCH(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_UPDATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const existing = await prisma.match.findFirst({
     where: {
       id: params.matchId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -122,6 +129,21 @@ export async function PATCH(
     return NextResponse.json(
       { error: "Ndeshja nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      existing.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
     );
   }
 
@@ -142,7 +164,7 @@ export async function PATCH(
   const team = await prisma.team.findFirst({
     where: {
       id: teamId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
     select: {
       id: true,
@@ -156,6 +178,21 @@ export async function PATCH(
           "Ekipi nuk u gjet në këtë akademi.",
       },
       { status: 404 }
+    );
+  }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      { status: 403 }
     );
   }
 
@@ -346,19 +383,21 @@ export async function DELETE(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_DELETE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const existing = await prisma.match.findFirst({
     where: {
       id: params.matchId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
     select: {
       id: true,
@@ -369,6 +408,21 @@ export async function DELETE(
     return NextResponse.json(
       { error: "Ndeshja nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      existing.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
     );
   }
 
