@@ -10,11 +10,26 @@ import {
 } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
-const STATUS_LABELS: Record<string, string> = {
+const STAFF_STATUS_LABELS: Record<
+  string,
+  string
+> = {
   ACTIVE: "Aktiv",
-  INVITED: "Ftesë në pritje",
-  SUSPENDED: "Pezulluar",
-  REMOVED: "Hequr",
+  INACTIVE: "Joaktiv",
+  LEFT: "Larguar",
+};
+
+const ACCESS_STATUS_LABELS: Record<
+  string,
+  string
+> = {
+  ACTIVE: "Akses aktiv",
+  INVITED:
+    "Ftesë në pritje",
+  SUSPENDED:
+    "Akses i pezulluar",
+  REMOVED: "Pa akses",
+  NO_ACCESS: "Pa llogari",
 };
 
 export async function GET() {
@@ -27,28 +42,44 @@ export async function GET() {
     return access.response;
   }
 
-  const memberships =
-    await prisma.academyMembership.findMany({
+  const records =
+    await prisma.academyStaff.findMany({
       where: {
-        academyId: access.academyId,
+        academyId:
+          access.academyId,
+
         status: {
-          not: "REMOVED",
+          not: "LEFT",
         },
       },
+
       select: {
         id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
         role: true,
         status: true,
-        joinedAt: true,
+        createdAt: true,
 
-        user: {
+        membership: {
           select: {
             id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            image: true,
+            role: true,
+            status: true,
+            joinedAt: true,
+
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                image: true,
+              },
+            },
           },
         },
 
@@ -61,60 +92,128 @@ export async function GET() {
           },
         },
       },
-      orderBy: {
-        joinedAt: "asc",
-      },
+
+      orderBy: [
+        {
+          lastName: "asc",
+        },
+        {
+          firstName: "asc",
+        },
+      ],
     });
 
-  const staff = memberships.map(
-    (membership) => {
-      const role =
-        String(
-          membership.role
-        ) as AcademyRoleName;
+  const staff =
+    records.map(
+      (record) => {
+        const role =
+          String(
+            record.role
+          ) as AcademyRoleName;
 
-      const status =
-        String(
-          membership.status
-        );
+        const membership =
+          record.membership;
 
-      return {
-        id: membership.id,
+        const usableMembership =
+          membership &&
+          membership.status !==
+            "REMOVED"
+            ? membership
+            : null;
 
-        role,
-        roleLabel:
-          ROLE_LABELS[role] ??
-          "Anëtar",
+        const accessStatus =
+          usableMembership
+            ? String(
+                usableMembership.status
+              )
+            : "NO_ACCESS";
 
-        status,
-        statusLabel:
-          STATUS_LABELS[status] ??
-          status,
+        const fallbackUser = {
+          id: record.id,
+          name: [
+            record.firstName,
+            record.lastName,
+          ]
+            .filter(Boolean)
+            .join(" "),
+          firstName:
+            record.firstName,
+          lastName:
+            record.lastName,
+          email:
+            record.email || "",
+          image: null,
+        };
 
-        joinedAt:
-          membership.joinedAt,
+        return {
+          id: record.id,
 
-        isCurrentUser:
-          membership.id ===
-          access.membership.id,
+          membershipId:
+            usableMembership?.id ??
+            null,
 
-        isOwner:
-          role === "OWNER",
+          role,
+          roleLabel:
+            ROLE_LABELS[role] ??
+            "Anëtar",
 
-        user: membership.user,
+          status:
+            record.status ===
+            "ACTIVE"
+              ? "ACTIVE"
+              : "SUSPENDED",
 
-        coachProfile:
-          membership.coachProfile,
-      };
-    }
-  );
+          statusLabel:
+            STAFF_STATUS_LABELS[
+              String(
+                record.status
+              )
+            ] ??
+            String(
+              record.status
+            ),
+
+          accessStatus,
+
+          accessStatusLabel:
+            ACCESS_STATUS_LABELS[
+              accessStatus
+            ] ??
+            accessStatus,
+
+          joinedAt:
+            usableMembership
+              ?.joinedAt ??
+            record.createdAt,
+
+          isCurrentUser:
+            usableMembership?.id ===
+            access.membership.id,
+
+          isOwner:
+            role === "OWNER",
+
+          user:
+            usableMembership?.user ??
+            fallbackUser,
+
+          coachProfile:
+            record.coachProfile,
+        };
+      }
+    );
 
   return NextResponse.json({
     academy: {
-      id: access.academy.id,
-      name: access.academy.name,
+      id:
+        access.academy.id,
+      name:
+        access.academy.name,
     },
-    permissions: access.permissions,
+
+    permissions:
+      access.permissions,
+
     staff,
   });
 }

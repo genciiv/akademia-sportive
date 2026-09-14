@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -10,150 +15,381 @@ const STATUSET = [
   "LEFT",
 ] as const;
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
+type CoachStatusValue =
+  (typeof STATUSET)[number];
 
-  if (!session?.user?.id) {
-    return null;
+const COACHING_ROLES = [
+  "HEAD_COACH",
+  "COACH",
+  "ASSISTANT_COACH",
+] as const;
+
+function staffStatusFromCoach(
+  status: CoachStatusValue
+) {
+  if (status === "ACTIVE") {
+    return "ACTIVE" as const;
   }
 
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
+  if (status === "LEFT") {
+    return "LEFT" as const;
+  }
+
+  return "INACTIVE" as const;
 }
 
 export async function GET() {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.COACHES_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
-  const activeSeason = await prisma.academySeason.findFirst({
-    where: {
-      academyId: membership.academyId,
-      isActive: true,
-    },
-  });
+  const activeSeason =
+    await prisma.academySeason.findFirst({
+      where: {
+        academyId:
+          access.academyId,
+        isActive: true,
+      },
+    });
 
-  const coaches = await prisma.coach.findMany({
-    where: {
-      academyId: membership.academyId,
-      ...(activeSeason
-        ? {
-            teams: {
-              some: {
-                isActive: true,
-                team: {
-                  academyId: membership.academyId,
-                  season: activeSeason.name,
-                  status: "ACTIVE",
-                },
+  const coaches =
+    await prisma.coach.findMany({
+      where: {
+        academyId:
+          access.academyId,
+      },
+
+      include: {
+        teams: {
+          where: {
+            isActive: true,
+
+            ...(activeSeason
+              ? {
+                  team: {
+                    academyId:
+                      access.academyId,
+                    season:
+                      activeSeason.name,
+                    status:
+                      "ACTIVE",
+                  },
+                }
+              : {}),
+          },
+
+          include: {
+            team: {
+              select: {
+                id: true,
+                name: true,
               },
-            },
-          }
-        : {}),
-    },
-    include: {
-      teams: {
-        where: {
-          isActive: true,
-        },
-        include: {
-          team: {
-            select: {
-              id: true,
-              name: true,
             },
           },
         },
+
+        staff: {
+          select: {
+            id: true,
+            role: true,
+            status: true,
+            membershipId: true,
+          },
+        },
       },
-    },
-    orderBy: [
-      { lastName: "asc" },
-      { firstName: "asc" },
-    ],
-  });
+
+      orderBy: [
+        {
+          lastName: "asc",
+        },
+        {
+          firstName: "asc",
+        },
+      ],
+    });
 
   return NextResponse.json({
     coaches,
   });
 }
 
-export async function POST(request: Request) {
-  const membership = await merrAkademineAktive();
+export async function POST(
+  request: Request
+) {
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.COACHES_CREATE
+    );
 
-  if (!membership) {
+  if (!access.ok) {
+    return access.response;
+  }
+
+  let body: Record<
+    string,
+    unknown
+  >;
+
+  try {
+    body =
+      await request.json();
+  } catch {
     return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+      {
+        error:
+          "Të dhënat e dërguara nuk janë të vlefshme.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  const body = await request.json();
+  const firstName =
+    String(
+      body.firstName || ""
+    ).trim();
 
-  const firstName = String(body.firstName || "").trim();
-  const lastName = String(body.lastName || "").trim();
-  const status = String(body.status || "ACTIVE").trim();
+  const lastName =
+    String(
+      body.lastName || ""
+    ).trim();
 
-  if (!firstName || !lastName) {
+  const email =
+    String(
+      body.email || ""
+    )
+      .trim()
+      .toLowerCase() ||
+    null;
+
+  const phone =
+    String(
+      body.phone || ""
+    ).trim() ||
+    null;
+
+  const status =
+    String(
+      body.status || "ACTIVE"
+    ).trim() as CoachStatusValue;
+
+  if (
+    !firstName ||
+    !lastName
+  ) {
     return NextResponse.json(
-      { error: "Emri dhe mbiemri janë të detyrueshëm." },
-      { status: 400 }
+      {
+        error:
+          "Emri dhe mbiemri janë të detyrueshëm.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  if (!STATUSET.includes(status as (typeof STATUSET)[number])) {
+  if (
+    !STATUSET.includes(
+      status
+    )
+  ) {
     return NextResponse.json(
-      { error: "Statusi i zgjedhur nuk është i vlefshëm." },
-      { status: 400 }
+      {
+        error:
+          "Statusi i zgjedhur nuk është i vlefshëm.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  let dateOfBirth: Date | null = null;
+  let dateOfBirth: Date | null =
+    null;
 
   if (body.dateOfBirth) {
-    dateOfBirth = new Date(body.dateOfBirth);
+    dateOfBirth =
+      new Date(
+        String(
+          body.dateOfBirth
+        )
+      );
 
-    if (Number.isNaN(dateOfBirth.getTime())) {
+    if (
+      Number.isNaN(
+        dateOfBirth.getTime()
+      )
+    ) {
       return NextResponse.json(
-        { error: "Datëlindja nuk është e vlefshme." },
-        { status: 400 }
+        {
+          error:
+            "Datëlindja nuk është e vlefshme.",
+        },
+        {
+          status: 400,
+        }
       );
     }
   }
 
-  const coach = await prisma.coach.create({
-    data: {
-      academyId: membership.academyId,
-      firstName,
-      lastName,
-      email: String(body.email || "").trim() || null,
-      phone: String(body.phone || "").trim() || null,
-      dateOfBirth,
-      specialization:
-        String(body.specialization || "").trim() || null,
-      license:
-        String(body.license || "").trim() || null,
-      notes:
-        String(body.notes || "").trim() || null,
-      status: status as (typeof STATUSET)[number],
-    },
-  });
+  const existingStaff =
+    email
+      ? await prisma.academyStaff.findFirst({
+          where: {
+            academyId:
+              access.academyId,
+
+            email: {
+              equals: email,
+              mode: "insensitive",
+            },
+          },
+
+          include: {
+            coachProfile: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        })
+      : null;
+
+  if (
+    existingStaff?.coachProfile
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Ekziston tashmë një trajner me këtë adresë elektronike.",
+      },
+      {
+        status: 409,
+      }
+    );
+  }
+
+  if (
+    existingStaff &&
+    !COACHING_ROLES.includes(
+      existingStaff.role as
+        (typeof COACHING_ROLES)[number]
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Kjo adresë elektronike i përket një anëtari ekzistues të stafit me një rol tjetër.",
+      },
+      {
+        status: 409,
+      }
+    );
+  }
+
+  const result =
+    await prisma.$transaction(
+      async (tx) => {
+        const staff =
+          existingStaff
+            ? await tx.academyStaff.update({
+                where: {
+                  id:
+                    existingStaff.id,
+                },
+
+                data: {
+                  firstName,
+                  lastName,
+                  email,
+                  phone,
+
+                  status:
+                    staffStatusFromCoach(
+                      status
+                    ),
+                },
+              })
+            : await tx.academyStaff.create({
+                data: {
+                  academyId:
+                    access.academyId,
+
+                  firstName,
+                  lastName,
+                  email,
+                  phone,
+
+                  role: "COACH",
+
+                  status:
+                    staffStatusFromCoach(
+                      status
+                    ),
+                },
+              });
+
+        const coach =
+          await tx.coach.create({
+            data: {
+              academyId:
+                access.academyId,
+
+              staffId:
+                staff.id,
+
+              firstName,
+              lastName,
+              email,
+              phone,
+
+              dateOfBirth,
+
+              specialization:
+                String(
+                  body.specialization ||
+                    ""
+                ).trim() ||
+                null,
+
+              license:
+                String(
+                  body.license ||
+                    ""
+                ).trim() ||
+                null,
+
+              notes:
+                String(
+                  body.notes || ""
+                ).trim() ||
+                null,
+
+              status,
+            },
+
+            include: {
+              staff: true,
+            },
+          });
+
+        return {
+          staff,
+          coach,
+        };
+      }
+    );
 
   return NextResponse.json(
-    { coach },
-    { status: 201 }
+    result,
+    {
+      status: 201,
+    }
   );
 }
