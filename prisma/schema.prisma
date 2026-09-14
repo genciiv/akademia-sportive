@@ -44,6 +44,12 @@ enum MembershipStatus {
   REMOVED
 }
 
+enum AcademyStaffStatus {
+  ACTIVE
+  INACTIVE
+  LEFT
+}
+
 model User {
   id            String  @id @default(cuid())
   name          String
@@ -158,6 +164,7 @@ model Academy {
   notifications      Notification[]
   academySeasons     AcademySeason[]
   invitations        AcademyInvitation[]
+  staff              AcademyStaff[]
 
   @@index([ownerId])
   @@index([status])
@@ -199,6 +206,7 @@ model AcademyMembership {
   joinedAt DateTime @default(now())
 
   coachProfile Coach?
+  staffProfile AcademyStaff?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -209,11 +217,45 @@ model AcademyMembership {
   @@index([academyId, role])
 }
 
+model AcademyStaff {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+
+  email String?
+  phone String?
+
+  role   AcademyRole
+  status AcademyStaffStatus @default(ACTIVE)
+
+  membershipId String?            @unique
+  membership   AcademyMembership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+
+  coachProfile Coach?
+
+  invitations AcademyInvitation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([academyId, email])
+  @@index([academyId])
+  @@index([academyId, role])
+  @@index([academyId, status])
+}
+
 model AcademyInvitation {
   id String @id @default(cuid())
 
   academyId String
   academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  staffId String?
+  staff   AcademyStaff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
 
   email String
   role  AcademyRole
@@ -232,6 +274,7 @@ model AcademyInvitation {
 
   @@index([academyId, email])
   @@index([academyId, createdAt])
+  @@index([staffId])
   @@index([invitedByUserId])
   @@index([expiresAt])
 }
@@ -513,6 +556,9 @@ enum AttendanceStatus {
 
 model Coach {
   id String @id @default(cuid())
+
+  staffId String?       @unique
+  staff   AcademyStaff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
 
   membershipId String?            @unique
   membership   AcademyMembership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)

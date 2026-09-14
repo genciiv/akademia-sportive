@@ -50,6 +50,17 @@ type StaffInvitation = {
 type StaffMember = {
   id: string;
 
+  membershipId: string | null;
+
+  accessStatus:
+    | "ACTIVE"
+    | "INVITED"
+    | "SUSPENDED"
+    | "REMOVED"
+    | "NO_ACCESS";
+
+  accessStatusLabel: string;
+
   role: StaffRole;
   roleLabel: string;
 
@@ -166,17 +177,9 @@ export default function StafiClient() {
   const [invitations, setInvitations] =
     useState<StaffInvitation[]>([]);
 
-  const [showInviteForm, setShowInviteForm] =
-    useState(false);
 
-  const [inviteEmail, setInviteEmail] =
-    useState("");
 
-  const [inviteRole, setInviteRole] =
-    useState<StaffRole>("COACH");
 
-  const [sendingInvite, setSendingInvite] =
-    useState(false);
 
   const [loading, setLoading] =
     useState(true);
@@ -186,6 +189,14 @@ export default function StafiClient() {
 
   const [error, setError] =
     useState("");
+
+  const [message, setMessage] =
+    useState("");
+
+  const [
+    invitingStaffId,
+    setInvitingStaffId,
+  ] = useState<string | null>(null);
 
   const [editing, setEditing] =
     useState<StaffMember | null>(null);
@@ -286,58 +297,6 @@ export default function StafiClient() {
     loadInvitations();
   }, []);
 
-  async function createInvitation(
-    event: React.FormEvent
-  ) {
-    event.preventDefault();
-
-    setSendingInvite(true);
-    setError("");
-
-    try {
-      const response = await fetch(
-        "/api/staff/invitations",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            email: inviteEmail,
-            role: inviteRole,
-          }),
-        }
-      );
-
-      const data = (await response.json()) as {
-        invitation?: StaffInvitation;
-        error?: string;
-      };
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "Ftesa nuk u krijua."
-        );
-      }
-
-      setInviteEmail("");
-      setInviteRole("COACH");
-      setShowInviteForm(false);
-
-      await loadInvitations();
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Ndodhi një gabim gjatë krijimit të ftesës."
-      );
-    } finally {
-      setSendingInvite(false);
-    }
-  }
-
   async function copyInvitation(
     invitePath: string
   ) {
@@ -349,9 +308,102 @@ export default function StafiClient() {
     );
   }
 
+  async function inviteStaff(
+    member: StaffMember
+  ) {
+    if (!member.user.email) {
+      setError(
+        "Ky anëtar i stafit nuk ka adresë elektronike."
+      );
+      return;
+    }
+
+    setInvitingStaffId(
+      member.id
+    );
+
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/staff/profiles/${member.id}/invite`,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = (await response.json()) as {
+        error?: string;
+        message?: string;
+
+        accessLinked?: boolean;
+
+        invitation?: {
+          invitePath?: string;
+        };
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Ftesa nuk mund të krijohej."
+        );
+      }
+
+      if (data.accessLinked) {
+        setMessage(
+          "Llogaria ekzistuese u lidh me sukses me këtë anëtar të stafit."
+        );
+      } else if (
+        data.invitation?.invitePath
+      ) {
+        let copied = false;
+
+        try {
+          await navigator.clipboard.writeText(
+            `${window.location.origin}${data.invitation.invitePath}`
+          );
+
+          copied = true;
+        } catch {
+          copied = false;
+        }
+
+        setMessage(
+          copied
+            ? "Ftesa u krijua dhe lidhja u kopjua."
+            : "Ftesa u krijua. Lidhjen mund ta kopjosh te seksioni i ftesave."
+        );
+      } else {
+        setMessage(
+          data.message ||
+            "Aksesi u përditësua me sukses."
+        );
+      }
+
+      await Promise.all([
+        loadStaff(),
+        loadInvitations(),
+      ]);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ndodhi një gabim gjatë krijimit të ftesës."
+      );
+    } finally {
+      setInvitingStaffId(null);
+    }
+  }
+
   function canManage(
     member: StaffMember
   ) {
+    if (!member.membershipId) {
+      return false;
+    }
+
     if (
       member.isOwner ||
       member.isCurrentUser
@@ -387,7 +439,10 @@ export default function StafiClient() {
   ) {
     event.preventDefault();
 
-    if (!editing) {
+    if (
+      !editing ||
+      !editing.membershipId
+    ) {
       return;
     }
 
@@ -409,7 +464,7 @@ export default function StafiClient() {
       }
 
       const response = await fetch(
-        `/api/staff/${editing.id}`,
+        `/api/staff/${editing.membershipId}`,
         {
           method: "PATCH",
           headers: {
@@ -468,7 +523,7 @@ export default function StafiClient() {
 
     try {
       const response = await fetch(
-        `/api/staff/${member.id}`,
+        `/api/staff/${member.membershipId}`,
         {
           method: "DELETE",
         }
@@ -529,24 +584,19 @@ export default function StafiClient() {
               </div>
             ) : null}
 
-            {canInvite ? (
-              <button
-                type="button"
-                onClick={() =>
-                  setShowInviteForm(true)
-                }
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-              >
-                <MailPlus size={17} />
-                Fto anëtar stafi
-              </button>
-            ) : null}
+
           </div>
         </div>
 
         {error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
+          </div>
+        ) : null}
+
+        {message ? (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            {message}
           </div>
         ) : null}
 
@@ -588,7 +638,7 @@ export default function StafiClient() {
                     </th>
 
                     <th className="px-5 py-3">
-                      Profili i trajnerit
+                      Aksesi
                     </th>
 
                     <th className="px-5 py-3">
@@ -640,31 +690,25 @@ export default function StafiClient() {
                           </span>
                         </td>
 
-                        <td className="px-5 py-4 text-slate-600">
-                          {member.coachProfile ? (
-                            <div>
-                              <div className="font-medium text-slate-800">
-                                {
-                                  member
-                                    .coachProfile
-                                    .firstName
-                                }{" "}
-                                {
-                                  member
-                                    .coachProfile
-                                    .lastName
-                                }
-                              </div>
-
-                              <div className="mt-1 text-xs text-slate-500">
-                                Profil i lidhur
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400">
-                              Pa profil të lidhur
-                            </span>
-                          )}
+                        <td className="px-5 py-4">
+                          <span
+                            className={
+                              member.accessStatus ===
+                              "ACTIVE"
+                                ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+                                : member.accessStatus ===
+                                  "NO_ACCESS"
+                                ? "inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600"
+                                : member.accessStatus ===
+                                  "INVITED"
+                                ? "inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
+                                : "inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700"
+                            }
+                          >
+                            {
+                              member.accessStatusLabel
+                            }
+                          </span>
                         </td>
 
                         <td className="px-5 py-4 text-slate-600">
@@ -677,9 +721,52 @@ export default function StafiClient() {
 
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
-                            {canManage(
-                              member
-                            ) ? (
+                            {member.isOwner ? (
+                              <span className="text-xs font-medium text-slate-400">
+                                I mbrojtur
+                              </span>
+                            ) : !member.membershipId ? (
+                              canInvite ? (
+                                member.user.email ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      inviteStaff(
+                                        member
+                                      )
+                                    }
+                                    disabled={
+                                      invitingStaffId ===
+                                      member.id
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    <MailPlus
+                                      size={14}
+                                    />
+
+                                    {invitingStaffId ===
+                                    member.id
+                                      ? "Duke krijuar..."
+                                      : "Fto në platformë"}
+                                  </button>
+                                ) : (
+                                  <span className="text-xs font-medium text-amber-600">
+                                    Pa adresë elektronike
+                                  </span>
+                                )
+                              ) : (
+                                <span className="text-xs font-medium text-slate-400">
+                                  Pa akses
+                                </span>
+                              )
+                            ) : member.isCurrentUser ? (
+                              <span className="text-xs font-medium text-slate-400">
+                                Llogaria jote
+                              </span>
+                            ) : canManage(
+                                member
+                              ) ? (
                               <>
                                 <button
                                   type="button"
@@ -711,13 +798,7 @@ export default function StafiClient() {
                                   Hiq
                                 </button>
                               </>
-                            ) : (
-                              <span className="text-xs font-medium text-slate-400">
-                                {member.isOwner
-                                  ? "I mbrojtur"
-                                  : "Llogaria jote"}
-                              </span>
-                            )}
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -779,121 +860,6 @@ export default function StafiClient() {
                   </div>
                 )
               )}
-            </div>
-          </div>
-        ) : null}
-
-        {showInviteForm ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-950">
-                    Fto anëtar stafi
-                  </h2>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    Zgjidh adresën elektronike dhe rolin e përdoruesit.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowInviteForm(false)
-                  }
-                  className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-                  aria-label="Mbyll"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <form
-                onSubmit={
-                  createInvitation
-                }
-                className="mt-6 space-y-4"
-              >
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                    Adresa elektronike
-                  </label>
-
-                  <input
-                    type="email"
-                    required
-                    value={inviteEmail}
-                    onChange={(event) =>
-                      setInviteEmail(
-                        event.target.value
-                      )
-                    }
-                    placeholder="emri@shembull.al"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                    Roli
-                  </label>
-
-                  <select
-                    value={inviteRole}
-                    onChange={(event) =>
-                      setInviteRole(
-                        event.target
-                          .value as StaffRole
-                      )
-                    }
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-400"
-                  >
-                    {roleOptions.map(
-                      (option) => (
-                        <option
-                          key={
-                            option.value
-                          }
-                          value={
-                            option.value
-                          }
-                        >
-                          {
-                            option.label
-                          }
-                        </option>
-                      )
-                    )}
-                  </select>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowInviteForm(
-                        false
-                      )
-                    }
-                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    Anulo
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={
-                      sendingInvite
-                    }
-                    className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {sendingInvite
-                      ? "Duke krijuar..."
-                      : "Krijo ftesën"}
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         ) : null}

@@ -152,6 +152,7 @@ export async function POST(
       select: {
         id: true,
         academyId: true,
+        staffId: true,
         email: true,
         role: true,
         expiresAt: true,
@@ -295,6 +296,60 @@ export async function POST(
                 status: true,
               },
             });
+        }
+
+        if (invitation.staffId) {
+          const targetStaff =
+            await tx.academyStaff.findFirst({
+              where: {
+                id:
+                  invitation.staffId,
+                academyId:
+                  invitation.academyId,
+              },
+              select: {
+                id: true,
+                membershipId: true,
+              },
+            });
+
+          if (!targetStaff) {
+            throw new Error(
+              "Anëtari i stafit i lidhur me ftesën nuk u gjet."
+            );
+          }
+
+          if (
+            targetStaff.membershipId &&
+            targetStaff.membershipId !==
+              membership.id
+          ) {
+            throw new Error(
+              "Ky anëtar i stafit është lidhur tashmë me një llogari tjetër."
+            );
+          }
+
+          await tx.academyStaff.update({
+            where: {
+              id:
+                targetStaff.id,
+            },
+            data: {
+              membershipId:
+                membership.id,
+            },
+          });
+
+          await tx.coach.updateMany({
+            where: {
+              staffId:
+                targetStaff.id,
+            },
+            data: {
+              membershipId:
+                membership.id,
+            },
+          });
         }
 
         await tx.academyInvitation.update({
