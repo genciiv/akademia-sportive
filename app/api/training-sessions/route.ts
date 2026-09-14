@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTeam,
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -9,47 +17,39 @@ const STATUSET = [
   "CANCELLED",
 ] as const;
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
-
 export async function GET() {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
-        academyId: membership.academyId,
+        academyId: academyId,
         isActive: true,
       },
     });
 
+  const teamScope =
+    await getActiveTeamScope(access);
+
   const sessions = await prisma.trainingSession.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
+      ...(teamScope.isScoped
+        ? {
+            teamId: {
+              in: teamScope.teamIds,
+            },
+          }
+        : {}),
       ...(activeSeason
         ? {
             startsAt: {
@@ -92,7 +92,7 @@ export async function GET() {
 
   const teams = await prisma.team.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
       status: "ACTIVE",
     },
     select: {
@@ -106,7 +106,7 @@ export async function GET() {
 
   const coaches = await prisma.coach.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
       status: "ACTIVE",
     },
     select: {
@@ -122,7 +122,7 @@ export async function GET() {
 
   const branches = await prisma.academyBranch.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
       isActive: true,
     },
     select: {
@@ -143,14 +143,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TRAINING_CREATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const body = await request.json();
 
@@ -165,14 +167,14 @@ export async function POST(request: Request) {
 
   if (!title) {
     return NextResponse.json(
-      { error: "Titulli i seancës është i detyrueshëm." },
+      { error: "Titulli i seancÃ«s Ã«shtÃ« i detyrueshÃ«m." },
       { status: 400 }
     );
   }
 
   if (!teamId) {
     return NextResponse.json(
-      { error: "Ekipi është i detyrueshëm." },
+      { error: "Ekipi Ã«shtÃ« i detyrueshÃ«m." },
       { status: 400 }
     );
   }
@@ -181,7 +183,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Data dhe ora e fillimit janë të detyrueshme.",
+          "Data dhe ora e fillimit janÃ« tÃ« detyrueshme.",
       },
       { status: 400 }
     );
@@ -191,7 +193,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Statusi i seancës nuk është i vlefshëm.",
+          "Statusi i seancÃ«s nuk Ã«shtÃ« i vlefshÃ«m.",
       },
       { status: 400 }
     );
@@ -203,7 +205,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Data e fillimit nuk është e vlefshme.",
+          "Data e fillimit nuk Ã«shtÃ« e vlefshme.",
       },
       { status: 400 }
     );
@@ -212,7 +214,7 @@ export async function POST(request: Request) {
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
-        academyId: membership.academyId,
+        academyId: academyId,
         isActive: true,
       },
     });
@@ -227,7 +229,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Data e seancës duhet të jetë brenda sezonit aktiv.",
+          "Data e seancÃ«s duhet tÃ« jetÃ« brenda sezonit aktiv.",
       },
       { status: 400 }
     );
@@ -242,7 +244,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Data e përfundimit nuk është e vlefshme.",
+            "Data e pÃ«rfundimit nuk Ã«shtÃ« e vlefshme.",
         },
         { status: 400 }
       );
@@ -252,7 +254,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Ora e përfundimit duhet të jetë pas fillimit.",
+            "Ora e pÃ«rfundimit duhet tÃ« jetÃ« pas fillimit.",
         },
         { status: 400 }
       );
@@ -265,7 +267,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Data e përfundimit duhet të jetë brenda sezonit aktiv.",
+            "Data e pÃ«rfundimit duhet tÃ« jetÃ« brenda sezonit aktiv.",
         },
         { status: 400 }
       );
@@ -275,7 +277,7 @@ export async function POST(request: Request) {
   const team = await prisma.team.findFirst({
     where: {
       id: teamId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -285,12 +287,29 @@ export async function POST(request: Request) {
       { status: 404 }
     );
   }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
 
   if (coachId) {
     const coach = await prisma.coach.findFirst({
       where: {
         id: coachId,
-        academyId: membership.academyId,
+        academyId: academyId,
       },
     });
 
@@ -306,7 +325,7 @@ export async function POST(request: Request) {
     const branch = await prisma.academyBranch.findFirst({
       where: {
         id: branchId,
-        academyId: membership.academyId,
+        academyId: academyId,
       },
     });
 
@@ -321,7 +340,7 @@ export async function POST(request: Request) {
   const trainingSession =
     await prisma.trainingSession.create({
       data: {
-        academyId: membership.academyId,
+        academyId: academyId,
         teamId,
         coachId,
         branchId,

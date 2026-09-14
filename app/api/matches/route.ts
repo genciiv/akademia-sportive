@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTeam,
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const MATCH_TYPES = [
@@ -18,26 +26,6 @@ const MATCH_STATUSES = [
   "POSTPONED",
 ] as const;
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
-
 function rezultatValid(value: unknown) {
   if (
     value === null ||
@@ -53,26 +41,38 @@ function rezultatValid(value: unknown) {
 }
 
 export async function GET() {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
-        academyId: membership.academyId,
+        academyId: academyId,
         isActive: true,
       },
     });
 
+  const teamScope =
+    await getActiveTeamScope(access);
+
   const matches = await prisma.match.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
+      ...(teamScope.isScoped
+        ? {
+            teamId: {
+              in: teamScope.teamIds,
+            },
+          }
+        : {}),
       ...(activeSeason
         ? {
             startsAt: {
@@ -104,14 +104,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_CREATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const body = await request.json();
 
@@ -196,7 +198,7 @@ export async function POST(request: Request) {
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
-        academyId: membership.academyId,
+        academyId: academyId,
         isActive: true,
       },
     });
@@ -261,7 +263,7 @@ export async function POST(request: Request) {
   const team = await prisma.team.findFirst({
     where: {
       id: teamId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
     select: {
       id: true,
@@ -275,6 +277,21 @@ export async function POST(request: Request) {
           "Ekipi nuk u gjet në këtë akademi.",
       },
       { status: 404 }
+    );
+  }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      { status: 403 }
     );
   }
 
@@ -294,7 +311,7 @@ export async function POST(request: Request) {
 
   const match = await prisma.match.create({
     data: {
-      academyId: membership.academyId,
+      academyId: academyId,
       teamId: team.id,
       opponentName,
       matchType: matchType as

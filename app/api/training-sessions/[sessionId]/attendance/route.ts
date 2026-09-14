@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTrainingSession,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -10,44 +17,26 @@ const STATUSET = [
   "EXCUSED",
 ] as const;
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
-
 export async function GET(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.ATTENDANCE_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const trainingSession =
     await prisma.trainingSession.findFirst({
       where: {
         id: params.sessionId,
-        academyId: membership.academyId,
+        academyId: academyId,
       },
       select: {
         id: true,
@@ -70,13 +59,30 @@ export async function GET(
       { status: 404 }
     );
   }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
 
   const teamPlayers = await prisma.teamPlayer.findMany({
     where: {
       teamId: trainingSession.teamId,
       isActive: true,
       player: {
-        academyId: membership.academyId,
+        academyId: academyId,
         status: {
           not: "LEFT",
         },
@@ -164,14 +170,16 @@ export async function PATCH(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.ATTENDANCE_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const body = await request.json();
 
@@ -181,7 +189,7 @@ export async function PATCH(
 
   if (!playerId) {
     return NextResponse.json(
-      { error: "Sportisti është i detyrueshëm." },
+      { error: "Sportisti Ã«shtÃ« i detyrueshÃ«m." },
       { status: 400 }
     );
   }
@@ -192,7 +200,7 @@ export async function PATCH(
     )
   ) {
     return NextResponse.json(
-      { error: "Statusi i pjesëmarrjes nuk është i vlefshëm." },
+      { error: "Statusi i pjesÃ«marrjes nuk Ã«shtÃ« i vlefshÃ«m." },
       { status: 400 }
     );
   }
@@ -201,7 +209,7 @@ export async function PATCH(
     await prisma.trainingSession.findFirst({
       where: {
         id: params.sessionId,
-        academyId: membership.academyId,
+        academyId: academyId,
       },
       select: {
         id: true,
@@ -215,11 +223,28 @@ export async function PATCH(
       { status: 404 }
     );
   }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
 
   const player = await prisma.player.findFirst({
     where: {
       id: playerId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
     select: {
       id: true,
@@ -246,7 +271,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         error:
-          "Sportisti nuk është pjesë aktive e ekipit të kësaj seance.",
+          "Sportisti nuk Ã«shtÃ« pjesÃ« aktive e ekipit tÃ« kÃ«saj seance.",
       },
       { status: 400 }
     );
@@ -283,21 +308,23 @@ export async function DELETE(
   request: Request,
   { params }: { params: { sessionId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.ATTENDANCE_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const body = await request.json();
   const playerId = String(body.playerId || "").trim();
 
   if (!playerId) {
     return NextResponse.json(
-      { error: "Sportisti është i detyrueshëm." },
+      { error: "Sportisti Ã«shtÃ« i detyrueshÃ«m." },
       { status: 400 }
     );
   }
@@ -306,7 +333,7 @@ export async function DELETE(
     await prisma.trainingSession.findFirst({
       where: {
         id: params.sessionId,
-        academyId: membership.academyId,
+        academyId: academyId,
       },
       select: {
         id: true,
@@ -317,6 +344,23 @@ export async function DELETE(
     return NextResponse.json(
       { error: "Seanca nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasSessionAccess =
+    await canAccessTrainingSession(
+      access,
+      trainingSession.id
+    );
+
+  if (!hasSessionAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë seancë.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
@@ -332,7 +376,7 @@ export async function DELETE(
 
   if (!attendance) {
     return NextResponse.json(
-      { error: "Pjesëmarrja nuk u gjet." },
+      { error: "PjesÃ«marrja nuk u gjet." },
       { status: 404 }
     );
   }

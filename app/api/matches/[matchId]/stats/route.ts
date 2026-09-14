@@ -1,50 +1,36 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessMatch,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 export async function GET(
   request: Request,
   { params }: { params: { matchId: string } }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.MATCHES_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const match =
     await prisma.match.findFirst({
       where: {
         id: params.matchId,
         academyId:
-          membership.academyId,
+          academyId,
       },
       select: {
         id: true,
@@ -70,6 +56,21 @@ export async function GET(
       { status: 404 }
     );
   }
+  const hasMatchAccess =
+    await canAccessMatch(
+      access,
+      match.id
+    );
+
+  if (!hasMatchAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ndeshje.",
+      },
+      { status: 403 }
+    );
+  }
 
   const [matchPlayers, events] =
     await Promise.all([
@@ -78,7 +79,7 @@ export async function GET(
           matchId: match.id,
           player: {
             academyId:
-              membership.academyId,
+              academyId,
           },
         },
         include: {

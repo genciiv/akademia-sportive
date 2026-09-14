@@ -1,28 +1,16 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessPlayer,
+  canAccessTeam,
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 function parseDate(value: string | null, endOfDay = false) {
   if (!value) {
@@ -53,25 +41,26 @@ function perqindja(completed: number, attempted: number) {
 }
 
 export async function GET(request: Request) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.PERFORMANCE_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const activeSeason = await prisma.academySeason.findFirst({
     where: {
-      academyId: membership.academyId,
+      academyId,
       isActive: true,
     },
   });
+
+  const teamScope =
+    await getActiveTeamScope(access);
 
   const { searchParams } = new URL(request.url);
 
@@ -150,7 +139,7 @@ export async function GET(request: Request) {
     const team = await prisma.team.findFirst({
       where: {
         id: teamId,
-        academyId: membership.academyId,
+        academyId,
         ...(activeSeason
           ? {
               season: activeSeason.name,
@@ -173,20 +162,35 @@ export async function GET(request: Request) {
         }
       );
     }
+    const hasTeamAccess =
+      await canAccessTeam(
+        access,
+        team.id
+      );
+
+    if (!hasTeamAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Nuk ke leje për të aksesuar këtë ekip.",
+        },
+        { status: 403 }
+      );
+    }
   }
 
   if (playerId) {
     const player = await prisma.player.findFirst({
       where: {
         id: playerId,
-        academyId: membership.academyId,
+        academyId,
         ...(activeSeason
           ? {
               teams: {
                 some: {
                   isActive: true,
                   team: {
-                    academyId: membership.academyId,
+                    academyId,
                     season: activeSeason.name,
                     status: "ACTIVE",
                   },
@@ -210,15 +214,36 @@ export async function GET(request: Request) {
         }
       );
     }
+    const hasPlayerAccess =
+      await canAccessPlayer(
+        access,
+        player.id
+      );
+
+    if (!hasPlayerAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Nuk ke leje për të aksesuar këtë sportist.",
+        },
+        { status: 403 }
+      );
+    }
   }
 
   const matchWhere = {
-    academyId: membership.academyId,
+    academyId,
     ...(teamId
       ? {
           teamId,
         }
-      : {}),
+      : teamScope.isScoped
+        ? {
+            teamId: {
+              in: teamScope.teamIds,
+            },
+          }
+        : {}),
 
     ...(effectiveFrom || effectiveTo
       ? {
@@ -239,16 +264,42 @@ export async function GET(request: Request) {
       : {}),
   };
 
+  const scopedPlayerIds =
+    teamScope.isScoped
+      ? (
+          await prisma.teamPlayer.findMany({
+            where: {
+              isActive: true,
+              teamId: {
+                in: teamScope.teamIds,
+              },
+              player: {
+                academyId,
+              },
+            },
+            select: {
+              playerId: true,
+            },
+          })
+        ).map((item) => item.playerId)
+      : null;
+
   const [
     teams,
-    academyPlayers,
-    matchPlayers,
+    academyPlayers,    matchPlayers,
     performances,
     events,
   ] = await Promise.all([
     prisma.team.findMany({
       where: {
-        academyId: membership.academyId,
+        academyId,
+        ...(teamScope.isScoped
+          ? {
+              id: {
+                in: teamScope.teamIds,
+              },
+            }
+          : {}),
         status: "ACTIVE",
         ...(activeSeason
           ? {
@@ -268,7 +319,15 @@ export async function GET(request: Request) {
 
     prisma.player.findMany({
       where: {
-        academyId: membership.academyId,
+        academyId,
+
+        ...(teamScope.isScoped && !playerId
+          ? {
+              id: {
+                in: scopedPlayerIds ?? [],
+              },
+            }
+          : {}),
 
         ...(activeSeason
           ? {
@@ -276,7 +335,7 @@ export async function GET(request: Request) {
                 some: {
                   isActive: true,
                   team: {
-                    academyId: membership.academyId,
+                    academyId,
                     season: activeSeason.name,
                     status: "ACTIVE",
                   },
@@ -326,7 +385,7 @@ export async function GET(request: Request) {
         match: matchWhere,
 
         player: {
-          academyId: membership.academyId,
+          academyId,
         },
 
         ...(playerId
@@ -366,7 +425,7 @@ export async function GET(request: Request) {
         match: matchWhere,
 
         player: {
-          academyId: membership.academyId,
+          academyId,
         },
 
         ...(playerId
@@ -407,7 +466,7 @@ export async function GET(request: Request) {
         match: matchWhere,
 
         player: {
-          academyId: membership.academyId,
+          academyId,
         },
 
         type: {

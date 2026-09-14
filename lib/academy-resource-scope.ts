@@ -129,3 +129,79 @@ export async function canAccessPlayer(
 
   return Boolean(player);
 }
+export async function canAccessTeam(
+  access: AcademyScopeInput,
+  teamId: string
+): Promise<boolean> {
+  const scope =
+    await getActiveTeamScope(access);
+
+  if (!scope.isScoped) {
+    return true;
+  }
+
+  return scope.teamIds.includes(teamId);
+}
+export async function canAccessTrainingSession(
+  access: AcademyScopeInput,
+  sessionId: string
+): Promise<boolean> {
+  const scope =
+    await getActiveTeamScope(access);
+
+  if (!scope.isScoped) {
+    return true;
+  }
+
+  if (scope.teamIds.length === 0) {
+    return false;
+  }
+
+  const session =
+    await prisma.trainingSession.findFirst({
+      where: {
+        id: sessionId,
+        academyId: access.academyId,
+        teamId: {
+          in: scope.teamIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  return Boolean(session);
+}
+
+export async function canAccessMatch(
+  access: AcademyScopeInput,
+  matchId: string
+): Promise<boolean> {
+  const scope =
+    await getActiveTeamScope(access);
+
+  if (!scope.isScoped) {
+    return true;
+  }
+
+  if (scope.teamIds.length === 0) {
+    return false;
+  }
+
+  const match =
+    await prisma.match.findFirst({
+      where: {
+        id: matchId,
+        academyId: access.academyId,
+        teamId: {
+          in: scope.teamIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  return Boolean(match);
+}

@@ -1,27 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTeam,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 async function merrEkipin(teamId: string, academyId: string) {
   return prisma.team.findFirst({
@@ -36,18 +23,20 @@ export async function GET(
   request: Request,
   { params }: { params: { teamId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TEAMS_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const team = await merrEkipin(
     params.teamId,
-    membership.academyId
+    academyId
   );
 
   if (!team) {
@@ -56,10 +45,27 @@ export async function GET(
       { status: 404 }
     );
   }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
 
   const players = await prisma.player.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: academyId,
       status: {
         not: "LEFT",
       },
@@ -104,24 +110,43 @@ export async function POST(
   request: Request,
   { params }: { params: { teamId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TEAM_ROSTER_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const team = await merrEkipin(
     params.teamId,
-    membership.academyId
+    academyId
   );
 
   if (!team) {
     return NextResponse.json(
       { error: "Ekipi nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
@@ -131,7 +156,7 @@ export async function POST(
 
   if (!playerId) {
     return NextResponse.json(
-      { error: "Sportisti është i detyrueshëm." },
+      { error: "Sportisti Ã«shtÃ« i detyrueshÃ«m." },
       { status: 400 }
     );
   }
@@ -139,7 +164,7 @@ export async function POST(
   const player = await prisma.player.findFirst({
     where: {
       id: playerId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -162,7 +187,7 @@ export async function POST(
   if (ekziston) {
     if (ekziston.isActive) {
       return NextResponse.json(
-        { error: "Sportisti është tashmë në këtë ekip." },
+        { error: "Sportisti Ã«shtÃ« tashmÃ« nÃ« kÃ«tÃ« ekip." },
         { status: 409 }
       );
     }
@@ -202,24 +227,43 @@ export async function DELETE(
   request: Request,
   { params }: { params: { teamId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TEAM_ROSTER_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const team = await merrEkipin(
     params.teamId,
-    membership.academyId
+    academyId
   );
 
   if (!team) {
     return NextResponse.json(
       { error: "Ekipi nuk u gjet." },
       { status: 404 }
+    );
+  }
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      team.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      {
+        status: 403,
+      }
     );
   }
 
@@ -229,7 +273,7 @@ export async function DELETE(
 
   if (!playerId) {
     return NextResponse.json(
-      { error: "Sportisti është i detyrueshëm." },
+      { error: "Sportisti Ã«shtÃ« i detyrueshÃ«m." },
       { status: 400 }
     );
   }
@@ -237,7 +281,7 @@ export async function DELETE(
   const player = await prisma.player.findFirst({
     where: {
       id: playerId,
-      academyId: membership.academyId,
+      academyId: academyId,
     },
   });
 
@@ -259,7 +303,7 @@ export async function DELETE(
 
   if (!lidhja || !lidhja.isActive) {
     return NextResponse.json(
-      { error: "Sportisti nuk është aktiv në këtë ekip." },
+      { error: "Sportisti nuk Ã«shtÃ« aktiv nÃ« kÃ«tÃ« ekip." },
       { status: 404 }
     );
   }
