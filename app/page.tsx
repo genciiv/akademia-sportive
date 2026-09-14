@@ -1,5 +1,6 @@
 import { Dashboard } from "@/components/dashboard";
 import { merrAkademineAktive } from "@/lib/academy-context";
+import { getActiveTeamScope } from "@/lib/academy-resource-scope";
 import { prisma } from "@/lib/prisma";
 
 function etiketaDates(date: Date) {
@@ -15,6 +16,17 @@ export default async function Page() {
     membership,
     academy,
   } = await merrAkademineAktive();
+
+  const teamScope = await getActiveTeamScope({
+    academyId: academy.id,
+    role: membership.role,
+    membership: {
+      id: membership.id,
+    },
+  });
+
+  const scopedTeamIds =
+    teamScope.isScoped ? teamScope.teamIds : null;
 
   const tani = new Date();
 
@@ -68,6 +80,13 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         startsAt: seasonRange,
+        ...(scopedTeamIds
+          ? {
+              teamId: {
+                in: scopedTeamIds,
+              },
+            }
+          : {}),
       },
     }),
 
@@ -79,6 +98,13 @@ export default async function Page() {
           ? {
               teams: {
                 some: {
+                  ...(scopedTeamIds
+                    ? {
+                        teamId: {
+                          in: scopedTeamIds,
+                        },
+                      }
+                    : {}),
                   isActive: true,
                   team: {
                     academyId: academy.id,
@@ -100,6 +126,13 @@ export default async function Page() {
           ? {
               teams: {
                 some: {
+                  ...(scopedTeamIds
+                    ? {
+                        teamId: {
+                          in: scopedTeamIds,
+                        },
+                      }
+                    : {}),
                   isActive: true,
                   team: {
                     academyId: academy.id,
@@ -117,6 +150,13 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         startsAt: seasonRange,
+        ...(scopedTeamIds
+          ? {
+              teamId: {
+                in: scopedTeamIds,
+              },
+            }
+          : {}),
         attendances: {
           some: {},
         },
@@ -140,6 +180,13 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         startsAt: seasonRange,
+        ...(scopedTeamIds
+          ? {
+              teamId: {
+                in: scopedTeamIds,
+              },
+            }
+          : {}),
         performances: {
           some: {},
         },
@@ -163,6 +210,13 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         startsAt: upcomingRange,
+        ...(scopedTeamIds
+          ? {
+              teamId: {
+                in: scopedTeamIds,
+              },
+            }
+          : {}),
         status: "SCHEDULED",
       },
       orderBy: {
@@ -187,6 +241,13 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         startsAt: upcomingRange,
+        ...(scopedTeamIds
+          ? {
+              teamId: {
+                in: scopedTeamIds,
+              },
+            }
+          : {}),
         status: {
           in: ["SCHEDULED", "POSTPONED"],
         },
@@ -322,3 +383,4 @@ export default async function Page() {
     />
   );
 }
+
