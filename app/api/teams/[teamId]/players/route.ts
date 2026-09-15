@@ -4,6 +4,7 @@ import {
 } from "@/lib/academy-permissions";
 import {
   canAccessTeam,
+  getActiveTeamScope,
 } from "@/lib/academy-resource-scope";
 import {
   PERMISSIONS,
@@ -63,12 +64,53 @@ export async function GET(
     );
   }
 
+  const teamScope =
+    await getActiveTeamScope(access);
+
+  const canManageRoster =
+    access.permissions.includes(
+      PERMISSIONS.TEAM_ROSTER_MANAGE
+    );
+
   const players = await prisma.player.findMany({
     where: {
-      academyId: academyId,
+      academyId,
       status: {
         not: "LEFT",
       },
+
+      ...(teamScope.isScoped
+        ? canManageRoster
+          ? {
+              OR: [
+                {
+                  teams: {
+                    some: {
+                      isActive: true,
+                      teamId: {
+                        in: teamScope.teamIds,
+                      },
+                    },
+                  },
+                },
+                {
+                  teams: {
+                    none: {
+                      isActive: true,
+                    },
+                  },
+                },
+              ],
+            }
+          : {
+              teams: {
+                some: {
+                  teamId: team.id,
+                  isActive: true,
+                },
+              },
+            }
+        : {}),
     },
     include: {
       teams: {
@@ -150,6 +192,9 @@ export async function POST(
     );
   }
 
+  const teamScope =
+    await getActiveTeamScope(access);
+
   const body = await request.json();
 
   const playerId = String(body.playerId || "").trim();
@@ -164,7 +209,31 @@ export async function POST(
   const player = await prisma.player.findFirst({
     where: {
       id: playerId,
-      academyId: academyId,
+      academyId,
+
+      ...(teamScope.isScoped
+        ? {
+            OR: [
+              {
+                teams: {
+                  some: {
+                    isActive: true,
+                    teamId: {
+                      in: teamScope.teamIds,
+                    },
+                  },
+                },
+              },
+              {
+                teams: {
+                  none: {
+                    isActive: true,
+                  },
+                },
+              },
+            ],
+          }
+        : {}),
     },
   });
 
