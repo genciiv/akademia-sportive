@@ -1,28 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 function vleresimOseNull(value: unknown, fieldName: string) {
   if (
@@ -90,18 +76,13 @@ const GENDER_ALLOWED = [
 ] as const;
 
 export async function GET(request: Request) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SCOUTING_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const { searchParams } =
@@ -179,7 +160,7 @@ export async function GET(request: Request) {
     await prisma.scoutingCandidate.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
 
         ...(status
           ? {
@@ -264,7 +245,7 @@ export async function GET(request: Request) {
       by: ["status"],
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       _count: {
         _all: true,
@@ -373,18 +354,13 @@ export async function GET(request: Request) {
 export async function POST(
   request: Request
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SCOUTING_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const body =
@@ -588,7 +564,7 @@ export async function POST(
     await prisma.scoutingCandidate.create({
       data: {
         academyId:
-          membership.academyId,
+          access.academyId,
 
         firstName,
         lastName,

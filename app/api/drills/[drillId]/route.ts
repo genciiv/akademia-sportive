@@ -1,47 +1,33 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const VESHTIRESITE = ["EASY", "MEDIUM", "HARD"] as const;
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 export async function PATCH(
   request: Request,
   { params }: { params: { drillId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.DRILLS_UPDATE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const existing = await prisma.drill.findFirst({
     where: {
       id: params.drillId,
-      academyId: membership.academyId,
+      academyId: access.academyId,
     },
   });
 
@@ -129,19 +115,19 @@ export async function DELETE(
   request: Request,
   { params }: { params: { drillId: string } }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      { error: "Nuk je i autorizuar." },
-      { status: 401 }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.DRILLS_DELETE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const existing = await prisma.drill.findFirst({
     where: {
       id: params.drillId,
-      academyId: membership.academyId,
+      academyId: access.academyId,
     },
     select: {
       id: true,

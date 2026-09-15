@@ -1,42 +1,23 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 export async function GET() {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.FINANCE_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const now = new Date();
@@ -72,7 +53,7 @@ export async function GET() {
     prisma.cashPayment.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       select: {
         amountLek: true,
@@ -82,7 +63,7 @@ export async function GET() {
     prisma.cashPayment.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
         paidAt: {
           gte: startOfMonth,
           lt: startOfNextMonth,
@@ -96,7 +77,7 @@ export async function GET() {
     prisma.playerCharge.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
         status: {
           not: "CANCELLED",
         },
@@ -120,7 +101,7 @@ export async function GET() {
     prisma.cashPayment.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       orderBy: {
         paidAt: "desc",
@@ -146,7 +127,7 @@ export async function GET() {
     prisma.cashPayment.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
         paidAt: {
           gte: twelveMonthsAgo,
         },
@@ -160,7 +141,7 @@ export async function GET() {
     prisma.expense.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       select: {
         id: true,
@@ -174,7 +155,7 @@ export async function GET() {
     prisma.expense.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
         expenseDate: {
           gte: startOfMonth,
           lt: startOfNextMonth,
@@ -188,7 +169,7 @@ export async function GET() {
     prisma.expense.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
         expenseDate: {
           gte: twelveMonthsAgo,
         },

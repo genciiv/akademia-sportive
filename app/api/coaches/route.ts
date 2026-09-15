@@ -4,6 +4,9 @@ import {
   requireAcademyPermission,
 } from "@/lib/academy-permissions";
 import {
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
   PERMISSIONS,
 } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -48,6 +51,9 @@ export async function GET() {
     return access.response;
   }
 
+  const teamScope =
+    await getActiveTeamScope(access);
+
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
@@ -62,6 +68,18 @@ export async function GET() {
       where: {
         academyId:
           access.academyId,
+              ...(teamScope.isScoped
+          ? {
+              teams: {
+                some: {
+                  isActive: true,
+                  teamId: {
+                    in: teamScope.teamIds,
+                  },
+                },
+              },
+            }
+          : {}),
       },
 
       include: {
@@ -69,7 +87,14 @@ export async function GET() {
           where: {
             isActive: true,
 
-            ...(activeSeason
+                        ...(teamScope.isScoped
+              ? {
+                  teamId: {
+                    in: teamScope.teamIds,
+                  },
+                }
+              : {}),
+...(activeSeason
               ? {
                   team: {
                     academyId:

@@ -1,28 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 function tekstOseNull(value: unknown) {
   const text = String(value || "").trim();
@@ -118,22 +104,18 @@ export async function GET(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SCOUTING_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const candidate = await merrKandidatin(
     params.candidateId,
-    membership.academyId
+    access.academyId
   );
 
   if (!candidate) {
@@ -174,22 +156,18 @@ export async function POST(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SCOUTING_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const candidate = await merrKandidatin(
     params.candidateId,
-    membership.academyId
+    access.academyId
   );
 
   if (!candidate) {

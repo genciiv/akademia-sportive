@@ -1,46 +1,28 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 export async function GET() {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SEASONS_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const seasons = await prisma.academySeason.findMany({
     where: {
-      academyId: membership.academyId,
+      academyId: access.academyId,
     },
     orderBy: {
       startsAt: "desc",
@@ -55,17 +37,13 @@ export async function GET() {
 export async function POST(
   request: Request
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SEASONS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const body = await request.json();
@@ -140,7 +118,7 @@ export async function POST(
             await tx.academySeason.updateMany({
               where: {
                 academyId:
-                  membership.academyId,
+                  access.academyId,
                 isActive: true,
               },
               data: {
@@ -152,7 +130,7 @@ export async function POST(
           return tx.academySeason.create({
             data: {
               academyId:
-                membership.academyId,
+                access.academyId,
               name,
               startsAt,
               endsAt,
