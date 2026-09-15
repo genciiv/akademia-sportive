@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTeam,
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const LLOJET = [
@@ -12,26 +19,6 @@ const LLOJET = [
   "ADMINISTRATIVE",
   "OTHER",
 ] as const;
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 function tekstOseNull(value: unknown) {
   const text = String(value ?? "").trim();
@@ -74,22 +61,20 @@ export async function GET(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.CALENDAR_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const event = await merrAktivitetin(
     params.eventId,
-    membership.academyId
+    academyId
   );
 
   if (!event) {
@@ -100,6 +85,24 @@ export async function GET(
       {
         status: 404,
       }
+    );
+  }
+  const eventScope =
+    await getActiveTeamScope(access);
+
+  if (
+    eventScope.isScoped &&
+    event.teamId !== null &&
+    !eventScope.teamIds.includes(
+      event.teamId
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë aktivitet.",
+      },
+      { status: 403 }
     );
   }
 
@@ -118,22 +121,20 @@ export async function PATCH(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.CALENDAR_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const existing = await merrAktivitetin(
     params.eventId,
-    membership.academyId
+    academyId
   );
 
   if (!existing) {
@@ -144,6 +145,26 @@ export async function PATCH(
       {
         status: 404,
       }
+    );
+  }
+  const eventScope =
+    await getActiveTeamScope(access);
+
+  if (
+    eventScope.isScoped &&
+    (
+      existing.teamId === null ||
+      !eventScope.teamIds.includes(
+        existing.teamId
+      )
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të menaxhuar këtë aktivitet.",
+      },
+      { status: 403 }
     );
   }
 
@@ -265,6 +286,16 @@ export async function PATCH(
       body.teamId === null ||
       body.teamId === ""
     ) {
+      if (eventScope.isScoped) {
+        return NextResponse.json(
+          {
+            error:
+              "Nuk mund ta kthesh aktivitetin në aktivitet global.",
+          },
+          { status: 403 }
+        );
+      }
+
       teamId = null;
     } else {
       const team =
@@ -272,7 +303,7 @@ export async function PATCH(
           where: {
             id: String(body.teamId),
             academyId:
-              membership.academyId,
+              academyId,
           },
           select: {
             id: true,
@@ -287,6 +318,21 @@ export async function PATCH(
           {
             status: 404,
           }
+        );
+      }
+      const hasTeamAccess =
+        await canAccessTeam(
+          access,
+          team.id
+        );
+
+      if (!hasTeamAccess) {
+        return NextResponse.json(
+          {
+            error:
+              "Nuk ke leje për të aksesuar këtë ekip.",
+          },
+          { status: 403 }
         );
       }
 
@@ -345,22 +391,20 @@ export async function DELETE(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.CALENDAR_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
+
+  const { academyId } = access;
 
   const event = await merrAktivitetin(
     params.eventId,
-    membership.academyId
+    academyId
   );
 
   if (!event) {
@@ -371,6 +415,26 @@ export async function DELETE(
       {
         status: 404,
       }
+    );
+  }
+  const eventScope =
+    await getActiveTeamScope(access);
+
+  if (
+    eventScope.isScoped &&
+    (
+      event.teamId === null ||
+      !eventScope.teamIds.includes(
+        event.teamId
+      )
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të menaxhuar këtë aktivitet.",
+      },
+      { status: 403 }
     );
   }
 
