@@ -198,6 +198,17 @@ export default function StafiClient() {
     setInvitingStaffId,
   ] = useState<string | null>(null);
 
+  const [
+    invitationActionId,
+    setInvitationActionId,
+  ] = useState<string | null>(null);
+
+  const [
+    invitationActionType,
+    setInvitationActionType,
+  ] = useState<
+    "resend" | "revoke" | null
+  >(null);
   const [editing, setEditing] =
     useState<StaffMember | null>(null);
 
@@ -293,9 +304,20 @@ export default function StafiClient() {
   }
 
   useEffect(() => {
-    loadStaff();
-    loadInvitations();
+    void loadStaff();
   }, []);
+
+  useEffect(() => {
+    if (
+      permissions.includes(
+        "STAFF_INVITE"
+      )
+    ) {
+      void loadInvitations();
+    } else {
+      setInvitations([]);
+    }
+  }, [permissions]);
 
   async function copyInvitation(
     invitePath: string
@@ -308,6 +330,144 @@ export default function StafiClient() {
     );
   }
 
+  async function resendInvitation(
+    invitation: StaffInvitation
+  ) {
+    const confirmed =
+      window.confirm(
+        `Dëshiron ta ridërgosh ftesën për ${invitation.email}? Lidhja e vjetër do të çaktivizohet.`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setInvitationActionId(
+      invitation.id
+    );
+    setInvitationActionType(
+      "resend"
+    );
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/staff/invitations/${invitation.id}/resend`,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = (await response.json()) as {
+        error?: string;
+        message?: string;
+        invitation?: {
+          invitePath?: string;
+        };
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Ftesa nuk mund të ridërgohej."
+        );
+      }
+
+      let copied = false;
+
+      if (
+        data.invitation?.invitePath
+      ) {
+        try {
+          await navigator.clipboard.writeText(
+            `${window.location.origin}${data.invitation.invitePath}`
+          );
+
+          copied = true;
+        } catch {
+          copied = false;
+        }
+      }
+
+      setMessage(
+        copied
+          ? "Ftesa u ridërgua dhe lidhja e re u kopjua."
+          : data.message ||
+              "Ftesa u ridërgua me sukses."
+      );
+
+      await loadInvitations();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ndodhi një gabim gjatë ridërgimit të ftesës."
+      );
+    } finally {
+      setInvitationActionId(null);
+      setInvitationActionType(null);
+    }
+  }
+
+  async function revokeInvitation(
+    invitation: StaffInvitation
+  ) {
+    const confirmed =
+      window.confirm(
+        `Dëshiron ta revokosh ftesën për ${invitation.email}?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setInvitationActionId(
+      invitation.id
+    );
+    setInvitationActionType(
+      "revoke"
+    );
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/staff/invitations/${invitation.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = (await response.json()) as {
+        error?: string;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Ftesa nuk mund të revokohej."
+        );
+      }
+
+      setMessage(
+        data.message ||
+          "Ftesa u revokua me sukses."
+      );
+
+      await loadInvitations();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ndodhi një gabim gjatë revokimit të ftesës."
+      );
+    } finally {
+      setInvitationActionId(null);
+      setInvitationActionType(null);
+    }
+  }
   async function inviteStaff(
     member: StaffMember
   ) {
@@ -857,22 +1017,68 @@ export default function StafiClient() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyInvitation(
-                          invitation.invitePath
-                        )
-                      }
-                      disabled={
-                        invitation.status ===
-                        "EXPIRED"
-                      }
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Copy size={15} />
-                      Kopjo lidhjen
-                    </button>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          copyInvitation(
+                            invitation.invitePath
+                          )
+                        }
+                        disabled={
+                          invitation.status ===
+                            "EXPIRED" ||
+                          invitationActionId !==
+                            null
+                        }
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Copy size={15} />
+                        Kopjo lidhjen
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          resendInvitation(
+                            invitation
+                          )
+                        }
+                        disabled={
+                          invitationActionId !==
+                          null
+                        }
+                        className="inline-flex items-center justify-center rounded-xl border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {invitationActionId ===
+                          invitation.id &&
+                        invitationActionType ===
+                          "resend"
+                          ? "Duke ridërguar..."
+                          : "Ri-dërgo"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          revokeInvitation(
+                            invitation
+                          )
+                        }
+                        disabled={
+                          invitationActionId !==
+                          null
+                        }
+                        className="inline-flex items-center justify-center rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {invitationActionId ===
+                          invitation.id &&
+                        invitationActionType ===
+                          "revoke"
+                          ? "Duke revokuar..."
+                          : "Revoko"}
+                      </button>
+                    </div>
                   </div>
                 )
               )}

@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   const access =
     await requireAcademyPermission(
-      PERMISSIONS.STAFF_VIEW
+      PERMISSIONS.STAFF_INVITE
     );
 
   if (!access.ok) {
@@ -30,6 +30,17 @@ export async function GET() {
 
         acceptedAt: null,
         revokedAt: null,
+
+        ...(access.role !== "OWNER"
+          ? {
+              role: {
+                notIn: [
+                  "OWNER",
+                  "ADMIN",
+                ],
+              },
+            }
+          : {}),
       },
 
       select: {
