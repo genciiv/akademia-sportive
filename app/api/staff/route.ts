@@ -106,11 +106,6 @@ export async function GET() {
   const staff =
     records.map(
       (record) => {
-        const role =
-          String(
-            record.role
-          ) as AcademyRoleName;
-
         const membership =
           record.membership;
 
@@ -120,6 +115,12 @@ export async function GET() {
             "REMOVED"
             ? membership
             : null;
+
+        const role =
+          String(
+            usableMembership?.role ??
+              record.role
+          ) as AcademyRoleName;
 
         const accessStatus =
           usableMembership
