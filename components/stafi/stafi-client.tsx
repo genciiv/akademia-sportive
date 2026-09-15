@@ -397,9 +397,25 @@ export default function StafiClient() {
     }
   }
 
+  const canUpdate =
+    permissions.includes(
+      "STAFF_UPDATE"
+    );
+
+  const canRemove =
+    permissions.includes(
+      "STAFF_REMOVE"
+    );
+
   function canManage(
     member: StaffMember
   ) {
+    if (
+      !canUpdate &&
+      !canRemove
+    ) {
+      return false;
+    }
     if (!member.membershipId) {
       return false;
     }

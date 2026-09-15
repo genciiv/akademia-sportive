@@ -82,17 +82,34 @@ export async function POST(
   }
 
   if (staff.membershipId) {
-    return NextResponse.json(
-      {
-        error:
-          "Ky anëtar i stafit ka tashmë akses në platformë.",
-      },
-      {
-        status: 409,
-      }
-    );
-  }
+    const linkedMembership =
+      await prisma.academyMembership.findFirst({
+        where: {
+          id: staff.membershipId,
+          academyId:
+            access.academyId,
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      });
 
+    if (
+      linkedMembership &&
+      linkedMembership.status !== "REMOVED"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Ky anëtar i stafit ka tashmë akses në platformë.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+  }
   const email =
     normalizeEmail(
       staff.email

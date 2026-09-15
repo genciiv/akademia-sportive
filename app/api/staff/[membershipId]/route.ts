@@ -253,38 +253,59 @@ export async function PATCH(
   }
 
   const updated =
-    await prisma.academyMembership.update({
-      where: {
-        id: target.id,
-      },
-      data,
-      select: {
-        id: true,
-        role: true,
-        status: true,
-        joinedAt: true,
+    await prisma.$transaction(
+      async (tx) => {
+        const membership =
+          await tx.academyMembership.update({
+            where: {
+              id: target.id,
+            },
+            data,
+            select: {
+              id: true,
+              role: true,
+              status: true,
+              joinedAt: true,
 
-        user: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            image: true,
-          },
-        },
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  image: true,
+                },
+              },
 
-        coachProfile: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            status: true,
-          },
-        },
-      },
-    });
+              coachProfile: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  status: true,
+                },
+              },
+            },
+          });
+
+        if (data.role !== undefined) {
+          await tx.academyStaff.updateMany({
+            where: {
+              academyId:
+                access.academyId,
+              membershipId:
+                target.id,
+            },
+            data: {
+              role: data.role,
+            },
+          });
+        }
+
+        return membership;
+      }
+    );
 
   const role =
     String(
