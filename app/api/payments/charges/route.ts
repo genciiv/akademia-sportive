@@ -1,28 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 function tekstOseNull(value: unknown) {
   const text = String(value ?? "").trim();
@@ -30,17 +16,13 @@ function tekstOseNull(value: unknown) {
 }
 
 export async function POST(request: Request) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.PAYMENTS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const body = await request.json();
@@ -64,7 +46,7 @@ export async function POST(request: Request) {
       where: {
         id: playerId,
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       select: {
         id: true,
@@ -199,7 +181,7 @@ export async function POST(request: Request) {
     await prisma.playerCharge.create({
       data: {
         academyId:
-          membership.academyId,
+          access.academyId,
         playerId: player.id,
         title,
         amountLek,

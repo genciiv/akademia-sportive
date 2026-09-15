@@ -1,28 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 const KATEGORITE = [
   "SALARY",
@@ -37,25 +23,20 @@ const KATEGORITE = [
 ] as const;
 
 export async function GET() {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.EXPENSES_VIEW
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const expenses =
     await prisma.expense.findMany({
       where: {
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       orderBy: [
         {
@@ -86,18 +67,13 @@ export async function GET() {
 export async function POST(
   request: Request
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.EXPENSES_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const body =
@@ -188,7 +164,7 @@ export async function POST(
     await prisma.expense.create({
       data: {
         academyId:
-          membership.academyId,
+          access.academyId,
         category:
           category as
             (typeof KATEGORITE)[number],

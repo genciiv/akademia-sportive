@@ -1,28 +1,14 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
+
 import { prisma } from "@/lib/prisma";
 
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 const KATEGORITE = [
   "SALARY",
@@ -46,18 +32,13 @@ export async function PATCH(
     };
   }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.EXPENSES_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const expense =
@@ -65,7 +46,7 @@ export async function PATCH(
       where: {
         id: params.expenseId,
         academyId:
-          membership.academyId,
+          access.academyId,
       },
     });
 
@@ -254,18 +235,13 @@ export async function DELETE(
     };
   }
 ) {
-  const membership =
-    await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.EXPENSES_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
   const expense =
@@ -273,7 +249,7 @@ export async function DELETE(
       where: {
         id: params.expenseId,
         academyId:
-          membership.academyId,
+          access.academyId,
       },
       select: {
         id: true,
