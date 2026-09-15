@@ -35,6 +35,10 @@ type MembershipStatus =
   | "SUSPENDED"
   | "REMOVED";
 
+type EditableAccessStatus =
+  | "ACTIVE"
+  | "SUSPENDED";
+
 type StaffInvitation = {
   id: string;
   email: string;
@@ -215,8 +219,12 @@ export default function StafiClient() {
   const [role, setRole] =
     useState<StaffRole>("MEMBER");
 
-  const [status, setStatus] =
-    useState<MembershipStatus>("ACTIVE");
+  const [
+    accessStatus,
+    setAccessStatus,
+  ] = useState<EditableAccessStatus>(
+    "ACTIVE"
+  );
 
   const currentMember =
     useMemo(
@@ -606,7 +614,14 @@ export default function StafiClient() {
 
     setEditing(member);
     setRole(member.role);
-    setStatus(member.status);
+
+    setAccessStatus(
+      member.accessStatus ===
+        "SUSPENDED"
+        ? "SUSPENDED"
+        : "ACTIVE"
+    );
+
     setError("");
   }
 
@@ -628,15 +643,19 @@ export default function StafiClient() {
     try {
       const payload: {
         role: StaffRole;
-        status?: MembershipStatus;
+        status?: EditableAccessStatus;
       } = {
         role,
       };
 
       if (
-        editing.status !== "INVITED"
+        editing.accessStatus ===
+          "ACTIVE" ||
+        editing.accessStatus ===
+          "SUSPENDED"
       ) {
-        payload.status = status;
+        payload.status =
+          accessStatus;
       }
 
       const response = await fetch(
@@ -1156,21 +1175,21 @@ export default function StafiClient() {
 
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                    Statusi
+                    Aksesi në platformë
                   </label>
 
-                  {editing.status ===
+                  {editing.accessStatus ===
                   "INVITED" ? (
                     <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
                       Ftesë në pritje
                     </div>
                   ) : (
                     <select
-                      value={status}
+                      value={accessStatus}
                       onChange={(event) =>
-                        setStatus(
+                        setAccessStatus(
                           event.target
-                            .value as MembershipStatus
+                            .value as EditableAccessStatus
                         )
                       }
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-slate-400"
