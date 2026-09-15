@@ -1,48 +1,45 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import {
+  getCurrentAcademyAccess,
+} from "@/lib/academy-permissions";
+import {
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 export async function GET(
   request: Request
 ) {
-  const membership =
-    await merrAkademineAktive();
+  const access =
+    await getCurrentAcademyAccess();
 
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
-    );
+  if (!access.ok) {
+    return access.response;
   }
 
-  const academyId =
-    membership.academyId;
+  const { academyId } = access;
+
+  const teamScope =
+    await getActiveTeamScope(access);
+
+  const canViewPlayers =
+    access.permissions.includes(
+      PERMISSIONS.PLAYERS_VIEW
+    );
+
+  const canViewCoaches =
+    access.permissions.includes(
+      PERMISSIONS.COACHES_VIEW
+    );
+
+  const canViewTeams =
+    access.permissions.includes(
+      PERMISSIONS.TEAMS_VIEW
+    );
 
   const activeSeason =
     await prisma.academySeason.findFirst({
@@ -71,156 +68,208 @@ export async function GET(
     coaches,
     teams,
   ] = await Promise.all([
-    prisma.player.findMany({
-      where: {
-        academyId,
-        ...(activeSeason
-          ? {
-              teams: {
-                some: {
-                  isActive: true,
-                  team: {
-                    academyId,
-                    season: activeSeason.name,
-                    status: "ACTIVE",
+    canViewPlayers
+      ? prisma.player.findMany({
+          where: {
+            academyId,
+
+            ...(teamScope.isScoped ||
+            Boolean(activeSeason)
+              ? {
+                  teams: {
+                    some: {
+                      isActive: true,
+
+                      ...(teamScope.isScoped
+                        ? {
+                            teamId: {
+                              in: teamScope.teamIds,
+                            },
+                          }
+                        : {}),
+
+                      ...(activeSeason
+                        ? {
+                            team: {
+                              academyId,
+                              season:
+                                activeSeason.name,
+                              status: "ACTIVE",
+                            },
+                          }
+                        : {}),
+                    },
                   },
+                }
+              : {}),
+
+            OR: [
+              {
+                firstName: {
+                  contains: query,
+                  mode: "insensitive",
                 },
               },
-            }
-          : {}),
-        OR: [
-          {
-            firstName: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-          {
-            lastName: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-          {
-            email: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-          {
-            phone: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-      take: 5,
-      orderBy: [
-        {
-          lastName: "asc",
-        },
-        {
-          firstName: "asc",
-        },
-      ],
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-      },
-    }),
-
-    prisma.coach.findMany({
-      where: {
-        academyId,
-        ...(activeSeason
-          ? {
-              teams: {
-                some: {
-                  isActive: true,
-                  team: {
-                    academyId,
-                    season: activeSeason.name,
-                    status: "ACTIVE",
-                  },
+              {
+                lastName: {
+                  contains: query,
+                  mode: "insensitive",
                 },
               },
-            }
-          : {}),
-        OR: [
-          {
-            firstName: {
-              contains: query,
-              mode: "insensitive",
-            },
+              {
+                email: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
+                phone: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+            ],
           },
-          {
-            lastName: {
-              contains: query,
-              mode: "insensitive",
+          take: 5,
+          orderBy: [
+            {
+              lastName: "asc",
             },
-          },
-          {
-            email: {
-              contains: query,
-              mode: "insensitive",
+            {
+              firstName: "asc",
             },
+          ],
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           },
-          {
-            phone: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-      take: 5,
-      orderBy: [
-        {
-          lastName: "asc",
-        },
-        {
-          firstName: "asc",
-        },
-      ],
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-      },
-    }),
+        })
+      : Promise.resolve([]),
 
-    prisma.team.findMany({
-      where: {
-        academyId,
-        status: "ACTIVE",
-        ...(activeSeason
-          ? {
-              season: activeSeason.name,
-            }
-          : {}),
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-      },
-      take: 5,
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
+    canViewCoaches
+      ? prisma.coach.findMany({
+          where: {
+            academyId,
+
+            ...(teamScope.isScoped ||
+            Boolean(activeSeason)
+              ? {
+                  teams: {
+                    some: {
+                      isActive: true,
+
+                      ...(teamScope.isScoped
+                        ? {
+                            teamId: {
+                              in: teamScope.teamIds,
+                            },
+                          }
+                        : {}),
+
+                      ...(activeSeason
+                        ? {
+                            team: {
+                              academyId,
+                              season:
+                                activeSeason.name,
+                              status: "ACTIVE",
+                            },
+                          }
+                        : {}),
+                    },
+                  },
+                }
+              : {}),
+
+            OR: [
+              {
+                firstName: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
+                lastName: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
+                email: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
+                phone: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          take: 5,
+          orderBy: [
+            {
+              lastName: "asc",
+            },
+            {
+              firstName: "asc",
+            },
+          ],
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        })
+      : Promise.resolve([]),
+
+    canViewTeams
+      ? prisma.team.findMany({
+          where: {
+            academyId,
+            status: "ACTIVE",
+
+            ...(teamScope.isScoped
+              ? {
+                  id: {
+                    in: teamScope.teamIds,
+                  },
+                }
+              : {}),
+
+            ...(activeSeason
+              ? {
+                  season:
+                    activeSeason.name,
+                }
+              : {}),
+
+            name: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          take: 5,
+          orderBy: {
+            name: "asc",
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        })
+      : Promise.resolve([]),
   ]);
 
   const results = [
     ...players.map((player) => ({
       id: player.id,
       type: "PLAYER",
-      title: `${player.firstName} ${player.lastName}`,
+      title:
+        `${player.firstName} ${player.lastName}`,
       subtitle: "Sportist",
       href: "/anetaret",
     })),
@@ -228,7 +277,8 @@ export async function GET(
     ...coaches.map((coach) => ({
       id: coach.id,
       type: "COACH",
-      title: `${coach.firstName} ${coach.lastName}`,
+      title:
+        `${coach.firstName} ${coach.lastName}`,
       subtitle: "Trajner",
       href: "/trajneret",
     })),

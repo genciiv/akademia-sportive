@@ -1,28 +1,15 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  canAccessTeam,
+  getActiveTeamScope,
+} from "@/lib/academy-resource-scope";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-
-async function merrAkademineAktive() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  return prisma.academyMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-    },
-    select: {
-      academyId: true,
-    },
-  });
-}
 
 export async function PATCH(
   request: Request,
@@ -34,20 +21,17 @@ export async function PATCH(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.NOTIFICATIONS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
-  const academyId = membership.academyId;
+  const { academyId } = access;
+
   const notificationId = params.notificationId;
 
   const existing =
@@ -58,6 +42,8 @@ export async function PATCH(
       },
       select: {
         id: true,
+        audience: true,
+        teamId: true,
       },
     });
 
@@ -71,6 +57,27 @@ export async function PATCH(
       }
     );
   }
+  const teamScope =
+    await getActiveTeamScope(access);
+
+  if (
+    teamScope.isScoped &&
+    (
+      existing.audience === "ALL" ||
+      existing.teamId === null ||
+      !teamScope.teamIds.includes(
+        existing.teamId
+      )
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të menaxhuar këtë njoftim.",
+      },
+      { status: 403 }
+    );
+  }
 
   const body = await request.json();
 
@@ -81,6 +88,18 @@ export async function PATCH(
     body.audience === "TEAM"
       ? "TEAM"
       : "ALL";
+  if (
+    teamScope.isScoped &&
+    audience === "ALL"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Njoftimi duhet të lidhet me një ekip që menaxhon.",
+      },
+      { status: 403 }
+    );
+  }
 
   const priority =
     body.priority === "IMPORTANT" ||
@@ -169,6 +188,21 @@ export async function PATCH(
         }
       );
     }
+    const hasTeamAccess =
+      await canAccessTeam(
+        access,
+        team.id
+      );
+
+    if (!hasTeamAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Nuk ke leje për të aksesuar këtë ekip.",
+        },
+        { status: 403 }
+      );
+    }
   }
 
   const notification =
@@ -213,20 +247,17 @@ export async function DELETE(
     };
   }
 ) {
-  const membership = await merrAkademineAktive();
-
-  if (!membership) {
-    return NextResponse.json(
-      {
-        error: "Nuk je i autorizuar.",
-      },
-      {
-        status: 401,
-      }
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.NOTIFICATIONS_MANAGE
     );
+
+  if (!access.ok) {
+    return access.response;
   }
 
-  const academyId = membership.academyId;
+  const { academyId } = access;
+
   const notificationId = params.notificationId;
 
   const existing =
@@ -237,6 +268,8 @@ export async function DELETE(
       },
       select: {
         id: true,
+        audience: true,
+        teamId: true,
       },
     });
 
@@ -248,6 +281,27 @@ export async function DELETE(
       {
         status: 404,
       }
+    );
+  }
+  const teamScope =
+    await getActiveTeamScope(access);
+
+  if (
+    teamScope.isScoped &&
+    (
+      existing.audience === "ALL" ||
+      existing.teamId === null ||
+      !teamScope.teamIds.includes(
+        existing.teamId
+      )
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të menaxhuar këtë njoftim.",
+      },
+      { status: 403 }
     );
   }
 
