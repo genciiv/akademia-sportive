@@ -22,6 +22,11 @@ import { PageHeader } from "@/components/page-header";
 type ReportsResponse = {
   generatedAt: string;
 
+  access: {
+    sports: boolean;
+    finance: boolean;
+  };
+
   sports: {
     players: number;
     teams: number;
@@ -99,6 +104,12 @@ export default function ReportsClient() {
     ngarko();
   }, []);
 
+  const canViewSports =
+    data?.access.sports ?? false;
+
+  const canViewFinance =
+    data?.access.finance ?? false;
+
   return (
     <AppShell>
       <PageHeader
@@ -119,6 +130,8 @@ export default function ReportsClient() {
       ) : (
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {canViewSports && (
+              <>
             <ReportCard
               title="Raporti i sportistëve"
               description="Numri aktual i sportistëve të regjistruar në akademi."
@@ -179,7 +192,10 @@ export default function ReportsClient() {
                 <Medal className="h-5 w-5" />
               }
             />
+              </>
+            )}
 
+            {canViewFinance && (
             <ReportCard
               title="Raporti financiar"
               description="Arkëtimet reale të regjistruara në sistem."
@@ -192,9 +208,11 @@ export default function ReportsClient() {
                 <CircleDollarSign className="h-5 w-5" />
               }
             />
+            )}
           </div>
 
           <div className="grid gap-5 xl:grid-cols-2">
+            {canViewFinance && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div>
                 <h2 className="font-bold text-slate-950">
@@ -271,7 +289,9 @@ export default function ReportsClient() {
                 />
               </div>
             </div>
+            )}
 
+            {canViewSports && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div>
                 <h2 className="font-bold text-slate-950">
@@ -319,32 +339,9 @@ export default function ReportsClient() {
                     data?.sports.matches ?? 0
                   )}
                 />
-
-                <SummaryBox
-                  label="Pagesa"
-                  value={String(
-                    data?.finance.paymentCount ??
-                      0
-                  )}
-                />
-
-                <SummaryBox
-                  label="Shpenzime"
-                  value={String(
-                    data?.finance.expenseCount ??
-                      0
-                  )}
-                />
-
-                <SummaryBox
-                  label="Detyrime gjithsej"
-                  value={lek(
-                    data?.finance.totalCharges ??
-                      0
-                  )}
-                />
               </div>
             </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

@@ -94,11 +94,12 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         status: "ACTIVE",
-        ...(activeSeason
+        ...(scopedTeamIds !== null ||
+        activeSeason
           ? {
               teams: {
                 some: {
-                  ...(scopedTeamIds
+                  ...(scopedTeamIds !== null
                     ? {
                         teamId: {
                           in: scopedTeamIds,
@@ -106,11 +107,15 @@ export default async function Page() {
                       }
                     : {}),
                   isActive: true,
-                  team: {
-                    academyId: academy.id,
-                    season: activeSeason.name,
-                    status: "ACTIVE",
-                  },
+                  ...(activeSeason
+                    ? {
+                        team: {
+                          academyId: academy.id,
+                          season: activeSeason.name,
+                          status: "ACTIVE",
+                        },
+                      }
+                    : {}),
                 },
               },
             }
@@ -122,11 +127,12 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         status: "ACTIVE",
-        ...(activeSeason
+        ...(scopedTeamIds !== null ||
+        activeSeason
           ? {
               teams: {
                 some: {
-                  ...(scopedTeamIds
+                  ...(scopedTeamIds !== null
                     ? {
                         teamId: {
                           in: scopedTeamIds,
@@ -134,11 +140,15 @@ export default async function Page() {
                       }
                     : {}),
                   isActive: true,
-                  team: {
-                    academyId: academy.id,
-                    season: activeSeason.name,
-                    status: "ACTIVE",
-                  },
+                  ...(activeSeason
+                    ? {
+                        team: {
+                          academyId: academy.id,
+                          season: activeSeason.name,
+                          status: "ACTIVE",
+                        },
+                      }
+                    : {}),
                 },
               },
             }
@@ -383,4 +393,3 @@ export default async function Page() {
     />
   );
 }
-
