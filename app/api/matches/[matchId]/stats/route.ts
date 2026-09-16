@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -28,7 +28,7 @@ export async function GET(
   const match =
     await prisma.match.findFirst({
       where: {
-        id: params.matchId,
+        id: (await params).matchId,
         academyId:
           academyId,
       },

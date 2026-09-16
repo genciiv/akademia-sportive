@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function kerkoPerdoruesin() {
   const session = await auth.api.getSession({
-    headers: headers(),
+    headers: await headers(),
   });
 
   if (!session?.user?.id) {

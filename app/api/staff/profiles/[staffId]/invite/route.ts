@@ -18,9 +18,9 @@ import { prisma } from "@/lib/prisma";
 const INVITATION_DURATION_DAYS = 7;
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     staffId: string;
-  };
+  }>;
 };
 
 function normalizeEmail(
@@ -55,7 +55,7 @@ export async function POST(
   const staff =
     await prisma.academyStaff.findFirst({
       where: {
-        id: params.staffId,
+        id: (await params).staffId,
         academyId:
           access.academyId,
         status: {

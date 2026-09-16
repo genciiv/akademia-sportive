@@ -15,7 +15,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { coachId: string } }
+  { params }: { params: Promise<{ coachId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -31,7 +31,7 @@ export async function GET(
 
   const coach = await prisma.coach.findFirst({
     where: {
-      id: params.coachId,
+      id: (await params).coachId,
       academyId: access.academyId,
     },
   });
@@ -111,7 +111,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { coachId: string } }
+  { params }: { params: Promise<{ coachId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -136,7 +136,7 @@ export async function POST(
   const [coach, team] = await Promise.all([
     prisma.coach.findFirst({
       where: {
-        id: params.coachId,
+        id: (await params).coachId,
         academyId: access.academyId,
       },
     }),
@@ -228,7 +228,7 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { coachId: string } }
+  { params }: { params: Promise<{ coachId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -252,7 +252,7 @@ export async function DELETE(
   const [coach, team] = await Promise.all([
     prisma.coach.findFirst({
       where: {
-        id: params.coachId,
+        id: (await params).coachId,
         academyId: access.academyId,
       },
     }),

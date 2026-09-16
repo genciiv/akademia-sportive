@@ -17,9 +17,9 @@ import { prisma } from "@/lib/prisma";
 const INVITATION_DURATION_DAYS = 7;
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     invitationId: string;
-  };
+  }>;
 };
 
 export async function POST(
@@ -38,7 +38,7 @@ export async function POST(
   const invitation =
     await prisma.academyInvitation.findFirst({
       where: {
-        id: params.invitationId,
+        id: (await params).invitationId,
         academyId:
           access.academyId,
         acceptedAt: null,

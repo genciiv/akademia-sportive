@@ -6,7 +6,7 @@ import Formulari from "./formulari";
 
 export default async function Page() {
   const session = await auth.api.getSession({
-    headers: headers(),
+    headers: await headers(),
   });
 
   if (!session?.user?.id) {

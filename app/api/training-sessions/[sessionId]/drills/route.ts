@@ -28,7 +28,7 @@ async function merrSeancen(
 
 export async function GET(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -42,7 +42,7 @@ export async function GET(
   const { academyId } = access;
 
   const trainingSession = await merrSeancen(
-    params.sessionId,
+    (await params).sessionId,
     academyId
   );
 
@@ -143,7 +143,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -157,7 +157,7 @@ export async function POST(
   const { academyId } = access;
 
   const trainingSession = await merrSeancen(
-    params.sessionId,
+    (await params).sessionId,
     academyId
   );
 
@@ -292,7 +292,7 @@ export async function POST(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -306,7 +306,7 @@ export async function PATCH(
   const { academyId } = access;
 
   const trainingSession = await merrSeancen(
-    params.sessionId,
+    (await params).sessionId,
     academyId
   );
 
@@ -435,7 +435,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -449,7 +449,7 @@ export async function DELETE(
   const { academyId } = access;
 
   const trainingSession = await merrSeancen(
-    params.sessionId,
+    (await params).sessionId,
     academyId
   );
 

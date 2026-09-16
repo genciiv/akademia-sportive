@@ -134,9 +134,9 @@ export async function GET(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -151,7 +151,7 @@ export async function GET(
   const candidate =
     await prisma.scoutingCandidate.findFirst({
       where: {
-        id: params.candidateId,
+        id: (await params).candidateId,
         academyId:
           access.academyId,
       },
@@ -271,9 +271,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -287,7 +287,7 @@ export async function PATCH(
 
   const existing =
     await merrKandidatin(
-      params.candidateId,
+      (await params).candidateId,
       access.academyId
     );
 
@@ -710,9 +710,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -726,7 +726,7 @@ export async function DELETE(
 
   const candidate =
     await merrKandidatin(
-      params.candidateId,
+      (await params).candidateId,
       access.academyId
     );
 

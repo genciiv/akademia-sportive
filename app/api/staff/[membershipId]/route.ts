@@ -17,9 +17,9 @@ import {
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     membershipId: string;
-  };
+  }>;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -94,7 +94,7 @@ export async function PATCH(
   const target =
     await getTargetMembership(
       access.academyId,
-      params.membershipId
+      (await params).membershipId
     );
 
   if (!target) {
@@ -449,7 +449,7 @@ export async function DELETE(
   const target =
     await getTargetMembership(
       access.academyId,
-      params.membershipId
+      (await params).membershipId
     );
 
   if (!target) {

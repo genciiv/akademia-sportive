@@ -56,9 +56,9 @@ export async function GET(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       eventId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -73,7 +73,7 @@ export async function GET(
   const { academyId } = access;
 
   const event = await merrAktivitetin(
-    params.eventId,
+    (await params).eventId,
     academyId
   );
 
@@ -116,9 +116,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       eventId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -133,7 +133,7 @@ export async function PATCH(
   const { academyId } = access;
 
   const existing = await merrAktivitetin(
-    params.eventId,
+    (await params).eventId,
     academyId
   );
 
@@ -386,9 +386,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       eventId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -403,7 +403,7 @@ export async function DELETE(
   const { academyId } = access;
 
   const event = await merrAktivitetin(
-    params.eventId,
+    (await params).eventId,
     academyId
   );
 

@@ -31,9 +31,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       playerId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -50,7 +50,7 @@ export async function PATCH(
   const player =
     await prisma.player.findFirst({
       where: {
-        id: params.playerId,
+        id: (await params).playerId,
         academyId,
       },
     });
@@ -283,9 +283,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       playerId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -302,7 +302,7 @@ export async function DELETE(
   const player =
     await prisma.player.findFirst({
       where: {
-        id: params.playerId,
+        id: (await params).playerId,
         academyId,
       },
     });

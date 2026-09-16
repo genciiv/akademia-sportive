@@ -13,9 +13,9 @@ import {
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     invitationId: string;
-  };
+  }>;
 };
 
 export async function DELETE(
@@ -34,7 +34,7 @@ export async function DELETE(
   const invitation =
     await prisma.academyInvitation.findFirst({
       where: {
-        id: params.invitationId,
+        id: (await params).invitationId,
         academyId:
           access.academyId,
         acceptedAt: null,
