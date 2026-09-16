@@ -607,6 +607,30 @@ const CONTRACTS:
       permission: "TRAINING_CREATE",
     },
     {
+      path: "app/api/knowledge/[articleId]/route.ts",
+      method: "GET",
+      permission: "KNOWLEDGE_VIEW",
+    },
+    {
+      path: "app/api/knowledge/[articleId]/route.ts",
+      method: "PATCH",
+      permission: "KNOWLEDGE_MANAGE",
+    },
+    {
+      path: "app/api/knowledge/[articleId]/route.ts",
+      method: "DELETE",
+      permission: "KNOWLEDGE_MANAGE",
+    },
+    {
+      path: "app/api/knowledge/route.ts",
+      method: "GET",
+      permission: "KNOWLEDGE_VIEW",
+    },
+    {
+      path: "app/api/knowledge/route.ts",
+      method: "POST",
+      permission: "KNOWLEDGE_MANAGE",
+    },    {
       path: "app/api/tactics/[tacticId]/route.ts",
       method: "GET",
       permission: "TACTICS_VIEW",
