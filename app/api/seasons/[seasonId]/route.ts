@@ -15,9 +15,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       seasonId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -32,7 +32,7 @@ export async function PATCH(
   const existing =
     await prisma.academySeason.findFirst({
       where: {
-        id: params.seasonId,
+        id: (await params).seasonId,
         academyId:
           access.academyId,
       },

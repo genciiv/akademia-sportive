@@ -99,9 +99,9 @@ export async function GET(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -114,7 +114,7 @@ export async function GET(
   }
 
   const candidate = await merrKandidatin(
-    params.candidateId,
+    (await params).candidateId,
     access.academyId
   );
 
@@ -151,9 +151,9 @@ export async function POST(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -166,7 +166,7 @@ export async function POST(
   }
 
   const candidate = await merrKandidatin(
-    params.candidateId,
+    (await params).candidateId,
     access.academyId
   );
 

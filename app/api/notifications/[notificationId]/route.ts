@@ -16,9 +16,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       notificationId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -32,7 +32,7 @@ export async function PATCH(
 
   const { academyId } = access;
 
-  const notificationId = params.notificationId;
+  const notificationId = (await params).notificationId;
 
   const existing =
     await prisma.notification.findFirst({
@@ -242,9 +242,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       notificationId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -258,7 +258,7 @@ export async function DELETE(
 
   const { academyId } = access;
 
-  const notificationId = params.notificationId;
+  const notificationId = (await params).notificationId;
 
   const existing =
     await prisma.notification.findFirst({

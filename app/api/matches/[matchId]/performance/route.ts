@@ -50,7 +50,7 @@ function numerJoNegativ(
 
 export async function GET(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -64,7 +64,7 @@ export async function GET(
   const { academyId } = access;
 
   const match = await merrNdeshjen(
-    params.matchId,
+    (await params).matchId,
     academyId
   );
 
@@ -234,7 +234,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -248,7 +248,7 @@ export async function POST(
   const { academyId } = access;
 
   const match = await merrNdeshjen(
-    params.matchId,
+    (await params).matchId,
     academyId
   );
 
@@ -547,7 +547,7 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -561,7 +561,7 @@ export async function DELETE(
   const { academyId } = access;
 
   const match = await merrNdeshjen(
-    params.matchId,
+    (await params).matchId,
     academyId
   );
 

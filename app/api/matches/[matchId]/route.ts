@@ -45,7 +45,7 @@ function rezultatValid(value: unknown) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -60,7 +60,7 @@ export async function GET(
 
   const match = await prisma.match.findFirst({
     where: {
-      id: params.matchId,
+      id: (await params).matchId,
       academyId: academyId,
     },
     include: {
@@ -85,7 +85,7 @@ export async function GET(
   const hasMatchAccess =
     await canAccessMatch(
       access,
-      params.matchId
+      (await params).matchId
     );
 
   if (!hasMatchAccess) {
@@ -105,7 +105,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -120,7 +120,7 @@ export async function PATCH(
 
   const existing = await prisma.match.findFirst({
     where: {
-      id: params.matchId,
+      id: (await params).matchId,
       academyId: academyId,
     },
   });
@@ -381,7 +381,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -396,7 +396,7 @@ export async function DELETE(
 
   const existing = await prisma.match.findFirst({
     where: {
-      id: params.matchId,
+      id: (await params).matchId,
       academyId: academyId,
     },
     select: {

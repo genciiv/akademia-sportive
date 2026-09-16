@@ -51,9 +51,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       guardianId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -71,7 +71,7 @@ export async function PATCH(
   const guardian =
     await prisma.guardian.findFirst({
       where: {
-        id: params.guardianId,
+        id: (await params).guardianId,
         academyId,
       },
       select: {
@@ -324,9 +324,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       guardianId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -344,7 +344,7 @@ export async function DELETE(
   const guardian =
     await prisma.guardian.findFirst({
       where: {
-        id: params.guardianId,
+        id: (await params).guardianId,
         academyId,
       },
       select: {

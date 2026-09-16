@@ -9,9 +9,9 @@ import {
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     token: string;
-  };
+  }>;
 };
 
 function normalizeEmail(
@@ -29,7 +29,7 @@ export async function GET(
   const invitation =
     await prisma.academyInvitation.findUnique({
       where: {
-        token: params.token,
+        token: (await params).token,
       },
       select: {
         id: true,
@@ -129,7 +129,7 @@ export async function POST(
 ) {
   const session =
     await auth.api.getSession({
-      headers: headers(),
+      headers: await headers(),
     });
 
   if (!session?.user?.id) {
@@ -147,7 +147,7 @@ export async function POST(
   const invitation =
     await prisma.academyInvitation.findUnique({
       where: {
-        token: params.token,
+        token: (await params).token,
       },
       select: {
         id: true,

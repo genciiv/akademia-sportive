@@ -27,9 +27,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       expenseId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -44,7 +44,7 @@ export async function PATCH(
   const expense =
     await prisma.expense.findFirst({
       where: {
-        id: params.expenseId,
+        id: (await params).expenseId,
         academyId:
           access.academyId,
       },
@@ -230,9 +230,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       expenseId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -247,7 +247,7 @@ export async function DELETE(
   const expense =
     await prisma.expense.findFirst({
       where: {
-        id: params.expenseId,
+        id: (await params).expenseId,
         academyId:
           access.academyId,
       },

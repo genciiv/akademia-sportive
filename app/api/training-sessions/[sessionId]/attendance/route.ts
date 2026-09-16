@@ -19,7 +19,7 @@ const STATUSET = [
 
 export async function GET(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -35,7 +35,7 @@ export async function GET(
   const trainingSession =
     await prisma.trainingSession.findFirst({
       where: {
-        id: params.sessionId,
+        id: (await params).sessionId,
         academyId: academyId,
       },
       select: {
@@ -168,7 +168,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -208,7 +208,7 @@ export async function PATCH(
   const trainingSession =
     await prisma.trainingSession.findFirst({
       where: {
-        id: params.sessionId,
+        id: (await params).sessionId,
         academyId: academyId,
       },
       select: {
@@ -306,7 +306,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -332,7 +332,7 @@ export async function DELETE(
   const trainingSession =
     await prisma.trainingSession.findFirst({
       where: {
-        id: params.sessionId,
+        id: (await params).sessionId,
         academyId: academyId,
       },
       select: {

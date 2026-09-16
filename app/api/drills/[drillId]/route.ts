@@ -13,7 +13,7 @@ const VESHTIRESITE = ["EASY", "MEDIUM", "HARD"] as const;
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { drillId: string } }
+  { params }: { params: Promise<{ drillId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -26,7 +26,7 @@ export async function PATCH(
 
   const existing = await prisma.drill.findFirst({
     where: {
-      id: params.drillId,
+      id: (await params).drillId,
       academyId: access.academyId,
     },
   });
@@ -113,7 +113,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { drillId: string } }
+  { params }: { params: Promise<{ drillId: string }> }
 ) {
   const access =
     await requireAcademyPermission(
@@ -126,7 +126,7 @@ export async function DELETE(
 
   const existing = await prisma.drill.findFirst({
     where: {
-      id: params.drillId,
+      id: (await params).drillId,
       academyId: access.academyId,
     },
     select: {

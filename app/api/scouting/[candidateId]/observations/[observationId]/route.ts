@@ -100,10 +100,10 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
       observationId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -116,8 +116,8 @@ export async function PATCH(
   }
 
   const existing = await merrVezhgimin(
-    params.candidateId,
-    params.observationId,
+    (await params).candidateId,
+    (await params).observationId,
     access.academyId
   );
 
@@ -281,10 +281,10 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       candidateId: string;
       observationId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -297,8 +297,8 @@ export async function DELETE(
   }
 
   const observation = await merrVezhgimin(
-    params.candidateId,
-    params.observationId,
+    (await params).candidateId,
+    (await params).observationId,
     access.academyId
   );
 

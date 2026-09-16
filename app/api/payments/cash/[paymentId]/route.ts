@@ -80,9 +80,9 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       paymentId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -97,7 +97,7 @@ export async function PATCH(
   const payment =
     await prisma.cashPayment.findFirst({
       where: {
-        id: params.paymentId,
+        id: (await params).paymentId,
         academyId:
           access.academyId,
       },
@@ -251,9 +251,9 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       paymentId: string;
-    };
+    }>;
   }
 ) {
   const access =
@@ -268,7 +268,7 @@ export async function DELETE(
   const payment =
     await prisma.cashPayment.findFirst({
       where: {
-        id: params.paymentId,
+        id: (await params).paymentId,
         academyId:
           access.academyId,
       },
