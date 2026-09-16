@@ -2,6 +2,10 @@ import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 
 import {
+  AUDIT_ACTIONS,
+  writeAuditLog,
+} from "@/lib/audit-log";
+import {
   requireAcademyPermission,
 } from "@/lib/academy-permissions";
 import {
@@ -110,6 +114,7 @@ export async function POST(
       );
     }
   }
+
   const email =
     normalizeEmail(
       staff.email
@@ -131,6 +136,17 @@ export async function POST(
     String(
       staff.role
     ) as AcademyRoleName;
+
+  const entityLabel =
+    [
+      staff.firstName,
+      staff.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    email ||
+    staff.id;
 
   if (role === "OWNER") {
     return NextResponse.json(
@@ -206,6 +222,33 @@ export async function POST(
               existingMembership.id,
           },
         });
+
+        await writeAuditLog({
+          tx,
+          academyId:
+            access.academyId,
+          actorUserId:
+            access.session.user.id,
+          action:
+            AUDIT_ACTIONS.STAFF_ACCOUNT_LINKED,
+          entityType:
+            "STAFF_PROFILE",
+          entityId:
+            staff.id,
+          entityLabel,
+          beforeData: {
+            membershipId:
+              staff.membershipId,
+          },
+          afterData: {
+            membershipId:
+              existingMembership.id,
+          },
+          metadata: {
+            email,
+            role,
+          },
+        });
       }
     );
 
@@ -260,27 +303,6 @@ export async function POST(
     });
   }
 
-  await prisma.academyInvitation.updateMany({
-    where: {
-      academyId:
-        access.academyId,
-
-      staffId:
-        staff.id,
-
-      acceptedAt: null,
-      revokedAt: null,
-
-      expiresAt: {
-        lte: now,
-      },
-    },
-
-    data: {
-      revokedAt: now,
-    },
-  });
-
   const token =
     randomBytes(32).toString(
       "hex"
@@ -297,30 +319,85 @@ export async function POST(
     );
 
   const invitation =
-    await prisma.academyInvitation.create({
-      data: {
-        academyId:
-          access.academyId,
+    await prisma.$transaction(
+      async (tx) => {
+        await tx.academyInvitation.updateMany({
+          where: {
+            academyId:
+              access.academyId,
 
-        staffId:
-          staff.id,
+            staffId:
+              staff.id,
 
-        email,
-        role:
-          staff.role,
+            acceptedAt: null,
+            revokedAt: null,
 
-        token,
-        expiresAt,
+            expiresAt: {
+              lte: now,
+            },
+          },
 
-        invitedByUserId:
-          access.session.user.id,
-      },
+          data: {
+            revokedAt: now,
+          },
+        });
 
-      select: {
-        id: true,
-        expiresAt: true,
-      },
-    });
+        const created =
+          await tx.academyInvitation.create({
+            data: {
+              academyId:
+                access.academyId,
+
+              staffId:
+                staff.id,
+
+              email,
+              role:
+                staff.role,
+
+              token,
+              expiresAt,
+
+              invitedByUserId:
+                access.session.user.id,
+            },
+
+            select: {
+              id: true,
+              expiresAt: true,
+            },
+          });
+
+        await writeAuditLog({
+          tx,
+          academyId:
+            access.academyId,
+          actorUserId:
+            access.session.user.id,
+          action:
+            AUDIT_ACTIONS.STAFF_INVITATION_CREATED,
+          entityType:
+            "STAFF_INVITATION",
+          entityId:
+            created.id,
+          entityLabel,
+          afterData: {
+            email,
+            role,
+            status:
+              "PENDING",
+            expiresAt:
+              created.expiresAt.toISOString(),
+          },
+          metadata: {
+            staffId:
+              staff.id,
+          },
+        });
+
+        return created;
+      }
+    );
 
   return NextResponse.json(
     {

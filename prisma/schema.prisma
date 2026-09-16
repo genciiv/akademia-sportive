@@ -68,6 +68,7 @@ model User {
   memberships            AcademyMembership[]
   sentAcademyInvitations AcademyInvitation[] @relation("AcademyInvitationSender")
   ownedAcademies         Academy[]           @relation("AcademyOwner")
+  auditLogs              AuditLog[]          @relation("AuditLogActor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -165,6 +166,7 @@ model Academy {
   academySeasons     AcademySeason[]
   invitations        AcademyInvitation[]
   staff              AcademyStaff[]
+  auditLogs          AuditLog[]
 
   @@index([ownerId])
   @@index([status])
@@ -277,6 +279,33 @@ model AcademyInvitation {
   @@index([staffId])
   @@index([invitedByUserId])
   @@index([expiresAt])
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  actorUserId String?
+  actorUser   User?   @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  action String
+
+  entityType  String
+  entityId    String?
+  entityLabel String?
+
+  beforeData Json?
+  afterData  Json?
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([academyId, createdAt])
+  @@index([academyId, action])
+  @@index([actorUserId])
+  @@index([entityType, entityId])
 }
 
 model AcademyBranch {
