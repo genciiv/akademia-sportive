@@ -69,6 +69,7 @@ model User {
   sentAcademyInvitations AcademyInvitation[] @relation("AcademyInvitationSender")
   ownedAcademies         Academy[]           @relation("AcademyOwner")
   auditLogs              AuditLog[]          @relation("AuditLogActor")
+  knowledgeArticles      KnowledgeArticle[]  @relation("KnowledgeArticleAuthor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -168,6 +169,7 @@ model Academy {
   invitations        AcademyInvitation[]
   staff              AcademyStaff[]
   auditLogs          AuditLog[]
+  knowledgeArticles  KnowledgeArticle[]
 
   @@index([ownerId])
   @@index([status])
@@ -1224,4 +1226,65 @@ model Tactic {
   @@index([academyId, isActive])
   @@index([academyId, phase])
   @@index([teamId])
+}
+
+enum KnowledgeArticleCategory {
+  METHODOLOGY
+  POLICY
+  PROCEDURE
+  COMMUNICATION
+  DEVELOPMENT
+  SAFEGUARDING
+  RESOURCE
+  OTHER
+}
+
+enum KnowledgeArticleAudience {
+  ALL
+  COACHES
+  STAFF
+  PLAYERS
+  PARENTS
+}
+
+enum KnowledgeArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model KnowledgeArticle {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  authorId String?
+  author   User?   @relation("KnowledgeArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  title   String
+  summary String?
+  content String
+
+  category KnowledgeArticleCategory @default(OTHER)
+  audience KnowledgeArticleAudience @default(ALL)
+  status   KnowledgeArticleStatus   @default(DRAFT)
+
+  tags String[]
+
+  sourceUrl String?
+
+  isPinned Boolean @default(false)
+
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([academyId, category])
+  @@index([academyId, audience])
+  @@index([academyId, isPinned])
+  @@index([authorId])
 }
