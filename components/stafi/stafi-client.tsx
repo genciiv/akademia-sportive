@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import {
+  StaffAuditLog,
+} from "@/components/stafi/staff-audit-log";
 
 type StaffRole =
   | "OWNER"
@@ -1103,6 +1106,12 @@ export default function StafiClient() {
               )}
             </div>
           </div>
+        ) : null}
+
+        {permissions.includes(
+          "AUDIT_LOGS_VIEW"
+        ) ? (
+          <StaffAuditLog />
         ) : null}
 
         {editing ? (

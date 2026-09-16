@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import {
+  AUDIT_ACTIONS,
+  writeAuditLog,
+} from "@/lib/audit-log";
+import {
   requireAcademyPermission,
 } from "@/lib/academy-permissions";
 import {
@@ -39,6 +43,8 @@ export async function DELETE(
       select: {
         id: true,
         role: true,
+        email: true,
+        staffId: true,
       },
     });
 
@@ -81,14 +87,63 @@ export async function DELETE(
     );
   }
 
-  await prisma.academyInvitation.update({
-    where: {
-      id: invitation.id,
-    },
-    data: {
-      revokedAt: new Date(),
-    },
-  });
+  const revokedAt =
+    new Date();
+
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.academyInvitation.update({
+        where: {
+          id: invitation.id,
+        },
+        data: {
+          revokedAt,
+        },
+      });
+
+      await writeAuditLog({
+        tx,
+        academyId:
+          access.academyId,
+        actorUserId:
+          access.session.user.id,
+        action:
+          AUDIT_ACTIONS.STAFF_INVITATION_REVOKED,
+        entityType:
+          "STAFF_INVITATION",
+        entityId:
+          invitation.id,
+        entityLabel:
+          invitation.email,
+        beforeData: {
+          role:
+            String(
+              invitation.role
+            ),
+          status:
+            "PENDING",
+        },
+        afterData: {
+          role:
+            String(
+              invitation.role
+            ),
+          status:
+            "REVOKED",
+          revokedAt:
+            revokedAt.toISOString(),
+        },
+        metadata: {
+          ...(invitation.staffId
+            ? {
+                staffId:
+                  invitation.staffId,
+              }
+            : {}),
+        },
+      });
+    }
+  );
 
   return NextResponse.json({
     message:

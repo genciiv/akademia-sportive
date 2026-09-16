@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 
 import {
+  AUDIT_ACTIONS,
+  writeAuditLog,
+} from "@/lib/audit-log";
+
+import {
   requireAcademyPermission,
 } from "@/lib/academy-permissions";
 import {
@@ -108,6 +113,18 @@ export async function PATCH(
     String(
       target.role
     ) as AcademyRoleName;
+
+  const entityLabel =
+    [
+      target.user.firstName,
+      target.user.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    target.user.name ||
+    target.user.email ||
+    target.id;
 
   if (targetRole === "OWNER") {
     return NextResponse.json(
@@ -303,6 +320,77 @@ export async function PATCH(
           });
         }
 
+        if (
+          data.role !== undefined &&
+          data.role !== targetRole
+        ) {
+          await writeAuditLog({
+            tx,
+            academyId:
+              access.academyId,
+            actorUserId:
+              access.session.user.id,
+            action:
+              AUDIT_ACTIONS.STAFF_ROLE_CHANGED,
+            entityType:
+              "STAFF_MEMBERSHIP",
+            entityId:
+              target.id,
+            entityLabel,
+            beforeData: {
+              role:
+                targetRole,
+            },
+            afterData: {
+              role:
+                String(
+                  membership.role
+                ),
+            },
+            metadata: {
+              userId:
+                target.userId,
+            },
+          });
+        }
+
+        if (
+          data.status !== undefined &&
+          data.status !==
+            String(target.status)
+        ) {
+          await writeAuditLog({
+            tx,
+            academyId:
+              access.academyId,
+            actorUserId:
+              access.session.user.id,
+            action:
+              AUDIT_ACTIONS.STAFF_ACCESS_CHANGED,
+            entityType:
+              "STAFF_MEMBERSHIP",
+            entityId:
+              target.id,
+            entityLabel,
+            beforeData: {
+              status:
+                String(
+                  target.status
+                ),
+            },
+            afterData: {
+              status:
+                String(
+                  membership.status
+                ),
+            },
+            metadata: {
+              userId:
+                target.userId,
+            },
+          });
+        }
+
         return membership;
       }
     );
@@ -381,6 +469,18 @@ export async function DELETE(
       target.role
     ) as AcademyRoleName;
 
+  const entityLabel =
+    [
+      target.user.firstName,
+      target.user.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    target.user.name ||
+    target.user.email ||
+    target.id;
+
   if (targetRole === "OWNER") {
     return NextResponse.json(
       {
@@ -423,14 +523,51 @@ export async function DELETE(
     );
   }
 
-  await prisma.academyMembership.update({
-    where: {
-      id: target.id,
-    },
-    data: {
-      status: "REMOVED",
-    },
-  });
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.academyMembership.update({
+        where: {
+          id: target.id,
+        },
+        data: {
+          status: "REMOVED",
+        },
+      });
+
+      await writeAuditLog({
+        tx,
+        academyId:
+          access.academyId,
+        actorUserId:
+          access.session.user.id,
+        action:
+          AUDIT_ACTIONS.STAFF_REMOVED,
+        entityType:
+          "STAFF_MEMBERSHIP",
+        entityId:
+          target.id,
+        entityLabel,
+        beforeData: {
+          role:
+            targetRole,
+          status:
+            String(
+              target.status
+            ),
+        },
+        afterData: {
+          role:
+            targetRole,
+          status:
+            "REMOVED",
+        },
+        metadata: {
+          userId:
+            target.userId,
+        },
+      });
+    }
+  );
 
   return NextResponse.json({
     message:

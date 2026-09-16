@@ -2,6 +2,11 @@ import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 
 import {
+  AUDIT_ACTIONS,
+  writeAuditLog,
+} from "@/lib/audit-log";
+
+import {
   requireAcademyPermission,
 } from "@/lib/academy-permissions";
 import {
@@ -116,26 +121,73 @@ export async function POST(
           },
         });
 
-        return tx.academyInvitation.create({
-          data: {
-            academyId:
-              invitation.academyId,
-            staffId:
-              invitation.staffId,
-            email:
-              invitation.email,
-            role:
-              invitation.role,
-            token,
-            expiresAt,
-            invitedByUserId:
-              access.session.user.id,
+        const created =
+          await tx.academyInvitation.create({
+            data: {
+              academyId:
+                invitation.academyId,
+              staffId:
+                invitation.staffId,
+              email:
+                invitation.email,
+              role:
+                invitation.role,
+              token,
+              expiresAt,
+              invitedByUserId:
+                access.session.user.id,
+            },
+            select: {
+              id: true,
+              expiresAt: true,
+            },
+          });
+
+        await writeAuditLog({
+          tx,
+          academyId:
+            access.academyId,
+          actorUserId:
+            access.session.user.id,
+          action:
+            AUDIT_ACTIONS.STAFF_INVITATION_RESENT,
+          entityType:
+            "STAFF_INVITATION",
+          entityId:
+            created.id,
+          entityLabel:
+            invitation.email,
+          beforeData: {
+            invitationId:
+              invitation.id,
+            status:
+              "REVOKED",
           },
-          select: {
-            id: true,
-            expiresAt: true,
+          afterData: {
+            invitationId:
+              created.id,
+            role:
+              String(
+                invitation.role
+              ),
+            expiresAt:
+              created.expiresAt.toISOString(),
+            status:
+              "PENDING",
+          },
+          metadata: {
+            previousInvitationId:
+              invitation.id,
+            ...(invitation.staffId
+              ? {
+                  staffId:
+                    invitation.staffId,
+                }
+              : {}),
           },
         });
+
+        return created;
       }
     );
 
