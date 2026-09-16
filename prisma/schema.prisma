@@ -130,9 +130,10 @@ model Verification {
 model Academy {
   matches Match[]
   drills  Drill[]
-  id      String  @id @default(cuid())
+  tactics Tactic[]
+  id      String   @id @default(cuid())
   name    String
-  slug    String  @unique
+  slug    String   @unique
   email   String?
   phone   String?
   logo    String?
@@ -489,6 +490,7 @@ model Team {
   updatedAt     DateTime       @updatedAt
   matches       Match[]
   notifications Notification[]
+  tactics       Tactic[]
 
   @@unique([academyId, name])
   @@index([academyId])
@@ -1182,4 +1184,44 @@ model CashPayment {
   @@index([playerId])
   @@index([chargeId])
   @@index([academyId, paidAt])
+}
+
+enum TacticPhase {
+  ATTACK
+  DEFENSE
+  ATTACK_TRANSITION
+  DEFENSE_TRANSITION
+  SET_PIECE
+}
+
+model Tactic {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  name String
+
+  formation String?
+  phase     TacticPhase @default(ATTACK)
+  sport     String?
+
+  objective   String?
+  description String?
+  notes       String?
+
+  boardData Json?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId])
+  @@index([academyId, isActive])
+  @@index([academyId, phase])
+  @@index([teamId])
 }

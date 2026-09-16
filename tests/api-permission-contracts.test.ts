@@ -606,6 +606,31 @@ const CONTRACTS:
       method: "POST",
       permission: "TRAINING_CREATE",
     },
+    {
+      path: "app/api/tactics/[tacticId]/route.ts",
+      method: "GET",
+      permission: "TACTICS_VIEW",
+    },
+    {
+      path: "app/api/tactics/[tacticId]/route.ts",
+      method: "PATCH",
+      permission: "TACTICS_MANAGE",
+    },
+    {
+      path: "app/api/tactics/[tacticId]/route.ts",
+      method: "DELETE",
+      permission: "TACTICS_MANAGE",
+    },
+    {
+      path: "app/api/tactics/route.ts",
+      method: "GET",
+      permission: "TACTICS_VIEW",
+    },
+    {
+      path: "app/api/tactics/route.ts",
+      method: "POST",
+      permission: "TACTICS_MANAGE",
+    },
   ];
 
 test("API mutation and read handlers preserve their exact permission contracts", () => {
