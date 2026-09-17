@@ -1,8 +1,32 @@
+import { redirect } from "next/navigation";
+
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
+import { AcademySettings } from "@/components/cilesimet/academy-settings";
 import { SeasonsSettings } from "@/components/cilesimet/seasons-settings";
+import {
+  requireAcademyPermission,
+} from "@/lib/academy-permissions";
+import {
+  PERMISSIONS,
+} from "@/lib/permissions";
 
-export default function Page() {
+export default async function Page() {
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.SETTINGS_VIEW
+    );
+
+  if (!access.ok) {
+    if (
+      access.response.status === 401
+    ) {
+      redirect("/hyrje");
+    }
+
+    redirect("/");
+  }
+
   return (
     <AppShell>
       <PageHeader
@@ -11,17 +35,8 @@ export default function Page() {
       />
 
       <div className="grid gap-5 xl:grid-cols-2">
+        <AcademySettings />
         <SeasonsSettings />
-
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="font-bold text-slate-900">
-            Preferencat
-          </h2>
-
-          <p className="mt-1 text-xs text-slate-500">
-            Preferencat e tjera të akademisë do të menaxhohen këtu.
-          </p>
-        </section>
       </div>
     </AppShell>
   );
