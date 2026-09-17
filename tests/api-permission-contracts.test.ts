@@ -411,6 +411,26 @@ const CONTRACTS:
       method: "POST",
       permission: "PLAYERS_CREATE",
     },
+    {
+      path: "app/api/players/[playerId]/physical-measurements/route.ts",
+      method: "GET",
+      permission: "PLAYERS_VIEW",
+    },
+    {
+      path: "app/api/players/[playerId]/physical-measurements/route.ts",
+      method: "POST",
+      permission: "PLAYERS_UPDATE",
+    },
+    {
+      path: "app/api/players/[playerId]/physical-measurements/[measurementId]/route.ts",
+      method: "PATCH",
+      permission: "PLAYERS_UPDATE",
+    },
+    {
+      path: "app/api/players/[playerId]/physical-measurements/[measurementId]/route.ts",
+      method: "DELETE",
+      permission: "PLAYERS_UPDATE",
+    },
 
     {
       path: "app/api/scouting/[candidateId]/observations/[observationId]/route.ts",

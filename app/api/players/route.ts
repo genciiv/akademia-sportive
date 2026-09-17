@@ -74,6 +74,19 @@ export async function GET() {
           : {}),
       },
 
+      include: {
+        physicalMeasurements: {
+          orderBy: [
+            {
+              measuredAt: "desc",
+            },
+            {
+              createdAt: "desc",
+            },
+          ],
+          take: 1,
+        },
+      },
       orderBy: [
         {
           lastName: "asc",

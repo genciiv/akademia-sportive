@@ -397,12 +397,13 @@ model Player {
 
   status PlayerStatus @default(ACTIVE)
 
-  teams        TeamPlayer[]
-  attendances  TrainingAttendance[]
-  fees         PlayerFee[]
-  charges      PlayerCharge[]
-  cashPayments CashPayment[]
-  guardians    PlayerGuardian[]
+  teams                TeamPlayer[]
+  attendances          TrainingAttendance[]
+  fees                 PlayerFee[]
+  charges              PlayerCharge[]
+  cashPayments         CashPayment[]
+  guardians            PlayerGuardian[]
+  physicalMeasurements PlayerPhysicalMeasurement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -410,6 +411,27 @@ model Player {
   @@index([academyId])
   @@index([academyId, status])
   @@index([academyId, lastName, firstName])
+}
+
+model PlayerPhysicalMeasurement {
+  id String @id @default(cuid())
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  measuredAt DateTime
+
+  heightCm       Float?
+  weightKg       Float?
+  bodyFatPercent Float?
+  muscleMassKg   Float?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([playerId, measuredAt])
 }
 
 model Guardian {
