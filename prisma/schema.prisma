@@ -376,6 +376,9 @@ model Facility {
   description String?
   notes       String?
 
+  trainingSessions TrainingSession[]
+  matches          Match[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -784,6 +787,9 @@ model TrainingSession {
   branchId String?
   branch   AcademyBranch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
+  facilityId String?
+  facility   Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
   title String
 
   startsAt DateTime
@@ -809,6 +815,8 @@ model TrainingSession {
   @@index([teamId])
   @@index([coachId])
   @@index([branchId])
+  @@index([facilityId])
+  @@index([academyId, facilityId, startsAt])
   @@index([academyId, startsAt])
   @@index([academyId, status])
 }
@@ -919,6 +927,11 @@ model Match {
   status    MatchStatus @default(SCHEDULED)
 
   startsAt DateTime
+  endsAt   DateTime?
+
+  facilityId String?
+  facility   Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
   location String?
   isHome   Boolean  @default(true)
 
@@ -935,6 +948,8 @@ model Match {
   updatedAt DateTime @updatedAt
 
   @@index([academyId])
+  @@index([facilityId])
+  @@index([academyId, facilityId, startsAt])
   @@index([academyId, startsAt])
   @@index([academyId, status])
   @@index([teamId])

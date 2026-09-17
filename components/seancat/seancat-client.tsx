@@ -42,6 +42,14 @@ type BranchOption = {
   name: string;
 };
 
+type FacilityOption = {
+  id: string;
+  name: string;
+  type: string;
+  status: "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+  isIndoor: boolean;
+};
+
 type AttendanceStatus =
   | "PRESENT"
   | "ABSENT"
@@ -131,6 +139,14 @@ type TrainingSession = {
   branch: {
     id: string;
     name: string;
+  } | null;
+
+  facility: {
+    id: string;
+    name: string;
+    type: string;
+    status: "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+    isIndoor: boolean;
   } | null;
 
   _count: {
@@ -240,6 +256,7 @@ export default function SeancatClient() {
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [coaches, setCoaches] = useState<CoachOption[]>([]);
   const [branches, setBranches] = useState<BranchOption[]>([]);
+  const [facilities, setFacilities] = useState<FacilityOption[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [gabimi, setGabimi] = useState("");
@@ -308,6 +325,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
   const [teamId, setTeamId] = useState("");
   const [coachId, setCoachId] = useState("");
   const [branchId, setBranchId] = useState("");
+  const [facilityId, setFacilityId] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [location, setLocation] = useState("");
@@ -342,6 +360,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
       setTeams(data.teams || []);
       setCoaches(data.coaches || []);
       setBranches(data.branches || []);
+      setFacilities(data.facilities || []);
     } catch {
       setGabimi(
         "Ndodhi një problem gjatë ngarkimit të seancave."
@@ -413,6 +432,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
     setTeamId(teams[0]?.id || "");
     setCoachId("");
     setBranchId("");
+    setFacilityId("");
     setStartsAt("");
     setEndsAt("");
     setLocation("");
@@ -438,6 +458,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
     setTeamId(session.team.id);
     setCoachId(session.coach?.id || "");
     setBranchId(session.branch?.id || "");
+    setFacilityId(session.facility?.id || "");
     setStartsAt(dateTimeLocal(session.startsAt));
     setEndsAt(dateTimeLocal(session.endsAt));
     setLocation(session.location || "");
@@ -467,6 +488,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
           teamId,
           coachId,
           branchId,
+          facilityId,
           startsAt,
           endsAt,
           location,
@@ -1077,6 +1099,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                   <InfoDark
                     icon={MapPin}
                     text={
+                      nextSession.facility?.name ||
                       nextSession.location ||
                       nextSession.branch?.name ||
                       "Pa vendndodhje"
@@ -1276,6 +1299,7 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                         icon={MapPin}
                         label="Vendndodhja"
                         value={
+                          session.facility?.name ||
                           session.location ||
                           session.branch?.name ||
                           "Pa përcaktuar"
@@ -1443,6 +1467,40 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                 </select>
               </Field>
 
+              <Field label="Ambienti i akademisë">
+                <select
+                  value={facilityId}
+                  onChange={(event) =>
+                    setFacilityId(event.target.value)
+                  }
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                >
+                  <option value="">
+                    Pa ambient të caktuar
+                  </option>
+
+                  {facilities.map((facility) => (
+                    <option
+                      key={facility.id}
+                      value={facility.id}
+                      disabled={facility.status !== "ACTIVE"}
+                    >
+                      {facility.name}
+                      {facility.isIndoor ? " · Indoor" : " · Outdoor"}
+                      {facility.status === "MAINTENANCE"
+                        ? " · Në mirëmbajtje"
+                        : facility.status === "INACTIVE"
+                          ? " · Jo aktiv"
+                          : ""}
+                    </option>
+                  ))}
+                </select>
+
+                <p className="mt-1 text-xs text-slate-400">
+                  Ambientet në mirëmbajtje ose jo aktive nuk mund të rezervohen.
+                </p>
+              </Field>
+
               <Field label="Fillimi">
                 <input
                   type="datetime-local"
@@ -1466,13 +1524,13 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
                 />
               </Field>
 
-              <Field label="Fusha / vendndodhja">
+              <Field label="Vendndodhje e jashtme">
                 <input
                   value={location}
                   onChange={(event) =>
                     setLocation(event.target.value)
                   }
-                  placeholder="p.sh. Fusha 1"
+                  placeholder="p.sh. Stadiumi i qytetit"
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 />
               </Field>

@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkFacilityAvailability } from "@/lib/facility-scheduling";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -79,6 +80,15 @@ export async function GET() {
           name: true,
         },
       },
+      facility: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          status: true,
+          isIndoor: true,
+        },
+      },
       _count: {
         select: {
           attendances: true,
@@ -134,11 +144,28 @@ export async function GET() {
     },
   });
 
+  const facilities = await prisma.facility.findMany({
+    where: {
+      academyId: academyId,
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      status: true,
+      isIndoor: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+
   return NextResponse.json({
     sessions,
     teams,
     coaches,
     branches,
+    facilities,
   });
 }
 
@@ -160,7 +187,8 @@ export async function POST(request: Request) {
   const teamId = String(body.teamId || "").trim();
   const coachId = String(body.coachId || "").trim() || null;
   const branchId = String(body.branchId || "").trim() || null;
-  const location = String(body.location || "").trim() || null;
+  const facilityId = String(body.facilityId || "").trim() || null;
+  const location = facilityId ? null : String(body.location || "").trim() || null;
   const description = String(body.description || "").trim() || null;
   const notes = String(body.notes || "").trim() || null;
   const status = String(body.status || "SCHEDULED").trim();
@@ -274,6 +302,36 @@ export async function POST(request: Request) {
     }
   }
 
+  if (facilityId && !endsAt) {
+    return NextResponse.json(
+      {
+        error:
+          "Ora e përfundimit është e detyrueshme kur zgjidhet një ambient.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (facilityId && endsAt) {
+    const availability =
+      await checkFacilityAvailability({
+        academyId,
+        facilityId,
+        startsAt,
+        endsAt,
+      });
+
+    if (!availability.ok) {
+      return NextResponse.json(
+        {
+          error: availability.error,
+          conflict: availability.conflict ?? null,
+        },
+        { status: availability.status }
+      );
+    }
+  }
+
   const team = await prisma.team.findFirst({
     where: {
       id: teamId,
@@ -344,6 +402,7 @@ export async function POST(request: Request) {
         teamId,
         coachId,
         branchId,
+        facilityId,
         title,
         startsAt,
         endsAt,

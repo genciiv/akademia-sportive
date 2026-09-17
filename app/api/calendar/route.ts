@@ -244,6 +244,15 @@ export async function GET(request: Request) {
         description: true,
         notes: true,
         status: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            status: true,
+            isIndoor: true,
+          },
+        },
         team: {
           select: {
             id: true,
@@ -285,7 +294,17 @@ export async function GET(request: Request) {
         matchType: true,
         status: true,
         startsAt: true,
+        endsAt: true,
         location: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            status: true,
+            isIndoor: true,
+          },
+        },
         isHome: true,
         ourScore: true,
         opponentScore: true,
@@ -352,6 +371,7 @@ export async function GET(request: Request) {
       notes: session.notes,
       status: session.status,
       team: session.team,
+      facility: session.facility,
     })),
 
     ...matches.map((match) => ({
@@ -361,8 +381,9 @@ export async function GET(request: Request) {
       type: "MATCH",
       title: `${match.team.name} - ${match.opponentName}`,
       startsAt: match.startsAt,
-      endsAt: null,
+      endsAt: match.endsAt,
       location: match.location,
+      facility: match.facility,
       description: match.description,
       notes: match.notes,
       status: match.status,
@@ -388,6 +409,7 @@ export async function GET(request: Request) {
       description: event.description,
       notes: event.notes,
       status: null,
+      facility: null,
       team: event.teamId
         ? teams.find(
             (team) =>

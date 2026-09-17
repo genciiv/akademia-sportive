@@ -48,6 +48,13 @@ type CalendarEvent = {
   notes: string | null;
   status: string | null;
   team: Team | null;
+  facility: {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    isIndoor: boolean;
+  } | null;
   opponentName?: string | null;
   matchType?: string | null;
   isHome?: boolean;
@@ -673,14 +680,21 @@ export default function CalendarClient() {
                               )}`}
                             >
                               <p className="truncate text-[11px] font-bold">
-                                {ora(
-                                  event.startsAt
-                                )}{" "}
+                                {ora(event.startsAt)}
+                                {event.endsAt
+                                  ? `–${ora(event.endsAt)}`
+                                  : ""}{" "}
                                 ·{" "}
-                                {
-                                  event.title
-                                }
+                                {event.title}
                               </p>
+
+                              {(event.facility?.name ||
+                                event.location) && (
+                                <p className="mt-0.5 truncate text-[10px] opacity-75">
+                                  {event.facility?.name ||
+                                    event.location}
+                                </p>
+                              )}
                             </button>
                           ))}
 
@@ -864,6 +878,9 @@ function EventDetails({
                 event.startsAt
               ).getFullYear()}
               , {ora(event.startsAt)}
+              {event.endsAt
+                ? ` - ${ora(event.endsAt)}`
+                : ""}
             </p>
           </div>
 
@@ -879,15 +896,19 @@ function EventDetails({
             </div>
           )}
 
-          {event.location && (
+          {(event.facility?.name ||
+            event.location) && (
             <div>
               <p className="text-xs font-semibold text-slate-500">
-                Vendndodhja
+                {event.facility
+                  ? "Ambienti"
+                  : "Vendndodhja"}
               </p>
 
               <p className="mt-1 flex items-center gap-2 font-semibold text-slate-900">
                 <MapPin className="h-4 w-4" />
-                {event.location}
+                {event.facility?.name ||
+                  event.location}
               </p>
             </div>
           )}

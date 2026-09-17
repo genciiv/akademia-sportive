@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkFacilityAvailability } from "@/lib/facility-scheduling";
 import { prisma } from "@/lib/prisma";
 
 const MATCH_TYPES = [
@@ -279,6 +280,76 @@ export async function PATCH(
     startsAt = parsed;
   }
 
+  let endsAt = existing.endsAt;
+
+  if (body.endsAt !== undefined) {
+    const value = String(body.endsAt || "").trim();
+
+    if (!value) {
+      endsAt = null;
+    } else {
+      const parsed = new Date(value);
+
+      if (Number.isNaN(parsed.getTime())) {
+        return NextResponse.json(
+          {
+            error:
+              "Data dhe ora e përfundimit nuk janë të vlefshme.",
+          },
+          { status: 400 }
+        );
+      }
+
+      endsAt = parsed;
+    }
+  }
+
+  const facilityId =
+    body.facilityId === undefined
+      ? existing.facilityId
+      : String(body.facilityId || "").trim() || null;
+
+  if (endsAt && endsAt <= startsAt) {
+    return NextResponse.json(
+      {
+        error:
+          "Ora e përfundimit duhet të jetë pas fillimit.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (facilityId && !endsAt) {
+    return NextResponse.json(
+      {
+        error:
+          "Ora e përfundimit është e detyrueshme kur zgjidhet një ambient.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (facilityId && endsAt) {
+    const availability =
+      await checkFacilityAvailability({
+        academyId,
+        facilityId,
+        startsAt,
+        endsAt,
+        excludeMatchId: existing.id,
+      });
+
+    if (!availability.ok) {
+      return NextResponse.json(
+        {
+          error: availability.error,
+          conflict: availability.conflict ?? null,
+        },
+        { status: availability.status }
+      );
+    }
+  }
+
   if (
     !rezultatValid(body.ourScore) ||
     !rezultatValid(body.opponentScore)
@@ -327,8 +398,11 @@ export async function PATCH(
         | "CANCELLED"
         | "POSTPONED",
       startsAt,
-      location:
-        body.location === undefined
+      endsAt,
+      facilityId,
+      location: facilityId
+        ? null
+        : body.location === undefined
           ? existing.location
           : String(body.location || "").trim() ||
             null,

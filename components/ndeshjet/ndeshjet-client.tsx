@@ -50,12 +50,21 @@ type TeamOption = {
   season: string | null;
 };
 
+type FacilityOption = {
+  id: string;
+  name: string;
+  type: string;
+  status: "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+  isIndoor: boolean;
+};
+
 type MatchItem = {
   id: string;
   opponentName: string;
   matchType: MatchType;
   status: MatchStatus;
   startsAt: string;
+  endsAt: string | null;
   location: string | null;
   isHome: boolean;
   ourScore: number | null;
@@ -65,6 +74,13 @@ type MatchItem = {
   description: string | null;
   notes: string | null;
   team: TeamOption;
+  facility: {
+    id: string;
+    name: string;
+    type: string;
+    status: "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+    isIndoor: boolean;
+  } | null;
 };
 
 type MatchPlayerRole =
@@ -279,6 +295,9 @@ export default function NdeshjetClient() {
   const [ekipet, setEkipet] =
     useState<TeamOption[]>([]);
 
+  const [facilities, setFacilities] =
+    useState<FacilityOption[]>([]);
+
   const [dukeNgarkuar, setDukeNgarkuar] =
     useState(true);
 
@@ -402,6 +421,12 @@ export default function NdeshjetClient() {
   const [startsAt, setStartsAt] =
     useState("");
 
+  const [endsAt, setEndsAt] =
+    useState("");
+
+  const [facilityId, setFacilityId] =
+    useState("");
+
   const [location, setLocation] =
     useState("");
 
@@ -469,6 +494,10 @@ export default function NdeshjetClient() {
         matchesData.matches || []
       );
 
+      setFacilities(
+        matchesData.facilities || []
+      );
+
       setEkipet(
         teamsData.teams || []
       );
@@ -497,6 +526,9 @@ export default function NdeshjetClient() {
           .toLowerCase()
           .includes(term) ||
         match.team.name
+          .toLowerCase()
+          .includes(term) ||
+        (match.facility?.name || "")
           .toLowerCase()
           .includes(term) ||
         (match.location || "")
@@ -1184,6 +1216,8 @@ export default function NdeshjetClient() {
     setMatchType("FRIENDLY");
     setStatus("SCHEDULED");
     setStartsAt("");
+    setEndsAt("");
+    setFacilityId("");
     setLocation("");
     setIsHome(true);
     setOurScore("");
@@ -1212,6 +1246,12 @@ export default function NdeshjetClient() {
     setStatus(match.status);
     setStartsAt(
       dateTimeLocal(match.startsAt)
+    );
+    setEndsAt(
+      dateTimeLocal(match.endsAt)
+    );
+    setFacilityId(
+      match.facility?.id || ""
     );
     setLocation(match.location || "");
     setIsHome(match.isHome);
@@ -1298,6 +1338,8 @@ export default function NdeshjetClient() {
             matchType,
             status,
             startsAt,
+            endsAt,
+            facilityId,
             location,
             isHome,
             ourScore,
@@ -1642,10 +1684,12 @@ export default function NdeshjetClient() {
                             )}
                           </span>
 
-                          {match.location && (
+                          {(match.facility?.name ||
+                            match.location) && (
                             <span className="inline-flex items-center gap-1.5">
                               <MapPin size={15} />
-                              {match.location}
+                              {match.facility?.name ||
+                                match.location}
                             </span>
                           )}
 
@@ -1849,7 +1893,64 @@ export default function NdeshjetClient() {
                   />
                 </Fusha>
 
-                <Fusha label="Vendndodhja">
+                <Fusha label="Përfundimi">
+                  <input
+                    type="datetime-local"
+                    value={endsAt}
+                    onChange={(event) =>
+                      setEndsAt(
+                        event.target.value
+                      )
+                    }
+                    required={Boolean(facilityId)}
+                    className={inputClass}
+                  />
+                </Fusha>
+
+                <Fusha label="Ambienti i akademisë">
+                  <select
+                    value={facilityId}
+                    onChange={(event) =>
+                      setFacilityId(
+                        event.target.value
+                      )
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">
+                      Pa ambient të caktuar
+                    </option>
+
+                    {facilities.map((facility) => (
+                      <option
+                        key={facility.id}
+                        value={facility.id}
+                        disabled={
+                          facility.status !==
+                          "ACTIVE"
+                        }
+                      >
+                        {facility.name}
+                        {facility.isIndoor
+                          ? " · Indoor"
+                          : " · Outdoor"}
+                        {facility.status ===
+                        "MAINTENANCE"
+                          ? " · Në mirëmbajtje"
+                          : facility.status ===
+                              "INACTIVE"
+                            ? " · Jo aktiv"
+                            : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    Kur zgjidhet ambienti, ora e përfundimit është e detyrueshme.
+                  </p>
+                </Fusha>
+
+                <Fusha label="Vendndodhje e jashtme">
                   <input
                     value={location}
                     onChange={(event) =>
@@ -1857,7 +1958,7 @@ export default function NdeshjetClient() {
                         event.target.value
                       )
                     }
-                    placeholder="Stadiumi ose fusha"
+                    placeholder="p.sh. Stadiumi i qytetit"
                     className={inputClass}
                   />
                 </Fusha>
