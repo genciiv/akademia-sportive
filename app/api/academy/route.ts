@@ -66,6 +66,19 @@ export async function POST(request: Request) {
   }
 
   const academy = await prisma.$transaction(async (tx) => {
+    const proPlan = await tx.plan.findUnique({
+      where: { code: "PRO" },
+      select: { id: true },
+    });
+
+    if (!proPlan) {
+      throw new Error("Plani PRO nuk u gjet.");
+    }
+
+    const trialStartsAt = new Date();
+    const trialEndsAt = new Date(trialStartsAt);
+    trialEndsAt.setUTCDate(trialEndsAt.getUTCDate() + 7);
+
     const createdAcademy = await tx.academy.create({
       data: {
         name,
@@ -92,6 +105,16 @@ export async function POST(request: Request) {
         name: "Dega Kryesore",
         city: city || null,
         country: country || null,
+      },
+    });
+
+    await tx.academySubscription.create({
+      data: {
+        academyId: createdAcademy.id,
+        planId: proPlan.id,
+        status: "TRIALING",
+        trialStartsAt,
+        trialEndsAt,
       },
     });
 

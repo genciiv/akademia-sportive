@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkPlanLimit } from "@/lib/plan-limits";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -318,6 +319,45 @@ export async function POST(
     );
   }
 
+  const nextStaffStatus =
+    staffStatusFromCoach(
+      status
+    );
+
+  const consumesNewStaffSlot =
+    nextStaffStatus !== "LEFT" &&
+    (
+      !existingStaff ||
+      existingStaff.status === "LEFT"
+    );
+
+  if (consumesNewStaffSlot) {
+    const planLimit =
+      await checkPlanLimit(
+        access.academyId,
+        "staff"
+      );
+
+    if (!planLimit.allowed) {
+      const error =
+        planLimit.reason === "LIMIT_REACHED"
+          ? `Plani ${planLimit.planCode} lejon maksimumi ${planLimit.limit} anëtarë stafi.`
+          : "Abonimi aktual nuk lejon shtimin e stafit të ri.";
+
+      return NextResponse.json(
+        {
+          error,
+          code: planLimit.reason,
+          current: planLimit.current,
+          limit: planLimit.limit,
+          plan: planLimit.planCode,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+  }
   const result =
     await prisma.$transaction(
       async (tx) => {

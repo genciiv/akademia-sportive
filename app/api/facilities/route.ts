@@ -6,6 +6,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkPlanLimit } from "@/lib/plan-limits";
 import { prisma } from "@/lib/prisma";
 
 const FACILITY_TYPES = [
@@ -385,6 +386,31 @@ export async function POST(
     );
   }
 
+  const planLimit =
+    await checkPlanLimit(
+      access.academyId,
+      "facilities"
+    );
+
+  if (!planLimit.allowed) {
+    const error =
+      planLimit.reason === "LIMIT_REACHED"
+        ? `Plani ${planLimit.planCode} lejon maksimumi ${planLimit.limit} ambiente.`
+        : "Abonimi aktual nuk lejon krijimin e ambienteve të reja.";
+
+    return NextResponse.json(
+      {
+        error,
+        code: planLimit.reason,
+        current: planLimit.current,
+        limit: planLimit.limit,
+        plan: planLimit.planCode,
+      },
+      {
+        status: 403,
+      }
+    );
+  }
   const facility =
     await prisma.facility.create({
       data: {
