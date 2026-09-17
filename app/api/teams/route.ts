@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkPlanLimit } from "@/lib/plan-limits";
 import { prisma } from "@/lib/prisma";
 
 const SPORTET = [
@@ -229,6 +230,31 @@ export async function POST(
     );
   }
 
+  const planLimit =
+    await checkPlanLimit(
+      academyId,
+      "teams"
+    );
+
+  if (!planLimit.allowed) {
+    const error =
+      planLimit.reason === "LIMIT_REACHED"
+        ? `Plani ${planLimit.planCode} lejon maksimumi ${planLimit.limit} ekipe.`
+        : "Abonimi aktual nuk lejon krijimin e ekipeve të reja.";
+
+    return NextResponse.json(
+      {
+        error,
+        code: planLimit.reason,
+        current: planLimit.current,
+        limit: planLimit.limit,
+        plan: planLimit.planCode,
+      },
+      {
+        status: 403,
+      }
+    );
+  }
   const team =
     await prisma.team.create({
       data: {

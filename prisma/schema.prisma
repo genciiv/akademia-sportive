@@ -37,6 +37,29 @@ enum AcademyStatus {
   CANCELLED
 }
 
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  GRACE_PERIOD
+  EXPIRED
+  CANCELLED
+}
+
+enum SubscriptionPaymentMethod {
+  CASH
+}
+
+enum PlanFeature {
+  MEDICAL
+  PHYSICAL_PROFILE
+  PERFORMANCE
+  SCOUTING
+  TACTICS
+  KNOWLEDGE_BASE
+  FACILITY_SCHEDULING
+  ADVANCED_REPORTS
+}
+
 enum MembershipStatus {
   ACTIVE
   INVITED
@@ -65,11 +88,12 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  memberships            AcademyMembership[]
-  sentAcademyInvitations AcademyInvitation[] @relation("AcademyInvitationSender")
-  ownedAcademies         Academy[]           @relation("AcademyOwner")
-  auditLogs              AuditLog[]          @relation("AuditLogActor")
-  knowledgeArticles      KnowledgeArticle[]  @relation("KnowledgeArticleAuthor")
+  memberships                  AcademyMembership[]
+  sentAcademyInvitations       AcademyInvitation[]   @relation("AcademyInvitationSender")
+  ownedAcademies               Academy[]             @relation("AcademyOwner")
+  auditLogs                    AuditLog[]            @relation("AuditLogActor")
+  knowledgeArticles            KnowledgeArticle[]    @relation("KnowledgeArticleAuthor")
+  recordedSubscriptionPayments SubscriptionPayment[] @relation("SubscriptionPaymentRecorder")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -150,27 +174,29 @@ model Academy {
   memberships AcademyMembership[]
   branches    AcademyBranch[]
 
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  players            Player[]
-  teams              Team[]
-  trainingSessions   TrainingSession[]
-  coaches            Coach[]
-  scoutingCandidates ScoutingCandidate[]
-  calendarEvents     CalendarEvent[]
-  playerFees         PlayerFee[]
-  playerCharges      PlayerCharge[]
-  cashPayments       CashPayment[]
-  expenses           Expense[]
-  guardians          Guardian[]
-  playerGuardians    PlayerGuardian[]
-  notifications      Notification[]
-  academySeasons     AcademySeason[]
-  invitations        AcademyInvitation[]
-  staff              AcademyStaff[]
-  auditLogs          AuditLog[]
-  knowledgeArticles  KnowledgeArticle[]
-  facilities         Facility[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  players              Player[]
+  teams                Team[]
+  trainingSessions     TrainingSession[]
+  coaches              Coach[]
+  scoutingCandidates   ScoutingCandidate[]
+  calendarEvents       CalendarEvent[]
+  playerFees           PlayerFee[]
+  playerCharges        PlayerCharge[]
+  cashPayments         CashPayment[]
+  expenses             Expense[]
+  guardians            Guardian[]
+  playerGuardians      PlayerGuardian[]
+  notifications        Notification[]
+  academySeasons       AcademySeason[]
+  invitations          AcademyInvitation[]
+  staff                AcademyStaff[]
+  auditLogs            AuditLog[]
+  knowledgeArticles    KnowledgeArticle[]
+  facilities           Facility[]
+  subscription         AcademySubscription?
+  subscriptionPayments SubscriptionPayment[]
 
   @@index([ownerId])
   @@index([status])
@@ -387,6 +413,7 @@ model Facility {
   @@index([academyId, status])
   @@index([academyId, type])
 }
+
 enum PlayerStatus {
   ACTIVE
   INACTIVE
@@ -457,7 +484,7 @@ model Player {
   cashPayments         CashPayment[]
   guardians            PlayerGuardian[]
   physicalMeasurements PlayerPhysicalMeasurement[]
-  medicalRecords        PlayerMedicalRecord[]
+  medicalRecords       PlayerMedicalRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -933,7 +960,7 @@ model Match {
   facility   Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
 
   location String?
-  isHome   Boolean  @default(true)
+  isHome   Boolean @default(true)
 
   ourScore      Int?
   opponentScore Int?
@@ -1422,4 +1449,99 @@ model KnowledgeArticle {
   @@index([academyId, audience])
   @@index([academyId, isPinned])
   @@index([authorId])
+}
+
+model Plan {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+
+  monthlyPrice Decimal @db.Decimal(12, 2)
+  currency     String  @default("ALL")
+
+  maxPlayers    Int
+  maxTeams      Int
+  maxStaff      Int
+  maxFacilities Int
+
+  features PlanFeature[] @default([])
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  subscriptions AcademySubscription[]
+  payments      SubscriptionPayment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model AcademySubscription {
+  id String @id @default(cuid())
+
+  academyId String  @unique
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  status SubscriptionStatus @default(TRIALING)
+
+  trialStartsAt DateTime?
+  trialEndsAt   DateTime?
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  graceEndsAt        DateTime?
+  cancelledAt        DateTime?
+
+  payments SubscriptionPayment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planId])
+  @@index([status])
+  @@index([status, currentPeriodEnd])
+}
+
+model SubscriptionPayment {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  subscriptionId String
+  subscription   AcademySubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  months Int
+
+  monthlyPrice Decimal @db.Decimal(12, 2)
+  totalAmount  Decimal @db.Decimal(12, 2)
+  currency     String  @default("ALL")
+
+  method SubscriptionPaymentMethod @default(CASH)
+
+  paidAt      DateTime @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
+
+  note String?
+
+  recordedById String?
+  recordedBy   User?   @relation("SubscriptionPaymentRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([academyId])
+  @@index([subscriptionId])
+  @@index([planId])
+  @@index([paidAt])
+  @@index([recordedById])
 }
