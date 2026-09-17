@@ -459,6 +459,16 @@ const CONTRACTS:
     },
 
     {
+      path: "app/api/settings/academy/route.ts",
+      method: "GET",
+      permission: "SETTINGS_VIEW",
+    },
+    {
+      path: "app/api/settings/academy/route.ts",
+      method: "PATCH",
+      permission: "SETTINGS_MANAGE",
+    },
+    {
       path: "app/api/seasons/[seasonId]/route.ts",
       method: "PATCH",
       permission: "SEASONS_MANAGE",
