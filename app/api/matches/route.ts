@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkFacilityAvailability } from "@/lib/facility-scheduling";
 import { prisma } from "@/lib/prisma";
 
 const MATCH_TYPES = [
@@ -92,14 +93,40 @@ export async function GET() {
           season: true,
         },
       },
+      facility: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          status: true,
+          isIndoor: true,
+        },
+      },
     },
     orderBy: {
       startsAt: "desc",
     },
   });
 
+  const facilities = await prisma.facility.findMany({
+    where: {
+      academyId,
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      status: true,
+      isIndoor: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+
   return NextResponse.json({
     matches,
+    facilities,
   });
 }
 
@@ -127,8 +154,15 @@ export async function POST(request: Request) {
     body.startsAt || ""
   ).trim();
 
-  const location =
-    String(body.location || "").trim() || null;
+  const endsAt =
+    String(body.endsAt || "").trim();
+
+  const facilityId =
+    String(body.facilityId || "").trim() || null;
+
+  const location = facilityId
+    ? null
+    : String(body.location || "").trim() || null;
 
   const competitionName =
     String(body.competitionName || "").trim() ||
@@ -195,6 +229,42 @@ export async function POST(request: Request) {
     );
   }
 
+  let endsAtDate: Date | null = null;
+
+  if (endsAt) {
+    endsAtDate = new Date(endsAt);
+
+    if (Number.isNaN(endsAtDate.getTime())) {
+      return NextResponse.json(
+        {
+          error:
+            "Data dhe ora e përfundimit nuk janë të vlefshme.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (endsAtDate <= startsAtDate) {
+      return NextResponse.json(
+        {
+          error:
+            "Ora e përfundimit duhet të jetë pas fillimit.",
+        },
+        { status: 400 }
+      );
+    }
+  }
+
+  if (facilityId && !endsAtDate) {
+    return NextResponse.json(
+      {
+        error:
+          "Ora e përfundimit është e detyrueshme kur zgjidhet një ambient.",
+      },
+      { status: 400 }
+    );
+  }
+
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
@@ -245,6 +315,26 @@ export async function POST(request: Request) {
       },
       { status: 400 }
     );
+  }
+
+  if (facilityId && endsAtDate) {
+    const availability =
+      await checkFacilityAvailability({
+        academyId,
+        facilityId,
+        startsAt: startsAtDate,
+        endsAt: endsAtDate,
+      });
+
+    if (!availability.ok) {
+      return NextResponse.json(
+        {
+          error: availability.error,
+          conflict: availability.conflict ?? null,
+        },
+        { status: availability.status }
+      );
+    }
   }
 
   if (
@@ -326,6 +416,8 @@ export async function POST(request: Request) {
         | "CANCELLED"
         | "POSTPONED",
       startsAt: startsAtDate,
+      endsAt: endsAtDate,
+      facilityId,
       location,
       isHome,
       ourScore,
@@ -343,6 +435,15 @@ export async function POST(request: Request) {
           sport: true,
           ageGroup: true,
           season: true,
+        },
+      },
+      facility: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          status: true,
+          isIndoor: true,
         },
       },
     },

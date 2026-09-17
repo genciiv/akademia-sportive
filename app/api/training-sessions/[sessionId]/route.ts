@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import { checkFacilityAvailability } from "@/lib/facility-scheduling";
 import { prisma } from "@/lib/prisma";
 
 const STATUSET = [
@@ -69,7 +70,8 @@ export async function PATCH(
   const teamId = String(body.teamId || "").trim();
   const coachId = String(body.coachId || "").trim() || null;
   const branchId = String(body.branchId || "").trim() || null;
-  const location = String(body.location || "").trim() || null;
+  const facilityId = String(body.facilityId || "").trim() || null;
+  const location = facilityId ? null : String(body.location || "").trim() || null;
   const description = String(body.description || "").trim() || null;
   const notes = String(body.notes || "").trim() || null;
   const status = String(body.status || "SCHEDULED").trim();
@@ -106,6 +108,37 @@ export async function PATCH(
       return NextResponse.json(
         { error: "Ora e pÃ«rfundimit nuk Ã«shtÃ« e vlefshme." },
         { status: 400 }
+      );
+    }
+  }
+
+  if (facilityId && !endsAt) {
+    return NextResponse.json(
+      {
+        error:
+          "Ora e përfundimit është e detyrueshme kur zgjidhet një ambient.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (facilityId && endsAt) {
+    const availability =
+      await checkFacilityAvailability({
+        academyId,
+        facilityId,
+        startsAt,
+        endsAt,
+        excludeTrainingSessionId: existing.id,
+      });
+
+    if (!availability.ok) {
+      return NextResponse.json(
+        {
+          error: availability.error,
+          conflict: availability.conflict ?? null,
+        },
+        { status: availability.status }
       );
     }
   }
@@ -182,6 +215,7 @@ export async function PATCH(
       teamId,
       coachId,
       branchId,
+      facilityId,
       title,
       startsAt,
       endsAt,
