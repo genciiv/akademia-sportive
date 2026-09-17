@@ -404,6 +404,7 @@ model Player {
   cashPayments         CashPayment[]
   guardians            PlayerGuardian[]
   physicalMeasurements PlayerPhysicalMeasurement[]
+  medicalRecords        PlayerMedicalRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -432,6 +433,53 @@ model PlayerPhysicalMeasurement {
   updatedAt DateTime @updatedAt
 
   @@index([playerId, measuredAt])
+}
+
+enum MedicalRecordType {
+  INJURY
+  ILLNESS
+  CHECKUP
+  OTHER
+}
+
+enum MedicalRecordStatus {
+  ACTIVE
+  RECOVERING
+  RESOLVED
+}
+
+enum MedicalAvailability {
+  AVAILABLE
+  LIMITED
+  UNAVAILABLE
+}
+
+model PlayerMedicalRecord {
+  id String @id @default(cuid())
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  type         MedicalRecordType
+  title        String
+  status       MedicalRecordStatus @default(ACTIVE)
+  availability MedicalAvailability
+
+  startedAt        DateTime
+  expectedReturnAt DateTime?
+  resolvedAt       DateTime?
+
+  description   String?
+  restrictions  String?
+  recoveryNotes String?
+  privateNotes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([playerId, startedAt])
+  @@index([playerId, status])
+  @@index([playerId, availability])
 }
 
 model Guardian {

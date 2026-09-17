@@ -13,6 +13,7 @@ import {
   ClipboardCheck,
   Dumbbell,
   FileBarChart,
+  HeartPulse,
   LayoutDashboard,
   Medal,
   ReceiptText,
@@ -112,6 +113,14 @@ const groups: NavGroup[] = [
         icon: UsersRound,
         permissions: [
           PERMISSIONS.PLAYERS_VIEW,
+        ],
+      },
+      {
+        label: "Mjekësore",
+        href: "/mjekesore",
+        icon: HeartPulse,
+        permissions: [
+          PERMISSIONS.MEDICAL_VIEW,
         ],
       },
       {
