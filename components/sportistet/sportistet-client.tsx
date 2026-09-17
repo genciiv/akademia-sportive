@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
+  Activity,
   Plus,
   RefreshCw,
   UserRound,
@@ -11,6 +12,19 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import PlayerPhysicalProfile from "@/components/sportistet/player-physical-profile";
+
+type PlayerPhysicalMeasurement = {
+  id: string;
+  measuredAt: string;
+  heightCm: number | null;
+  weightKg: number | null;
+  bodyFatPercent: number | null;
+  muscleMassKg: number | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 type Player = {
   id: string;
@@ -27,6 +41,13 @@ type Player = {
   jerseyNumber: number | null;
   notes: string | null;
   status: string;
+  physicalMeasurements: PlayerPhysicalMeasurement[];
+};
+
+type SportistetClientProps = {
+  canCreatePlayers: boolean;
+  canUpdatePlayers: boolean;
+  canDeletePlayers: boolean;
 };
 
 function perkthimStatusi(status: string) {
@@ -85,7 +106,11 @@ function formatDateForInput(date: string | null) {
   return new Date(date).toISOString().split("T")[0];
 }
 
-export default function SportistetClient() {
+export default function SportistetClient({
+  canCreatePlayers,
+  canUpdatePlayers,
+  canDeletePlayers,
+}: SportistetClientProps) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [dukeRuajtur, setDukeRuajtur] = useState(false);
@@ -98,6 +123,9 @@ export default function SportistetClient() {
     useState<Player | null>(null);
 
   const [playerPerFshirje, setPlayerPerFshirje] =
+    useState<Player | null>(null);
+
+  const [playerPhysicalProfile, setPlayerPhysicalProfile] =
     useState<Player | null>(null);
 
   const [dukeFshire, setDukeFshire] = useState(false);
@@ -288,13 +316,15 @@ export default function SportistetClient() {
           </p>
         </div>
 
-        <button
-          onClick={hapShtimin}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
-        >
-          <Plus size={18} />
-          Shto sportist
-        </button>
+        {canCreatePlayers && (
+          <button
+            onClick={hapShtimin}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+          >
+            <Plus size={18} />
+            Shto sportist
+          </button>
+        )}
       </div>
 
       {gabimi && (
@@ -596,26 +626,42 @@ export default function SportistetClient() {
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
                         <button
+                          type="button"
                           onClick={() =>
-                            hapEditimin(player)
-                          }
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
-                        >
-                          <Pencil size={14} />
-                          Edito
-                        </button>
-
-                        <button
-                          onClick={() =>
-                            setPlayerPerFshirje(
+                            setPlayerPhysicalProfile(
                               player
                             )
                           }
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
                         >
-                          <Trash2 size={14} />
-                          Fshi
+                          <Activity size={14} />
+                          Profili fizik
                         </button>
+                        {canUpdatePlayers && (
+                          <button
+                            onClick={() =>
+                              hapEditimin(player)
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                          >
+                            <Pencil size={14} />
+                            Edito
+                          </button>
+                        )}
+
+                        {canDeletePlayers && (
+                          <button
+                            onClick={() =>
+                              setPlayerPerFshirje(
+                                player
+                              )
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                          >
+                            <Trash2 size={14} />
+                            Fshi
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -625,6 +671,17 @@ export default function SportistetClient() {
           </div>
         )}
       </div>
+
+      {playerPhysicalProfile && (
+        <PlayerPhysicalProfile
+          player={playerPhysicalProfile}
+          canUpdatePlayers={canUpdatePlayers}
+          onClose={() =>
+            setPlayerPhysicalProfile(null)
+          }
+          onChanged={merrSportistet}
+        />
+      )}
 
       {playerPerFshirje && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/40 p-4">

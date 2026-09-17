@@ -22,5 +22,17 @@ export default async function Page() {
     redirect("/");
   }
 
-  return <SportistetClient />;
+  return (
+    <SportistetClient
+      canCreatePlayers={access.permissions.includes(
+        PERMISSIONS.PLAYERS_CREATE
+      )}
+      canUpdatePlayers={access.permissions.includes(
+        PERMISSIONS.PLAYERS_UPDATE
+      )}
+      canDeletePlayers={access.permissions.includes(
+        PERMISSIONS.PLAYERS_DELETE
+      )}
+    />
+  );
 }
