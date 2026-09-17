@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   BookOpen,
+  Building2,
   CalendarDays,
   CircleDollarSign,
   ContactRound,
@@ -121,6 +122,14 @@ const groups: NavGroup[] = [
         icon: HeartPulse,
         permissions: [
           PERMISSIONS.MEDICAL_VIEW,
+        ],
+      },
+      {
+        label: "Ambientet",
+        href: "/ambientet",
+        icon: Building2,
+        permissions: [
+          PERMISSIONS.FACILITIES_VIEW,
         ],
       },
       {
