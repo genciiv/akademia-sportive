@@ -170,6 +170,7 @@ model Academy {
   staff              AcademyStaff[]
   auditLogs          AuditLog[]
   knowledgeArticles  KnowledgeArticle[]
+  facilities         Facility[]
 
   @@index([ownerId])
   @@index([status])
@@ -334,6 +335,55 @@ model AcademyBranch {
   @@index([academyId])
 }
 
+enum FacilityType {
+  FOOTBALL_FIELD
+  BASKETBALL_COURT
+  VOLLEYBALL_COURT
+  TENNIS_COURT
+  SWIMMING_POOL
+  GYM
+  FITNESS_ROOM
+  MULTIPURPOSE_HALL
+  CLASSROOM
+  OTHER
+}
+
+enum FacilityStatus {
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
+}
+
+model Facility {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  name String
+
+  type   FacilityType   @default(OTHER)
+  status FacilityStatus @default(ACTIVE)
+
+  isIndoor Boolean @default(false)
+
+  capacity Int?
+
+  surface    String?
+  dimensions String?
+  address    String?
+
+  description String?
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([academyId, name])
+  @@index([academyId])
+  @@index([academyId, status])
+  @@index([academyId, type])
+}
 enum PlayerStatus {
   ACTIVE
   INACTIVE
