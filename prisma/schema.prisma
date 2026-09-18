@@ -37,6 +37,13 @@ enum AcademyStatus {
   CANCELLED
 }
 
+enum AcademyApplicationStatus {
+  PENDING
+  CONTACTED
+  APPROVED
+  REJECTED
+}
+
 enum SubscriptionStatus {
   TRIALING
   ACTIVE
@@ -150,6 +157,43 @@ model Verification {
   updatedAt DateTime @updatedAt
 
   @@index([identifier])
+}
+
+model AcademyApplication {
+  id String @id @default(cuid())
+
+  academyName String
+  contactName String
+
+  email String
+  phone String
+
+  city    String?
+  address String?
+  sport   String?
+  message String?
+
+  status AcademyApplicationStatus @default(PENDING)
+
+  adminNotes String?
+
+  reviewedByUserId String?
+
+  contactedAt DateTime?
+  reviewedAt  DateTime?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+
+  consumedAt       DateTime?
+  createdAcademyId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email, status])
+  @@index([reviewedByUserId])
+  @@index([createdAcademyId])
 }
 
 model Academy {

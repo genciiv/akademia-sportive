@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, Dumbbell, Menu, X } from "lucide-react";
+import { LayoutDashboard, Dumbbell, Menu, ShieldCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
@@ -16,6 +16,52 @@ export function PublicHomeNav() {
   } = authClient.useSession();
 
   const isAuthenticated = Boolean(session?.user);
+
+  const [isPlatformAdmin, setIsPlatformAdmin] =
+    useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (isPending) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setIsPlatformAdmin(false);
+      return;
+    }
+
+    setIsPlatformAdmin(null);
+
+    fetch("/api/platform-admin/session", {
+      method: "GET",
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          return false;
+        }
+
+        const data = await response.json();
+
+        return data?.platformAdmin === true;
+      })
+      .then((value) => {
+        if (!cancelled) {
+          setIsPlatformAdmin(value);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsPlatformAdmin(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, isPending]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -94,15 +140,28 @@ export function PublicHomeNav() {
         </nav>
 
         <div className="hidden min-w-[190px] items-center justify-end gap-3 xl:flex">
-          {!isPending && isAuthenticated && (
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-            >
-              <LayoutDashboard size={16} />
-              Dashboard
-            </Link>
-          )}
+          {!isPending &&
+            isAuthenticated &&
+            isPlatformAdmin !== null && (
+              <Link
+                href={
+                  isPlatformAdmin
+                    ? "/platform-admin"
+                    : "/dashboard"
+                }
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              >
+                {isPlatformAdmin ? (
+                  <ShieldCheck size={16} />
+                ) : (
+                  <LayoutDashboard size={16} />
+                )}
+
+                {isPlatformAdmin
+                  ? "Platform Admin"
+                  : "Dashboard"}
+              </Link>
+            )}
 
           {!isPending && !isAuthenticated && (
             <>
@@ -114,10 +173,10 @@ export function PublicHomeNav() {
               </Link>
 
               <Link
-                href="/regjistrohu"
+                href="/apliko"
                 className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
               >
-                Fillo falas
+                Apliko
               </Link>
             </>
           )}
@@ -142,16 +201,29 @@ export function PublicHomeNav() {
         }`}
       >
         <nav className="mx-auto max-w-7xl px-5 py-5">
-          {!isPending && isAuthenticated && (
-            <Link
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-              className="mb-3 flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700"
-            >
-              <LayoutDashboard size={16} />
-              Dashboard
-            </Link>
-          )}
+          {!isPending &&
+            isAuthenticated &&
+            isPlatformAdmin !== null && (
+              <Link
+                href={
+                  isPlatformAdmin
+                    ? "/platform-admin"
+                    : "/dashboard"
+                }
+                onClick={() => setOpen(false)}
+                className="mb-3 flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700"
+              >
+                {isPlatformAdmin ? (
+                  <ShieldCheck size={16} />
+                ) : (
+                  <LayoutDashboard size={16} />
+                )}
+
+                {isPlatformAdmin
+                  ? "Platform Admin"
+                  : "Dashboard"}
+              </Link>
+            )}
 
           {[
             ["Platforma", "#platforma"],
@@ -179,11 +251,11 @@ export function PublicHomeNav() {
               </Link>
 
               <Link
-                href="/regjistrohu"
+                href="/apliko"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white"
               >
-                Fillo falas
+                Apliko
               </Link>
             </div>
           )}

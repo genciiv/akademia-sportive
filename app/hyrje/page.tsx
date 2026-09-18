@@ -84,7 +84,31 @@ export default function Page() {
       return;
     }
 
-    router.push(nextPath);
+    let destination = nextPath;
+
+    try {
+      const platformAdminResponse =
+        await fetch("/api/platform-admin/session", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+      if (platformAdminResponse.ok) {
+        const platformAdminData =
+          await platformAdminResponse.json();
+
+        if (platformAdminData?.platformAdmin === true) {
+          destination =
+            nextPath.startsWith("/platform-admin")
+              ? nextPath
+              : "/platform-admin";
+        }
+      }
+    } catch {
+      // Nëse kontrolli dështon, ruajmë rrugën normale të login-it.
+    }
+
+    router.push(destination);
     router.refresh();
   }
 
