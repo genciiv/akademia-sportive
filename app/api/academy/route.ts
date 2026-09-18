@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -24,11 +25,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
 
-  const name = String(body.name || "").trim();
-  const city = String(body.city || "").trim();
-  const country = String(body.country || "Shqipëri").trim();
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Kërkesa nuk është e vlefshme." },
+      { status: 400 }
+    );
+  }
+
+  const name = String(body.name ?? "").trim();
+  const city = String(body.city ?? "").trim();
+  const country = String(body.country ?? "Shqipëri").trim();
 
   if (name.length < 2) {
     return NextResponse.json(
@@ -37,91 +47,229 @@ export async function POST(request: Request) {
     );
   }
 
-  const ekzistuese = await prisma.academyMembership.findFirst({
+  if (
+    name.length > 160 ||
+    city.length > 120 ||
+    country.length > 120
+  ) {
+    return NextResponse.json(
+      { error: "Të dhënat e dërguara janë shumë të gjata." },
+      { status: 400 }
+    );
+  }
+
+  const user = await prisma.user.findUnique({
     where: {
-      userId: session.user.id,
-      status: "ACTIVE",
+      id: session.user.id,
+    },
+    select: {
+      email: true,
     },
   });
 
-  if (ekzistuese) {
+  if (!user) {
+    return NextResponse.json(
+      { error: "Përdoruesi nuk u gjet." },
+      { status: 401 }
+    );
+  }
+
+  const email = user.email.trim().toLowerCase();
+
+  const existingMembership =
+    await prisma.academyMembership.findFirst({
+      where: {
+        userId: session.user.id,
+        status: "ACTIVE",
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  if (existingMembership) {
     return NextResponse.json(
       { error: "Ke tashmë një akademi aktive." },
       { status: 409 }
     );
   }
 
-  const bazaSlug = krijoSlug(name) || "akademia";
+  const application =
+    await prisma.academyApplication.findFirst({
+      where: {
+        email,
+        status: "APPROVED",
+        consumedAt: null,
+      },
+      select: {
+        id: true,
+      },
+      orderBy: {
+        approvedAt: "desc",
+      },
+    });
 
-  let slug = bazaSlug;
-  let numer = 1;
+  if (!application) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke një aplikim të aprovuar për krijimin e akademisë.",
+      },
+      { status: 403 }
+    );
+  }
+
+  const baseSlug = krijoSlug(name) || "akademia";
+
+  let slug = baseSlug;
+  let number = 1;
 
   while (
     await prisma.academy.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
+      select: {
+        id: true,
+      },
     })
   ) {
-    numer++;
-    slug = `${bazaSlug}-${numer}`;
+    number += 1;
+    slug = `${baseSlug}-${number}`;
   }
 
-  const academy = await prisma.$transaction(async (tx) => {
-    const proPlan = await tx.plan.findUnique({
-      where: { code: "PRO" },
-      select: { id: true },
+  try {
+    const academy = await prisma.$transaction(async (tx) => {
+      /*
+       * Claim application atomically.
+       * If another request has already consumed it, count = 0.
+       */
+      const claim =
+        await tx.academyApplication.updateMany({
+          where: {
+            id: application.id,
+            email,
+            status: "APPROVED",
+            consumedAt: null,
+          },
+          data: {
+            consumedAt: new Date(),
+          },
+        });
+
+      if (claim.count !== 1) {
+        throw new Error("APPLICATION_ALREADY_CONSUMED");
+      }
+
+      const proPlan = await tx.plan.findUnique({
+        where: {
+          code: "PRO",
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!proPlan) {
+        throw new Error("PRO_PLAN_NOT_FOUND");
+      }
+
+      const trialStartsAt = new Date();
+      const trialEndsAt = new Date(trialStartsAt);
+
+      trialEndsAt.setUTCDate(
+        trialEndsAt.getUTCDate() + 7
+      );
+
+      const createdAcademy = await tx.academy.create({
+        data: {
+          name,
+          slug,
+          city: city || null,
+          country: country || null,
+          ownerId: session.user.id,
+          status: "TRIAL",
+        },
+      });
+
+      await tx.academyMembership.create({
+        data: {
+          userId: session.user.id,
+          academyId: createdAcademy.id,
+          role: "OWNER",
+          status: "ACTIVE",
+        },
+      });
+
+      await tx.academyBranch.create({
+        data: {
+          academyId: createdAcademy.id,
+          name: "Dega Kryesore",
+          city: city || null,
+          country: country || null,
+        },
+      });
+
+      await tx.academySubscription.create({
+        data: {
+          academyId: createdAcademy.id,
+          planId: proPlan.id,
+          status: "TRIALING",
+          trialStartsAt,
+          trialEndsAt,
+        },
+      });
+
+      await tx.academyApplication.update({
+        where: {
+          id: application.id,
+        },
+        data: {
+          createdAcademyId: createdAcademy.id,
+        },
+      });
+
+      return createdAcademy;
     });
 
-    if (!proPlan) {
-      throw new Error("Plani PRO nuk u gjet.");
+    return NextResponse.json({
+      academy,
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "APPLICATION_ALREADY_CONSUMED"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Ky aplikim është përdorur tashmë për krijimin e një akademie.",
+        },
+        { status: 409 }
+      );
     }
 
-    const trialStartsAt = new Date();
-    const trialEndsAt = new Date(trialStartsAt);
-    trialEndsAt.setUTCDate(trialEndsAt.getUTCDate() + 7);
+    if (
+      error instanceof Error &&
+      error.message === "PRO_PLAN_NOT_FOUND"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Plani PRO nuk është konfiguruar. Kontakto administratorin.",
+        },
+        { status: 500 }
+      );
+    }
 
-    const createdAcademy = await tx.academy.create({
-      data: {
-        name,
-        slug,
-        city: city || null,
-        country: country || null,
-        ownerId: session.user.id,
-        status: "TRIAL",
+    console.error("Academy creation failed:", error);
+
+    return NextResponse.json(
+      {
+        error:
+          "Akademia nuk mund të krijohej. Provo përsëri.",
       },
-    });
-
-    await tx.academyMembership.create({
-      data: {
-        userId: session.user.id,
-        academyId: createdAcademy.id,
-        role: "OWNER",
-        status: "ACTIVE",
-      },
-    });
-
-    await tx.academyBranch.create({
-      data: {
-        academyId: createdAcademy.id,
-        name: "Dega Kryesore",
-        city: city || null,
-        country: country || null,
-      },
-    });
-
-    await tx.academySubscription.create({
-      data: {
-        academyId: createdAcademy.id,
-        planId: proPlan.id,
-        status: "TRIALING",
-        trialStartsAt,
-        trialEndsAt,
-      },
-    });
-
-    return createdAcademy;
-  });
-
-  return NextResponse.json({
-    academy,
-  });
+      { status: 500 }
+    );
+  }
 }

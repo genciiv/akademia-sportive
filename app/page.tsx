@@ -102,10 +102,10 @@ export default function HomePage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/regjistrohu"
+                href="/apliko"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700"
               >
-                Fillo provën falas
+                Apliko
                 <ArrowRight size={16} />
               </Link>
 
@@ -326,10 +326,10 @@ export default function HomePage() {
             </div>
 
             <Link
-              href="/regjistrohu"
+              href="/apliko"
               className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-blue-600"
             >
-              Krijo akademinë
+              Apliko
               <ArrowRight size={15} />
             </Link>
           </div>
@@ -423,10 +423,10 @@ export default function HomePage() {
               </div>
 
               <Link
-                href="/regjistrohu"
+                href="/apliko"
                 className="mt-8 flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                Fillo falas
+                Apliko
               </Link>
             </div>
 
@@ -456,10 +456,10 @@ export default function HomePage() {
               </div>
 
               <Link
-                href="/regjistrohu"
+                href="/apliko"
                 className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
-                Provo PRO falas
+                Apliko
                 <ArrowRight size={15} />
               </Link>
             </div>
@@ -471,7 +471,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-50 to-sky-100 px-6 py-12 sm:px-10 lg:flex lg:items-center lg:justify-between lg:px-14">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              Fillo sot
+              Apliko sot
             </p>
 
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
@@ -484,10 +484,10 @@ export default function HomePage() {
           </div>
 
           <Link
-            href="/regjistrohu"
+            href="/apliko"
             className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 lg:mt-0"
           >
-            Krijo akademinë
+            Apliko
             <ArrowRight size={16} />
           </Link>
         </div>

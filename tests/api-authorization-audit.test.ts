@@ -57,6 +57,7 @@ const PUBLIC_OR_SPECIAL_ROUTES =
   new Set([
     "app/api/auth/[...all]/route.ts",
     "app/api/academy/route.ts",
+    "app/api/academy-applications/route.ts",
     "app/api/invitations/[token]/route.ts",
   ]);
 
@@ -65,6 +66,7 @@ const ACCESS_GUARDS = [
   "requireAnyAcademyPermission",
   "requireEveryAcademyPermission",
   "getCurrentAcademyAccess",
+  "getPlatformAdminAccess",
 ];
 
 test("all academy API routes use an access guard or are explicitly allowlisted", () => {

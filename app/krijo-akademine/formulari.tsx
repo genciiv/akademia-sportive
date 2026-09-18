@@ -40,7 +40,7 @@ export default function Page() {
         return;
       }
 
-      router.push("/");
+      router.push("/dashboard");
       router.refresh();
     } catch {
       setGabimi("Ndodhi një problem gjatë krijimit të akademisë.");
