@@ -57,7 +57,7 @@ const groups: NavGroup[] = [
     items: [
       {
         label: "Paneli kryesor",
-        href: "/",
+        href: "/dashboard",
         icon: LayoutDashboard,
         permissions: [
           PERMISSIONS.DASHBOARD_VIEW,
