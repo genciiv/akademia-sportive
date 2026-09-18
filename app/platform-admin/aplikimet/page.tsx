@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import ApplicationsClient from "./applications-client";
+import { PlatformAdminShell } from "@/components/platform-admin-shell";
 import { getPlatformAdminAccess } from "@/lib/platform-admin";
 import { prisma } from "@/lib/prisma";
 
@@ -46,9 +47,11 @@ export default async function PlatformAdminApplicationsPage() {
   }));
 
   return (
-    <ApplicationsClient
-      initialApplications={serialized}
-      adminName={access.user.name ?? access.user.email}
-    />
+    <PlatformAdminShell>
+      <ApplicationsClient
+        initialApplications={serialized}
+        adminName={access.user.name ?? access.user.email}
+      />
+    </PlatformAdminShell>
   );
 }

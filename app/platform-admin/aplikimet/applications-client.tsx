@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowLeft,
   Building2,
   CheckCircle2,
   Clock3,
@@ -10,7 +8,6 @@ import {
   MapPin,
   MessageSquareText,
   Phone,
-  ShieldCheck,
   UserRound,
   XCircle,
 } from "lucide-react";
@@ -79,7 +76,12 @@ export default function ApplicationsClient({
 
   const [selectedId, setSelectedId] =
     useState<string | null>(
-      initialApplications[0]?.id ?? null
+      initialApplications.find(
+        (application) =>
+          application.status === "PENDING"
+      )?.id ??
+        initialApplications[0]?.id ??
+        null
     );
 
   const [saving, setSaving] = useState(false);
@@ -97,10 +99,12 @@ export default function ApplicationsClient({
   );
 
   const selected =
-    applications.find(
+    visible.find(
       (application) =>
         application.id === selectedId
-    ) ?? null;
+    ) ??
+    visible[0] ??
+    null;
 
   const counts = useMemo(() => {
     return {
@@ -197,41 +201,8 @@ export default function ApplicationsClient({
   }
 
   return (
-    <main className="min-h-screen bg-[#f7fbff]">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex min-h-[72px] max-w-[1500px] items-center justify-between gap-4 px-5 lg:px-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
-            >
-              <ArrowLeft size={16} />
-            </Link>
+    <div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck
-                  size={16}
-                  className="text-blue-600"
-                />
-                <p className="text-sm font-bold text-slate-950">
-                  Platform Admin
-                </p>
-              </div>
-
-              <p className="mt-0.5 text-[11px] text-slate-400">
-                {adminName}
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
-            {counts.PENDING} në pritje
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
         <div className="mb-7">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
             Aplikimet
@@ -312,7 +283,7 @@ export default function ApplicationsClient({
                     }
                     className={[
                       "block w-full border-b border-slate-100 px-4 py-4 text-left transition last:border-b-0",
-                      selectedId === application.id
+                      selected?.id === application.id
                         ? "bg-blue-50/70"
                         : "hover:bg-slate-50",
                     ].join(" ")}
@@ -528,8 +499,8 @@ export default function ApplicationsClient({
             )}
           </section>
         </div>
-      </div>
-    </main>
+
+    </div>
   );
 }
 
@@ -592,19 +563,75 @@ function Info({
   );
 }
 
+const MONTHS_SQ = [
+  "jan",
+  "shk",
+  "mar",
+  "pri",
+  "maj",
+  "qer",
+  "kor",
+  "gus",
+  "sht",
+  "tet",
+  "nën",
+  "dhj",
+];
+
+function tiranaDateParts(value: string) {
+  const parts = new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      timeZone: "Europe/Tirane",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }
+  ).formatToParts(new Date(value));
+
+  const getPart = (
+    type:
+      | "day"
+      | "month"
+      | "year"
+      | "hour"
+      | "minute"
+  ) =>
+    parts.find(
+      (part) => part.type === type
+    )?.value ?? "";
+
+  return {
+    day: getPart("day"),
+    month: Number(getPart("month")),
+    year: getPart("year"),
+    hour: getPart("hour"),
+    minute: getPart("minute"),
+  };
+}
+
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("sq-AL", {
-    day: "2-digit",
-    month: "short",
-  }).format(new Date(value));
+  const { day, month } =
+    tiranaDateParts(value);
+
+  return `${day} ${
+    MONTHS_SQ[month - 1] ?? ""
+  }`.trim();
 }
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("sq-AL", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+  const {
+    day,
+    month,
+    year,
+    hour,
+    minute,
+  } = tiranaDateParts(value);
+
+  return `${day} ${
+    MONTHS_SQ[month - 1] ?? ""
+  } ${year}, ${hour}:${minute}`;
 }
