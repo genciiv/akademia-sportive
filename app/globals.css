@@ -37,3 +37,9 @@ textarea {
   background: #cbd5e1;
   border-radius: 999px;
 }
+
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}

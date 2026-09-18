@@ -19,7 +19,7 @@ function safeNextPath(
     !value.startsWith("/") ||
     value.startsWith("//")
   ) {
-    return "/";
+    return "/dashboard";
   }
 
   return value;
@@ -45,7 +45,7 @@ export default function Page() {
   ] = useState(false);
 
   const [nextPath, setNextPath] =
-    useState("/");
+    useState("/dashboard");
 
   useEffect(() => {
     const params =
