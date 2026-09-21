@@ -3,12 +3,7 @@ import { NextResponse } from "next/server";
 import { getPlatformAdminAccess } from "@/lib/platform-admin";
 import { prisma } from "@/lib/prisma";
 
-const STATUSES = [
-  "PENDING",
-  "CONTACTED",
-  "APPROVED",
-  "REJECTED",
-] as const;
+const STATUSES = ["PENDING", "CONTACTED", "APPROVED", "REJECTED"] as const;
 
 export async function GET(request: Request) {
   const access = await getPlatformAdminAccess();
@@ -23,7 +18,7 @@ export async function GET(request: Request) {
       },
       {
         status: access.status,
-      }
+      },
     );
   }
 
@@ -31,59 +26,56 @@ export async function GET(request: Request) {
   const rawStatus = url.searchParams.get("status");
 
   const status =
-    rawStatus &&
-    STATUSES.includes(
-      rawStatus as (typeof STATUSES)[number]
-    )
+    rawStatus && STATUSES.includes(rawStatus as (typeof STATUSES)[number])
       ? (rawStatus as (typeof STATUSES)[number])
       : null;
 
-  const [
-    applications,
-    pending,
-    contacted,
-    approved,
-    rejected,
-  ] = await Promise.all([
-    prisma.academyApplication.findMany({
-      where: status
-        ? {
-            status,
-          }
-        : undefined,
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 200,
-    }),
+  const [applications, pending, contacted, approved, rejected] =
+    await Promise.all([
+      prisma.academyApplication.findMany({
+        where: status
+          ? {
+              status,
+            }
+          : undefined,
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 200,
+      }),
 
-    prisma.academyApplication.count({
-      where: {
-        status: "PENDING",
-      },
-    }),
+      prisma.academyApplication.count({
+        where: {
+          status: "PENDING",
+        },
+      }),
 
-    prisma.academyApplication.count({
-      where: {
-        status: "CONTACTED",
-      },
-    }),
+      prisma.academyApplication.count({
+        where: {
+          status: "CONTACTED",
+        },
+      }),
 
-    prisma.academyApplication.count({
-      where: {
-        status: "APPROVED",
-      },
-    }),
+      prisma.academyApplication.count({
+        where: {
+          status: "APPROVED",
+        },
+      }),
 
-    prisma.academyApplication.count({
-      where: {
-        status: "REJECTED",
-      },
-    }),
-  ]);
+      prisma.academyApplication.count({
+        where: {
+          status: "REJECTED",
+        },
+      }),
+    ]);
+
+  const safeApplications = applications.map(
+    ({ onboardingTokenHash: _onboardingTokenHash, ...application }) =>
+      application,
+  );
 
   return NextResponse.json({
-    applications,
+    applications: safeApplications,
     counts: {
       PENDING: pending,
       CONTACTED: contacted,

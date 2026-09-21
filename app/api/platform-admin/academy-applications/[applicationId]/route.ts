@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 
 import { getPlatformAdminAccess } from "@/lib/platform-admin";
 import { prisma } from "@/lib/prisma";
+import {
+  createInvitationToken,
+  createOnboardingExpiry,
+  hashInvitationToken,
+} from "@/lib/invitation-token";
 
 type RouteContext = {
   params: Promise<{
@@ -9,19 +14,11 @@ type RouteContext = {
   }>;
 };
 
-const ALLOWED_STATUSES = [
-  "CONTACTED",
-  "APPROVED",
-  "REJECTED",
-] as const;
+const ALLOWED_STATUSES = ["CONTACTED", "APPROVED", "REJECTED"] as const;
 
-type AllowedStatus =
-  (typeof ALLOWED_STATUSES)[number];
+type AllowedStatus = (typeof ALLOWED_STATUSES)[number];
 
-export async function PATCH(
-  request: Request,
-  { params }: RouteContext
-) {
+export async function PATCH(request: Request, { params }: RouteContext) {
   const access = await getPlatformAdminAccess();
 
   if (!access.ok) {
@@ -34,7 +31,7 @@ export async function PATCH(
       },
       {
         status: access.status,
-      }
+      },
     );
   }
 
@@ -49,50 +46,43 @@ export async function PATCH(
       },
       {
         status: 400,
-      }
+      },
     );
   }
 
   const status = String(body.status ?? "");
 
-  if (
-    !ALLOWED_STATUSES.includes(
-      status as AllowedStatus
-    )
-  ) {
+  if (!ALLOWED_STATUSES.includes(status as AllowedStatus)) {
     return NextResponse.json(
       {
         error: "Statusi nuk është i vlefshëm.",
       },
       {
         status: 400,
-      }
+      },
     );
   }
 
-  const adminNotes =
-    String(body.adminNotes ?? "").trim() || null;
+  const adminNotes = String(body.adminNotes ?? "").trim() || null;
 
   if ((adminNotes?.length ?? 0) > 2000) {
     return NextResponse.json(
       {
-        error:
-          "Shënimet nuk mund të kalojnë 2000 karaktere.",
+        error: "Shënimet nuk mund të kalojnë 2000 karaktere.",
       },
       {
         status: 400,
-      }
+      },
     );
   }
 
   const { applicationId } = await params;
 
-  const application =
-    await prisma.academyApplication.findUnique({
-      where: {
-        id: applicationId,
-      },
-    });
+  const application = await prisma.academyApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+  });
 
   if (!application) {
     return NextResponse.json(
@@ -101,63 +91,88 @@ export async function PATCH(
       },
       {
         status: 404,
-      }
+      },
     );
   }
 
   if (application.consumedAt) {
     return NextResponse.json(
       {
-        error:
-          "Ky aplikim është përdorur tashmë për krijimin e një akademie.",
+        error: "Ky aplikim është përdorur tashmë për krijimin e një akademie.",
       },
       {
         status: 409,
-      }
+      },
     );
   }
 
   const now = new Date();
 
-  const updated =
-    await prisma.academyApplication.update({
-      where: {
-        id: application.id,
-      },
-      data: {
-        status: status as AllowedStatus,
-        adminNotes,
-        reviewedByUserId: access.user.id,
+  const onboardingToken =
+    status === "APPROVED" ? createInvitationToken() : null;
 
-        ...(status === "CONTACTED"
-          ? {
-              contactedAt:
-                application.contactedAt ?? now,
-              reviewedAt: null,
-              approvedAt: null,
-              rejectedAt: null,
-            }
-          : {}),
+  const onboardingTokenHash = onboardingToken
+    ? hashInvitationToken(onboardingToken)
+    : null;
 
-        ...(status === "APPROVED"
-          ? {
-              reviewedAt: now,
-              approvedAt: now,
-              rejectedAt: null,
-            }
-          : {}),
+  const onboardingExpiresAt = onboardingToken
+    ? createOnboardingExpiry(now)
+    : null;
 
-        ...(status === "REJECTED"
-          ? {
-              reviewedAt: now,
-              rejectedAt: now,
-              approvedAt: null,
-            }
-          : {}),
-      },
-    });
+  const updated = await prisma.academyApplication.update({
+    where: {
+      id: application.id,
+    },
+    data: {
+      status: status as AllowedStatus,
+      adminNotes,
+      reviewedByUserId: access.user.id,
+
+      ...(status === "CONTACTED"
+        ? {
+            contactedAt: application.contactedAt ?? now,
+            reviewedAt: null,
+            approvedAt: null,
+            rejectedAt: null,
+            onboardingTokenHash: null,
+            onboardingExpiresAt: null,
+          }
+        : {}),
+
+      ...(status === "APPROVED"
+        ? {
+            reviewedAt: now,
+            approvedAt: now,
+            rejectedAt: null,
+            onboardingTokenHash,
+            onboardingExpiresAt,
+          }
+        : {}),
+
+      ...(status === "REJECTED"
+        ? {
+            reviewedAt: now,
+            rejectedAt: now,
+            approvedAt: null,
+            onboardingTokenHash: null,
+            onboardingExpiresAt: null,
+          }
+        : {}),
+    },
+  });
+
+  const { onboardingTokenHash: _onboardingTokenHash, ...safeApplication } =
+    updated;
 
   return NextResponse.json({
-    application: updated,
+    application: safeApplication,
+    ...(onboardingToken
+      ? {
+          onboarding: {
+            token: onboardingToken,
+            expiresAt: onboardingExpiresAt,
+          },
+        }
+      : {}),
   });
 }

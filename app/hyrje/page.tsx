@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   FormEvent,
@@ -112,13 +111,6 @@ export default function Page() {
     router.refresh();
   }
 
-  const registerHref =
-    nextPath !== "/"
-      ? `/regjistrohu?next=${encodeURIComponent(
-          nextPath
-        )}`
-      : "/regjistrohu";
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f5f7fb] p-4">
       <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-7 shadow-soft sm:p-9">
@@ -189,16 +181,6 @@ export default function Page() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Nuk ke ende llogari?{" "}
-
-          <Link
-            href={registerHref}
-            className="font-semibold text-blue-700 hover:text-blue-800"
-          >
-            Regjistrohu
-          </Link>
-        </p>
       </div>
     </div>
   );

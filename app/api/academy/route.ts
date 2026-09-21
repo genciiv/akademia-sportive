@@ -154,6 +154,8 @@ export async function POST(request: Request) {
           },
           data: {
             consumedAt: new Date(),
+            onboardingTokenHash: null,
+            onboardingExpiresAt: null,
           },
         });
 

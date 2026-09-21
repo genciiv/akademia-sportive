@@ -59,6 +59,7 @@ const PUBLIC_OR_SPECIAL_ROUTES =
     "app/api/academy/route.ts",
     "app/api/academy-applications/route.ts",
     "app/api/invitations/[token]/route.ts",
+    "app/api/registration-invitations/[token]/route.ts",
   ]);
 
 const ACCESS_GUARDS = [
