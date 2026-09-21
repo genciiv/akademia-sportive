@@ -158,7 +158,7 @@ export default function Page() {
     )}`;
 
   const registerHref =
-    `/regjistrohu?next=${encodeURIComponent(
+    `/regjistrohu?invite=${encodeURIComponent(token)}&next=${encodeURIComponent(
       nextPath
     )}`;
 

@@ -9,6 +9,7 @@ import {
 import {
   Copy,
   MailPlus,
+  Plus,
   Pencil,
   ShieldCheck,
   Trash2,
@@ -188,6 +189,27 @@ export default function StafiClient() {
 
 
 
+
+  const [creating, setCreating] =
+    useState(false);
+
+  const [createFirstName, setCreateFirstName] =
+    useState("");
+
+  const [createLastName, setCreateLastName] =
+    useState("");
+
+  const [createEmail, setCreateEmail] =
+    useState("");
+
+  const [createPhone, setCreatePhone] =
+    useState("");
+
+  const [createRole, setCreateRole] =
+    useState<Exclude<StaffRole, "OWNER">>(
+      "COACH"
+    );
+
   const [loading, setLoading] =
     useState(true);
 
@@ -241,6 +263,72 @@ export default function StafiClient() {
 
   const currentRole =
     currentMember?.role ?? null;
+
+
+  async function createStaff() {
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        "/api/staff",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            firstName:
+              createFirstName,
+            lastName:
+              createLastName,
+            email:
+              createEmail,
+            phone:
+              createPhone,
+            role:
+              createRole,
+          }),
+        }
+      );
+
+      const data = (await response.json()) as {
+        message?: string;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Anëtari i stafit nuk u shtua."
+        );
+      }
+
+      setCreating(false);
+      setCreateFirstName("");
+      setCreateLastName("");
+      setCreateEmail("");
+      setCreatePhone("");
+      setCreateRole("COACH");
+
+      setMessage(
+        data.message ||
+          "Anëtari i stafit u shtua me sukses."
+      );
+
+      await loadStaff();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ndodhi një gabim gjatë shtimit të stafit."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function loadStaff() {
     setLoading(true);
@@ -775,6 +863,22 @@ export default function StafiClient() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+
+            {canInvite ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setMessage("");
+                  setCreating(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                <Plus size={17} />
+                {"Shto anëtar"}
+              </button>
+            ) : null}
+
             {academyName ? (
               <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600">
                 <ShieldCheck size={17} />
@@ -785,6 +889,185 @@ export default function StafiClient() {
 
           </div>
         </div>
+
+
+        {creating ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
+            <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-950">
+                    {"Shto anëtar stafi"}
+                  </h2>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    {"Krijo profilin e stafit. Ftesën për akses në platformë mund ta dërgosh më pas."}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCreating(false)
+                  }
+                  disabled={saving}
+                  className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Mbyll"
+                >
+                  <X size={19} />
+                </button>
+              </div>
+
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void createStaff();
+                }}
+                className="space-y-5 p-6"
+              >
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Emri
+                    </span>
+
+                    <input
+                      required
+                      maxLength={80}
+                      value={createFirstName}
+                      onChange={(event) =>
+                        setCreateFirstName(
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      placeholder="Emri"
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Mbiemri
+                    </span>
+
+                    <input
+                      required
+                      maxLength={80}
+                      value={createLastName}
+                      onChange={(event) =>
+                        setCreateLastName(
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      placeholder="Mbiemri"
+                    />
+                  </label>
+                </div>
+
+                <label className="block space-y-1.5">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Email
+                  </span>
+
+                  <input
+                    required
+                    type="email"
+                    maxLength={320}
+                    value={createEmail}
+                    onChange={(event) =>
+                      setCreateEmail(
+                        event.target.value
+                      )
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    placeholder="email@example.com"
+                  />
+
+                  <p className="text-xs text-slate-500">
+                    {"Ky email do të përdoret edhe për ftesën e aksesit."}
+                  </p>
+                </label>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Telefoni
+                    </span>
+
+                    <input
+                      maxLength={50}
+                      value={createPhone}
+                      onChange={(event) =>
+                        setCreatePhone(
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      placeholder="069..."
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-semibold text-slate-700">
+                      Roli
+                    </span>
+
+                    <select
+                      value={createRole}
+                      onChange={(event) =>
+                        setCreateRole(
+                          event.target
+                            .value as Exclude<
+                            StaffRole,
+                            "OWNER"
+                          >
+                        )
+                      }
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    >
+                      {roleOptions.map(
+                        (option) => (
+                          <option
+                            key={option.value}
+                            value={option.value}
+                          >
+                            {option.label}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCreating(false)
+                    }
+                    disabled={saving}
+                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Anulo
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Plus size={17} />
+
+                    {saving
+                      ? "Duke shtuar..."
+                      : "Shto anëtar"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
 
         {error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
