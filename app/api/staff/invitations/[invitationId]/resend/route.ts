@@ -11,7 +11,10 @@ import {
 } from "@/lib/academy-permissions";
 import {
   PERMISSIONS,
+  ROLE_LABELS,
+  type AcademyRoleName,
 } from "@/lib/permissions";
+import { sendStaffInvitationEmail } from "@/lib/invitation-email";
 import { prisma } from "@/lib/prisma";
 
 const INVITATION_DURATION_DAYS = 7;
@@ -191,8 +194,27 @@ export async function POST(
       }
     );
 
+  const role =
+    String(
+      invitation.role
+    ) as AcademyRoleName;
+
+  const emailDelivery =
+    await sendStaffInvitationEmail({
+      email:
+        invitation.email,
+      academyName:
+        access.academy.name,
+      roleLabel:
+        ROLE_LABELS[role] ??
+        "Anëtar",
+      invitationToken: token,
+      expiresAt:
+        newInvitation.expiresAt,
+    });
   return NextResponse.json(
     {
+      emailDelivery,
       message:
         "Ftesa u ridërgua me sukses.",
       invitation: {

@@ -461,6 +461,9 @@ export default function StafiClient() {
       const data = (await response.json()) as {
         error?: string;
         message?: string;
+        emailDelivery?: {
+          ok?: boolean;
+        };
         invitation?: {
           invitePath?: string;
         };
@@ -489,13 +492,18 @@ export default function StafiClient() {
         }
       }
 
-      setMessage(
-        copied
-          ? "Ftesa u ridërgua dhe lidhja e re u kopjua."
-          : data.message ||
-              "Ftesa u ridërgua me sukses."
-      );
+      const emailSent =
+        data.emailDelivery?.ok === true;
 
+      setMessage(
+        emailSent
+          ? copied
+            ? "Email-i i ftes\u00ebs u d\u00ebrgua automatikisht dhe lidhja e re u kopjua."
+            : "Email-i i ftes\u00ebs u d\u00ebrgua automatikisht."
+          : copied
+            ? "Email-i i ftes\u00ebs nuk u d\u00ebrgua, por lidhja e re u kopjua. D\u00ebrgoje manualisht."
+            : "Email-i i ftes\u00ebs nuk u d\u00ebrgua. Kopjo lidhjen e re te seksioni i ftesave dhe d\u00ebrgoje manualisht."
+      );
       await loadInvitations();
     } catch (err) {
       setError(
@@ -595,6 +603,9 @@ export default function StafiClient() {
       const data = (await response.json()) as {
         error?: string;
         message?: string;
+        emailDelivery?: {
+          ok?: boolean;
+        };
 
         accessLinked?: boolean;
 
@@ -612,7 +623,7 @@ export default function StafiClient() {
 
       if (data.accessLinked) {
         setMessage(
-          "Llogaria ekzistuese u lidh me sukses me këtë anëtar të stafit."
+          "Llogaria ekzistuese u lidh me sukses me k\u00ebt\u00eb an\u00ebtar t\u00eb stafit."
         );
       } else if (
         data.invitation?.invitePath
@@ -629,10 +640,17 @@ export default function StafiClient() {
           copied = false;
         }
 
+        const emailSent =
+          data.emailDelivery?.ok === true;
+
         setMessage(
-          copied
-            ? "Ftesa u krijua dhe lidhja u kopjua."
-            : "Ftesa u krijua. Lidhjen mund ta kopjosh te seksioni i ftesave."
+          emailSent
+            ? copied
+              ? "Email-i i ftes\u00ebs u d\u00ebrgua automatikisht dhe lidhja u kopjua."
+              : "Email-i i ftes\u00ebs u d\u00ebrgua automatikisht."
+            : copied
+              ? "Email-i i ftes\u00ebs nuk u d\u00ebrgua, por lidhja u kopjua. D\u00ebrgoje manualisht."
+              : "Email-i i ftes\u00ebs nuk u d\u00ebrgua. Kopjo lidhjen te seksioni i ftesave dhe d\u00ebrgoje manualisht."
         );
       } else {
         setMessage(

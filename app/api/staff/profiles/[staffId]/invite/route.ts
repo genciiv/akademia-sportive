@@ -13,6 +13,7 @@ import {
   ROLE_LABELS,
   type AcademyRoleName,
 } from "@/lib/permissions";
+import { sendStaffInvitationEmail } from "@/lib/invitation-email";
 import { prisma } from "@/lib/prisma";
 
 const INVITATION_DURATION_DAYS = 7;
@@ -286,7 +287,22 @@ export async function POST(
     });
 
   if (existingInvitation) {
+    const emailDelivery =
+      await sendStaffInvitationEmail({
+        email,
+        staffName: entityLabel,
+        academyName:
+          access.academy.name,
+        roleLabel:
+          ROLE_LABELS[role] ??
+          "Anëtar",
+        invitationToken:
+          existingInvitation.token,
+        expiresAt:
+          existingInvitation.expiresAt,
+      });
     return NextResponse.json({
+      emailDelivery,
       message:
         "Ekziston tashmë një ftesë aktive për këtë anëtar të stafit.",
 
@@ -399,8 +415,22 @@ export async function POST(
       }
     );
 
+  const emailDelivery =
+    await sendStaffInvitationEmail({
+      email,
+      staffName: entityLabel,
+      academyName:
+        access.academy.name,
+      roleLabel:
+        ROLE_LABELS[role] ??
+        "Anëtar",
+      invitationToken: token,
+      expiresAt:
+        invitation.expiresAt,
+    });
   return NextResponse.json(
     {
+      emailDelivery,
       message:
         "Ftesa u krijua me sukses.",
 

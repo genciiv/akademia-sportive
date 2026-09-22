@@ -7,6 +7,7 @@ import {
   createOnboardingExpiry,
   hashInvitationToken,
 } from "@/lib/invitation-token";
+import { sendAcademyOwnerInvitationEmail } from "@/lib/invitation-email";
 
 type RouteContext = {
   params: Promise<{
@@ -163,6 +164,16 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   const { onboardingTokenHash: _onboardingTokenHash, ...safeApplication } =
     updated;
+  const emailDelivery =
+    onboardingToken && onboardingExpiresAt
+      ? await sendAcademyOwnerInvitationEmail({
+          email: application.email,
+          contactName: application.contactName,
+          academyName: application.academyName,
+          invitationToken: onboardingToken,
+          expiresAt: onboardingExpiresAt,
+        })
+      : null;
 
   return NextResponse.json({
     application: safeApplication,
@@ -171,6 +182,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
           onboarding: {
             token: onboardingToken,
             expiresAt: onboardingExpiresAt,
+            emailDelivery,
           },
         }
       : {}),

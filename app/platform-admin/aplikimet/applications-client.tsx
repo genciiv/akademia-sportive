@@ -83,6 +83,7 @@ export default function ApplicationsClient({
     email: string;
     url: string;
     expiresAt: string;
+    emailSent: boolean;
   } | null>(null);
   const [invitationCopied, setInvitationCopied] = useState(false);
 
@@ -154,6 +155,7 @@ export default function ApplicationsClient({
           email: selected.email,
           url: invitationUrl,
           expiresAt: data.onboarding.expiresAt,
+          emailSent: data?.onboarding?.emailDelivery?.ok === true,
         });
         setInvitationCopied(false);
       }
@@ -226,6 +228,18 @@ export default function ApplicationsClient({
               <p className="mt-1 text-xs leading-5 text-emerald-800">
                 {onboardingInvitation.academyName} ·{" "}
                 {onboardingInvitation.email}
+              </p>
+
+              <p
+                className={`mt-2 text-xs font-semibold leading-5 ${
+                  onboardingInvitation.emailSent
+                    ? "text-emerald-700"
+                    : "text-amber-700"
+                }`}
+              >
+                {onboardingInvitation.emailSent
+                  ? "Email-i i ftesës u dërgua automatikisht."
+                  : "Email-i i ftesës nuk u dërgua. Kopjo linkun më poshtë dhe dërgoja manualisht."}
               </p>
 
               <p className="mt-2 text-xs leading-5 text-emerald-700">
