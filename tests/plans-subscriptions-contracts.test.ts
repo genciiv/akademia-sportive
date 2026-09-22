@@ -134,3 +134,222 @@ test("migration grants existing academies a fresh 7-day PRO trial", () => {
     /ON CONFLICT\s*\("academyId"\)\s*DO NOTHING/
   );
 });
+
+test("custom academy offers are defined as subscription overrides", () => {
+  const schema = readFileSync(
+    join(root, "prisma/schema.prisma"),
+    "utf8"
+  );
+
+  assert.match(
+    schema,
+    /model AcademyCustomOffer\s*\{/
+  );
+
+  assert.match(
+    schema,
+    /subscriptionId\s+String\s+@unique/
+  );
+
+  assert.match(
+    schema,
+    /subscription\s+AcademySubscription\s+@relation/
+  );
+
+  assert.match(
+    schema,
+    /monthlyPrice\s+Decimal\?/
+  );
+
+  assert.match(
+    schema,
+    /maxPlayers\s+Int\?/
+  );
+
+  assert.match(
+    schema,
+    /maxTeams\s+Int\?/
+  );
+
+  assert.match(
+    schema,
+    /maxStaff\s+Int\?/
+  );
+
+  assert.match(
+    schema,
+    /maxFacilities\s+Int\?/
+  );
+
+  assert.match(
+    schema,
+    /overrideFeatures\s+Boolean\s+@default\(false\)/
+  );
+
+  assert.match(
+    schema,
+    /features\s+PlanFeature\[\]\s+@default\(\[\]\)/
+  );
+
+  assert.match(
+    schema,
+    /customOffer\s+AcademyCustomOffer\?/
+  );
+});
+
+test("custom offer migration enforces database safety constraints", () => {
+  const migration = readFileSync(
+    join(
+      root,
+      "prisma/migrations/20260922111456_add_academy_custom_offers/migration.sql"
+    ),
+    "utf8"
+  );
+
+  assert.match(
+    migration,
+    /CREATE TABLE "AcademyCustomOffer"/
+  );
+
+  assert.match(
+    migration,
+    /CREATE UNIQUE INDEX "AcademyCustomOffer_subscriptionId_key"/
+  );
+
+  assert.match(
+    migration,
+    /CONSTRAINT "AcademyCustomOffer_monthlyPrice_check"/
+  );
+
+  assert.match(
+    migration,
+    /CONSTRAINT "AcademyCustomOffer_maxPlayers_check"/
+  );
+
+  assert.match(
+    migration,
+    /CONSTRAINT "AcademyCustomOffer_maxTeams_check"/
+  );
+
+  assert.match(
+    migration,
+    /CONSTRAINT "AcademyCustomOffer_maxStaff_check"/
+  );
+
+  assert.match(
+    migration,
+    /CONSTRAINT "AcademyCustomOffer_maxFacilities_check"/
+  );
+
+  assert.match(
+    migration,
+    /CONSTRAINT "AcademyCustomOffer_validity_check"/
+  );
+
+  assert.match(
+    migration,
+    /ON DELETE CASCADE ON UPDATE CASCADE/
+  );
+});
+
+test("platform admin custom offer API is protected and preserves audit history", () => {
+  const source = readFileSync(
+    join(
+      root,
+      "app/api/platform-admin/subscriptions/[subscriptionId]/custom-offer/route.ts"
+    ),
+    "utf8"
+  );
+
+  assert.match(
+    source,
+    /getPlatformAdminAccess\(\)/
+  );
+
+  assert.match(
+    source,
+    /export async function PUT/
+  );
+
+  assert.match(
+    source,
+    /academyCustomOffer\.upsert/
+  );
+
+  assert.match(
+    source,
+    /createdById:\s*access\.user\.id/
+  );
+
+  assert.match(
+    source,
+    /updatedById:\s*access\.user\.id/
+  );
+
+  assert.match(
+    source,
+    /export async function DELETE/
+  );
+
+  assert.match(
+    source,
+    /academyCustomOffer\.update/
+  );
+
+  assert.match(
+    source,
+    /isActive:\s*false/
+  );
+
+  assert.doesNotMatch(
+    source,
+    /academyCustomOffer\.delete\s*\(/
+  );
+});
+
+test("plan limits resolve custom offers through the centralized entitlement resolver", () => {
+  const source = readFileSync(
+    join(root, "lib/plan-limits.ts"),
+    "utf8"
+  );
+
+  assert.match(
+    source,
+    /resolveEffectiveSubscriptionTerms/
+  );
+
+  assert.match(
+    source,
+    /customOffer:/
+  );
+
+  assert.match(
+    source,
+    /resolveSubscriptionStatus/
+  );
+
+  assert.match(
+    source,
+    /effective\.maxPlayers/
+  );
+
+  assert.match(
+    source,
+    /effective\.maxTeams/
+  );
+
+  assert.match(
+    source,
+    /effective\.maxStaff/
+  );
+
+  assert.match(
+    source,
+    /effective\.maxFacilities/
+  );
+
+  assert.match(
+    source,
+    /planCode: effective\.planCode/
+  );
+});

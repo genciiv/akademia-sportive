@@ -1,3 +1,6 @@
+import {
+  resolveEffectiveSubscriptionTerms,
+} from "@/lib/effective-subscription";
 import { prisma } from "@/lib/prisma";
 import {
   resolveSubscriptionStatus,
@@ -38,13 +41,34 @@ export async function checkPlanLimit(
         currentPeriodEnd: true,
         graceEndsAt: true,
         cancelledAt: true,
+
         plan: {
           select: {
             code: true,
+            name: true,
+            monthlyPrice: true,
+            currency: true,
             maxPlayers: true,
             maxTeams: true,
             maxStaff: true,
             maxFacilities: true,
+            features: true,
+          },
+        },
+
+        customOffer: {
+          select: {
+            monthlyPrice: true,
+            currency: true,
+            maxPlayers: true,
+            maxTeams: true,
+            maxStaff: true,
+            maxFacilities: true,
+            overrideFeatures: true,
+            features: true,
+            validFrom: true,
+            validUntil: true,
+            isActive: true,
           },
         },
       },
@@ -62,10 +86,12 @@ export async function checkPlanLimit(
     };
   }
 
+  const now = new Date();
+
   const subscriptionStatus =
     resolveSubscriptionStatus({
       currentStatus: subscription.status,
-      now: new Date(),
+      now,
       trialEndsAt: subscription.trialEndsAt,
       currentPeriodEnd:
         subscription.currentPeriodEnd,
@@ -75,6 +101,14 @@ export async function checkPlanLimit(
         subscription.cancelledAt,
     });
 
+  const effective =
+    resolveEffectiveSubscriptionTerms({
+      status: subscriptionStatus,
+      plan: subscription.plan,
+      customOffer: subscription.customOffer,
+      now,
+    });
+
   const accessAllowed =
     subscriptionStatus === "TRIALING" ||
     subscriptionStatus === "ACTIVE" ||
@@ -82,12 +116,12 @@ export async function checkPlanLimit(
 
   const limit =
     resource === "players"
-      ? subscription.plan.maxPlayers
+      ? effective.maxPlayers
       : resource === "teams"
-        ? subscription.plan.maxTeams
+        ? effective.maxTeams
         : resource === "staff"
-          ? subscription.plan.maxStaff
-          : subscription.plan.maxFacilities;
+          ? effective.maxStaff
+          : effective.maxFacilities;
 
   let current = 0;
 
@@ -138,7 +172,7 @@ export async function checkPlanLimit(
       resource,
       current,
       limit,
-      planCode: subscription.plan.code,
+      planCode: effective.planCode,
       subscriptionStatus,
       reason: "SUBSCRIPTION_INACTIVE",
     };
@@ -150,7 +184,7 @@ export async function checkPlanLimit(
       resource,
       current,
       limit,
-      planCode: subscription.plan.code,
+      planCode: effective.planCode,
       subscriptionStatus,
       reason: "LIMIT_REACHED",
     };
@@ -161,7 +195,7 @@ export async function checkPlanLimit(
     resource,
     current,
     limit,
-    planCode: subscription.plan.code,
+    planCode: effective.planCode,
     subscriptionStatus,
     reason: null,
   };

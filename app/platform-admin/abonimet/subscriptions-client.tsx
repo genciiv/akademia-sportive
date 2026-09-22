@@ -15,6 +15,8 @@ import {
   useState,
 } from "react";
 
+import { CustomOfferEditor } from "./custom-offer-editor";
+
 type Status =
   | "TRIALING"
   | "ACTIVE"
@@ -72,7 +74,30 @@ type Subscription = {
     name: string;
     monthlyPrice: string;
     currency: string;
+    maxPlayers: number;
+    maxTeams: number;
+    maxStaff: number;
+    maxFacilities: number;
+    features: string[];
   };
+
+  customOffer: {
+    id: string;
+    monthlyPrice: string | null;
+    currency: string | null;
+    maxPlayers: number | null;
+    maxTeams: number | null;
+    maxStaff: number | null;
+    maxFacilities: number | null;
+    overrideFeatures: boolean;
+    features: string[];
+    note: string | null;
+    validFrom: string;
+    validUntil: string | null;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
 
   payments: Payment[];
 
@@ -532,6 +557,14 @@ export function SubscriptionsClient({
                   )}
                 />
               </div>
+
+              <CustomOfferEditor
+                key={selected.id}
+                subscriptionId={selected.id}
+                subscriptionStatus={selected.status}
+                plan={selected.plan}
+                customOffer={selected.customOffer}
+              />
 
               <div className="border-t border-slate-100 p-5 sm:p-6">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-400">

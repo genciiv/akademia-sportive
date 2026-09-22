@@ -63,6 +63,31 @@ export default async function PlatformAdminSubscriptionsPage() {
             name: true,
             monthlyPrice: true,
             currency: true,
+            maxPlayers: true,
+            maxTeams: true,
+            maxStaff: true,
+            maxFacilities: true,
+            features: true,
+          },
+        },
+
+        customOffer: {
+          select: {
+            id: true,
+            monthlyPrice: true,
+            currency: true,
+            maxPlayers: true,
+            maxTeams: true,
+            maxStaff: true,
+            maxFacilities: true,
+            overrideFeatures: true,
+            features: true,
+            note: true,
+            validFrom: true,
+            validUntil: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
 
@@ -139,6 +164,24 @@ export default async function PlatformAdminSubscriptionsPage() {
           monthlyPrice:
             subscription.plan.monthlyPrice.toString(),
         },
+
+        customOffer: subscription.customOffer
+          ? {
+              ...subscription.customOffer,
+              monthlyPrice:
+                subscription.customOffer.monthlyPrice?.toString() ??
+                null,
+              validFrom:
+                subscription.customOffer.validFrom.toISOString(),
+              validUntil:
+                subscription.customOffer.validUntil?.toISOString() ??
+                null,
+              createdAt:
+                subscription.customOffer.createdAt.toISOString(),
+              updatedAt:
+                subscription.customOffer.updatedAt.toISOString(),
+            }
+          : null,
 
         payments:
           subscription.payments.map(
