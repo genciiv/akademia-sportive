@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   isCustomOfferActive,
+  resolveEffectiveCommercialTerms,
   resolveEffectiveSubscriptionTerms,
   type EffectiveCustomOffer,
   type EffectivePlan,
@@ -210,4 +211,94 @@ test("TRIALING always keeps the global PRO terms", () => {
   assert.equal(result.maxStaff, 50);
   assert.equal(result.maxFacilities, 15);
   assert.deepEqual(result.features, plan.features);
+});
+
+
+test("commercial terms fall back to the global plan without a custom offer", () => {
+  const result = resolveEffectiveCommercialTerms({
+    plan,
+    customOffer: null,
+    now,
+  });
+
+  assert.equal(result.source, "GLOBAL_PLAN");
+  assert.equal(result.customOfferActive, false);
+  assert.equal(result.monthlyPrice, "20000");
+  assert.equal(result.currency, "ALL");
+});
+
+test("commercial terms use an active custom offer during trial", () => {
+  const customOffer = offer({
+    monthlyPrice: 15000,
+    currency: "ALL",
+  });
+
+  const access = resolveEffectiveSubscriptionTerms({
+    status: "TRIALING",
+    plan,
+    customOffer,
+    now,
+  });
+
+  const commercial = resolveEffectiveCommercialTerms({
+    plan,
+    customOffer,
+    now,
+  });
+
+  assert.equal(access.source, "GLOBAL_PLAN");
+  assert.equal(access.monthlyPrice, "20000");
+  assert.equal(access.maxPlayers, 300);
+  assert.deepEqual(access.features, plan.features);
+
+  assert.equal(commercial.source, "CUSTOM_OFFER");
+  assert.equal(commercial.customOfferActive, true);
+  assert.equal(commercial.monthlyPrice, "15000");
+  assert.equal(commercial.currency, "ALL");
+});
+
+test("commercial terms can override currency independently", () => {
+  const result = resolveEffectiveCommercialTerms({
+    plan,
+    customOffer: offer({
+      monthlyPrice: 175,
+      currency: "EUR",
+    }),
+    now,
+  });
+
+  assert.equal(result.source, "CUSTOM_OFFER");
+  assert.equal(result.customOfferActive, true);
+  assert.equal(result.monthlyPrice, "175");
+  assert.equal(result.currency, "EUR");
+});
+
+test("commercial terms ignore inactive future and expired custom offers", () => {
+  const unavailableOffers = [
+    offer({
+      isActive: false,
+      monthlyPrice: 10000,
+    }),
+    offer({
+      validFrom: new Date("2026-09-23T00:00:00.000Z"),
+      monthlyPrice: 10000,
+    }),
+    offer({
+      validUntil: new Date("2026-09-22T12:00:00.000Z"),
+      monthlyPrice: 10000,
+    }),
+  ];
+
+  for (const customOffer of unavailableOffers) {
+    const result = resolveEffectiveCommercialTerms({
+      plan,
+      customOffer,
+      now,
+    });
+
+    assert.equal(result.source, "GLOBAL_PLAN");
+    assert.equal(result.customOfferActive, false);
+    assert.equal(result.monthlyPrice, "20000");
+    assert.equal(result.currency, "ALL");
+  }
 });

@@ -307,6 +307,328 @@ test("platform admin custom offer API is protected and preserves audit history",
   );
 });
 
+test("platform admin payment API records immutable commercial snapshots atomically", () => {
+  const source = readFileSync(
+    join(
+      root,
+      "app/api/platform-admin/subscriptions/[subscriptionId]/payments/route.ts"
+    ),
+    "utf8"
+  );
+
+  assert.match(
+    source,
+    /getPlatformAdminAccess\(\)/
+  );
+
+  assert.match(
+    source,
+    /export async function POST/
+  );
+
+  assert.match(
+    source,
+    /assertSubscriptionPaymentMonths\(rawMonths\)/
+  );
+
+  assert.match(
+    source,
+    /method !== "CASH"/
+  );
+
+  assert.match(
+    source,
+    /const paidAt = new Date\(\)/
+  );
+
+  assert.doesNotMatch(
+    source,
+    /body\.paidAt/
+  );
+
+  assert.match(
+    source,
+    /prisma\.\$transaction\(/
+  );
+
+  assert.match(
+    source,
+    /isolationLevel:\s*"Serializable"/
+  );
+
+  assert.match(
+    source,
+    /const MAX_TRANSACTION_RETRIES = 3/
+  );
+
+  assert.match(
+    source,
+    /error\.code === "P2034"/
+  );
+
+  assert.match(
+    source,
+    /attempt >= MAX_TRANSACTION_RETRIES/
+  );
+
+  assert.match(
+    source,
+    /resolveEffectiveCommercialTerms\(/
+  );
+
+  assert.match(
+    source,
+    /calculatePaymentLifecycle\(/
+  );
+
+  assert.match(
+    source,
+    /tx\.subscriptionPayment\.create/
+  );
+
+  assert.match(
+    source,
+    /monthlyPrice:\s*commercial\.monthlyPrice/
+  );
+
+  assert.match(
+    source,
+    /totalAmount:\s*totalAmount\.toFixed\(2\)/
+  );
+
+  assert.match(
+    source,
+    /currency:\s*commercial\.currency/
+  );
+
+  assert.match(
+    source,
+    /recordedById:\s*access\.user\.id/
+  );
+
+  assert.match(
+    source,
+    /periodStart:\s*lifecycle\.periodStart/
+  );
+
+  assert.match(
+    source,
+    /periodEnd:\s*lifecycle\.periodEnd/
+  );
+
+  assert.match(
+    source,
+    /tx\.academySubscription\.update/
+  );
+
+  assert.match(
+    source,
+    /status:\s*lifecycle\.status/
+  );
+
+  assert.match(
+    source,
+    /currentPeriodStart:\s*lifecycle\.subscriptionPeriodStart/
+  );
+
+  assert.match(
+    source,
+    /currentPeriodEnd:\s*lifecycle\.periodEnd/
+  );
+
+  assert.match(
+    source,
+    /graceEndsAt:\s*lifecycle\.graceEndsAt/
+  );
+
+  assert.match(
+    source,
+    /kind:\s*"CANCELLED"/
+  );
+
+  assert.match(
+    source,
+    /status:\s*409/
+  );
+});
+
+test("platform admin subscriptions serialize the resolved lifecycle status", () => {
+  const source = readFileSync(
+    join(
+      root,
+      "app/platform-admin/abonimet/page.tsx"
+    ),
+    "utf8"
+  );
+
+  assert.match(
+    source,
+    /resolveSubscriptionStatus/
+  );
+
+  assert.match(
+    source,
+    /const now = new Date\(\)/
+  );
+
+  assert.match(
+    source,
+    /status:\s*resolveSubscriptionStatus\(/
+  );
+
+  assert.match(
+    source,
+    /currentStatus:\s*subscription\.status/
+  );
+
+  assert.match(
+    source,
+    /trialEndsAt:\s*subscription\.trialEndsAt/
+  );
+
+  assert.match(
+    source,
+    /currentPeriodStart:\s*subscription\.currentPeriodStart/
+  );
+
+  assert.match(
+    source,
+    /currentPeriodEnd:\s*subscription\.currentPeriodEnd/
+  );
+
+  assert.match(
+    source,
+    /graceEndsAt:\s*subscription\.graceEndsAt/
+  );
+
+  assert.match(
+    source,
+    /cancelledAt:\s*subscription\.cancelledAt/
+  );
+});
+
+test("platform admin payment UI uses effective commercial terms and preserves payment lifecycle rules", () => {
+  const pageSource = readFileSync(
+    join(
+      root,
+      "app/platform-admin/abonimet/page.tsx"
+    ),
+    "utf8"
+  );
+
+  const clientSource = readFileSync(
+    join(
+      root,
+      "app/platform-admin/abonimet/subscriptions-client.tsx"
+    ),
+    "utf8"
+  );
+
+  const recorderSource = readFileSync(
+    join(
+      root,
+      "app/platform-admin/abonimet/payment-recorder.tsx"
+    ),
+    "utf8"
+  );
+
+  assert.match(
+    pageSource,
+    /resolveEffectiveCommercialTerms/
+  );
+
+  assert.match(
+    pageSource,
+    /commercialTerms:\s*resolveEffectiveCommercialTerms\(/
+  );
+
+  assert.match(
+    clientSource,
+    /subscription\s*\.commercialTerms\s*\.monthlyPrice/
+  );
+
+  assert.match(
+    clientSource,
+    /selected\.commercialTerms\s*\.monthlyPrice/
+  );
+
+  assert.match(
+    clientSource,
+    /<PaymentRecorder/
+  );
+
+  assert.match(
+    clientSource,
+    /commercialTerms=\{\s*selected\.commercialTerms\s*\}/
+  );
+
+  assert.match(
+    recorderSource,
+    /const PAYMENT_MONTHS = \[\s*1,\s*3,\s*6,\s*12,\s*\] as const/
+  );
+
+  assert.match(
+    recorderSource,
+    /subscriptionStatus === "CANCELLED"/
+  );
+
+  assert.match(
+    recorderSource,
+    /subscriptionStatus ===\s*"TRIALING"/
+  );
+
+  assert.match(
+    recorderSource,
+    /method: "CASH"/
+  );
+
+  assert.match(
+    recorderSource,
+    /\/api\/platform-admin\/subscriptions\/\$\{subscriptionId\}\/payments/
+  );
+
+  assert.match(
+    recorderSource,
+    /method: "POST"/
+  );
+
+  assert.match(
+    recorderSource,
+    /window\.confirm\(/
+  );
+
+  assert.match(
+    recorderSource,
+    /router\.refresh\(\)/
+  );
+
+  assert.match(
+    recorderSource,
+    /maxLength=\{2000\}/
+  );
+
+  // payment recorder must avoid locale-dependent SSR formatting
+  assert.doesNotMatch(
+    recorderSource,
+    /new Intl\.DateTimeFormat|toLocaleString/
+  );
+
+  assert.match(
+    recorderSource,
+    /getUTCDate\(\)[\s\S]*getUTCMonth\(\)[\s\S]*getUTCFullYear\(\)/
+  );
+
+  assert.doesNotMatch(
+    recorderSource,
+    /monthlyPrice\s*:.*JSON\.stringify/
+  );
+
+  assert.doesNotMatch(
+    recorderSource,
+    /totalAmount\s*:.*JSON\.stringify/
+  );
+});
+
 test("plan limits resolve custom offers through the centralized entitlement resolver", () => {
   const source = readFileSync(
     join(root, "lib/plan-limits.ts"),

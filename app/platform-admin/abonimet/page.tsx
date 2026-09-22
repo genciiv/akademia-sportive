@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { PlatformAdminShell } from "@/components/platform-admin-shell";
+import { resolveEffectiveCommercialTerms } from "@/lib/effective-subscription";
 import { getPlatformAdminAccess } from "@/lib/platform-admin";
 import { prisma } from "@/lib/prisma";
+import { resolveSubscriptionStatus } from "@/lib/subscription";
 
 import { SubscriptionsClient } from "./subscriptions-client";
 
@@ -127,10 +129,37 @@ export default async function PlatformAdminSubscriptionsPage() {
       },
     });
 
+  const now = new Date();
+
   const serialized =
     subscriptions.map(
       (subscription) => ({
         ...subscription,
+
+        status:
+          resolveSubscriptionStatus({
+            currentStatus:
+              subscription.status,
+            now,
+            trialEndsAt:
+              subscription.trialEndsAt,
+            currentPeriodStart:
+              subscription.currentPeriodStart,
+            currentPeriodEnd:
+              subscription.currentPeriodEnd,
+            graceEndsAt:
+              subscription.graceEndsAt,
+            cancelledAt:
+              subscription.cancelledAt,
+          }),
+
+        commercialTerms:
+          resolveEffectiveCommercialTerms({
+            plan: subscription.plan,
+            customOffer:
+              subscription.customOffer,
+            now,
+          }),
 
         createdAt:
           subscription.createdAt.toISOString(),

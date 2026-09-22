@@ -16,6 +16,7 @@ import {
 } from "react";
 
 import { CustomOfferEditor } from "./custom-offer-editor";
+import { PaymentRecorder } from "./payment-recorder";
 
 type Status =
   | "TRIALING"
@@ -56,6 +57,17 @@ type Subscription = {
   cancelledAt: string | null;
 
   createdAt: string;
+
+  commercialTerms: {
+    source:
+      | "GLOBAL_PLAN"
+      | "CUSTOM_OFFER";
+    customOfferActive: boolean;
+    planCode: string;
+    planName: string;
+    monthlyPrice: string;
+    currency: string;
+  };
 
   academy: {
     id: string;
@@ -401,10 +413,10 @@ export function SubscriptionsClient({
                           {" · "}
                           {formatMoney(
                             subscription
-                              .plan
+                              .commercialTerms
                               .monthlyPrice,
                             subscription
-                              .plan
+                              .commercialTerms
                               .currency
                           )}
                           /muaj
@@ -490,11 +502,11 @@ export function SubscriptionsClient({
 
                     <p className="mt-1 text-[11px] text-slate-500">
                       {formatMoney(
-                        selected.plan
-                          .monthlyPrice,
-                        selected.plan
-                          .currency
-                      )}
+                selected.commercialTerms
+                  .monthlyPrice,
+                selected.commercialTerms
+                  .currency
+              )}
                       /muaj
                     </p>
                   </div>
@@ -550,11 +562,11 @@ export function SubscriptionsClient({
                   }
                   label="Çmimi mujor"
                   value={formatMoney(
-                    selected.plan
-                      .monthlyPrice,
-                    selected.plan
-                      .currency
-                  )}
+                selected.commercialTerms
+                  .monthlyPrice,
+                selected.commercialTerms
+                  .currency
+              )}
                 />
               </div>
 
@@ -649,6 +661,20 @@ export function SubscriptionsClient({
                   ) : null}
                 </div>
               </div>
+
+              <PaymentRecorder
+                key={`payment-${selected.id}`}
+                subscriptionId={selected.id}
+                subscriptionStatus={
+                  selected.status
+                }
+                trialEndsAt={
+                  selected.trialEndsAt
+                }
+                commercialTerms={
+                  selected.commercialTerms
+                }
+              />
 
               <div className="border-t border-slate-100 p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-4">

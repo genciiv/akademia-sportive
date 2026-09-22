@@ -68,15 +68,35 @@ export function addUtcMonthsClamped(
 
 export function calculatePaidPeriod(input: {
   paidAt: Date;
+  trialEndsAt: Date | null;
   currentPeriodEnd: Date | null;
   months: SubscriptionPaymentMonths;
 }) {
-  const { paidAt, currentPeriodEnd, months } = input;
+  const {
+    paidAt,
+    trialEndsAt,
+    currentPeriodEnd,
+    months,
+  } = input;
+
+  const futureBoundaries = [
+    currentPeriodEnd,
+    trialEndsAt,
+  ].filter(
+    (date): date is Date =>
+      date !== null &&
+      date.getTime() > paidAt.getTime()
+  );
 
   const periodStart =
-    currentPeriodEnd &&
-    currentPeriodEnd.getTime() > paidAt.getTime()
-      ? new Date(currentPeriodEnd)
+    futureBoundaries.length > 0
+      ? new Date(
+          Math.max(
+            ...futureBoundaries.map((date) =>
+              date.getTime()
+            )
+          )
+        )
       : new Date(paidAt);
 
   const periodEnd = addUtcMonthsClamped(
@@ -90,10 +110,84 @@ export function calculatePaidPeriod(input: {
   };
 }
 
+export function calculatePaymentLifecycle(input: {
+  currentStatus: SubscriptionAccessStatus;
+  paidAt: Date;
+  trialEndsAt: Date | null;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  graceEndsAt: Date | null;
+  cancelledAt: Date | null;
+  months: SubscriptionPaymentMonths;
+}) {
+  const {
+    currentStatus,
+    paidAt,
+    trialEndsAt,
+    currentPeriodStart,
+    currentPeriodEnd,
+    graceEndsAt,
+    cancelledAt,
+    months,
+  } = input;
+
+  const statusBeforePayment =
+    resolveSubscriptionStatus({
+      currentStatus,
+      now: paidAt,
+      trialEndsAt,
+      currentPeriodStart,
+      currentPeriodEnd,
+      graceEndsAt,
+      cancelledAt,
+    });
+
+  if (statusBeforePayment === "CANCELLED") {
+    throw new Error(
+      "Abonimi i anuluar duhet t? riaktivizohet para regjistrimit t? pages?s."
+    );
+  }
+
+  const {
+    periodStart,
+    periodEnd,
+  } = calculatePaidPeriod({
+    paidAt,
+    trialEndsAt,
+    currentPeriodEnd,
+    months,
+  });
+
+  const status: SubscriptionAccessStatus =
+    statusBeforePayment === "TRIALING" &&
+    periodStart.getTime() > paidAt.getTime()
+      ? "TRIALING"
+      : "ACTIVE";
+
+  const hasFuturePaidCoverage =
+    currentPeriodEnd !== null &&
+    currentPeriodEnd.getTime() > paidAt.getTime();
+
+  const subscriptionPeriodStart =
+    hasFuturePaidCoverage
+      ? currentPeriodStart
+      : periodStart;
+
+  return {
+    statusBeforePayment,
+    status,
+    periodStart,
+    periodEnd,
+    subscriptionPeriodStart,
+    graceEndsAt: null,
+  };
+}
+
 export function resolveSubscriptionStatus(input: {
   currentStatus: SubscriptionAccessStatus;
   now: Date;
   trialEndsAt: Date | null;
+  currentPeriodStart?: Date | null;
   currentPeriodEnd: Date | null;
   graceEndsAt: Date | null;
   cancelledAt: Date | null;
@@ -102,6 +196,7 @@ export function resolveSubscriptionStatus(input: {
     currentStatus,
     now,
     trialEndsAt,
+    currentPeriodStart,
     currentPeriodEnd,
     graceEndsAt,
     cancelledAt,
@@ -116,7 +211,11 @@ export function resolveSubscriptionStatus(input: {
 
   if (
     currentPeriodEnd &&
-    currentPeriodEnd.getTime() > now.getTime()
+    currentPeriodEnd.getTime() > now.getTime() &&
+    (
+      !currentPeriodStart ||
+      currentPeriodStart.getTime() <= now.getTime()
+    )
   ) {
     return "ACTIVE";
   }

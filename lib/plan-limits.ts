@@ -38,6 +38,7 @@ export async function checkPlanLimit(
       select: {
         status: true,
         trialEndsAt: true,
+        currentPeriodStart: true,
         currentPeriodEnd: true,
         graceEndsAt: true,
         cancelledAt: true,
@@ -93,6 +94,8 @@ export async function checkPlanLimit(
       currentStatus: subscription.status,
       now,
       trialEndsAt: subscription.trialEndsAt,
+      currentPeriodStart:
+        subscription.currentPeriodStart,
       currentPeriodEnd:
         subscription.currentPeriodEnd,
       graceEndsAt:
