@@ -101,6 +101,8 @@ model User {
   auditLogs                    AuditLog[]            @relation("AuditLogActor")
   knowledgeArticles            KnowledgeArticle[]    @relation("KnowledgeArticleAuthor")
   recordedSubscriptionPayments SubscriptionPayment[] @relation("SubscriptionPaymentRecorder")
+  createdCustomOffers          AcademyCustomOffer[]  @relation("AcademyCustomOfferCreatedBy")
+  updatedCustomOffers          AcademyCustomOffer[]  @relation("AcademyCustomOfferUpdatedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1545,7 +1547,8 @@ model AcademySubscription {
   graceEndsAt        DateTime?
   cancelledAt        DateTime?
 
-  payments SubscriptionPayment[]
+  payments    SubscriptionPayment[]
+  customOffer AcademyCustomOffer?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1553,6 +1556,43 @@ model AcademySubscription {
   @@index([planId])
   @@index([status])
   @@index([status, currentPeriodEnd])
+}
+
+model AcademyCustomOffer {
+  id String @id @default(cuid())
+
+  subscriptionId String              @unique
+  subscription   AcademySubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  monthlyPrice Decimal? @db.Decimal(12, 2)
+  currency     String?
+
+  maxPlayers    Int?
+  maxTeams      Int?
+  maxStaff      Int?
+  maxFacilities Int?
+
+  overrideFeatures Boolean       @default(false)
+  features         PlanFeature[] @default([])
+
+  note String?
+
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+  isActive   Boolean   @default(true)
+
+  createdById String?
+  createdBy   User?   @relation("AcademyCustomOfferCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  updatedById String?
+  updatedBy   User?   @relation("AcademyCustomOfferUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, validUntil])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model SubscriptionPayment {
