@@ -188,11 +188,49 @@ test("Platform Admin approval surfaces the one-time owner onboarding invitation"
   const client = readSource(
     "app/platform-admin/aplikimet/applications-client.tsx",
   );
+  const approvalRoute = readSource(
+    "app/api/platform-admin/academy-applications/[applicationId]/route.ts",
+  );
 
   assert.match(
     client,
     /status === "APPROVED"/,
     "The applications UI must handle the approved status explicitly.",
+  );
+  assert.match(
+    approvalRoute,
+    /sendAcademyOwnerInvitationEmail/,
+    "Approving an academy application must use the owner invitation email service.",
+  );
+
+  assert.match(
+    approvalRoute,
+    /onboardingToken && onboardingExpiresAt/,
+    "Owner invitation email delivery must require a generated token and expiry.",
+  );
+
+  assert.match(
+    approvalRoute,
+    /invitationToken: onboardingToken/,
+    "The email must receive the same raw onboarding token surfaced by approval.",
+  );
+
+  const approvalPersistence = approvalRoute.indexOf(
+    "await prisma.academyApplication.update(",
+  );
+  const invitationEmailDelivery = approvalRoute.indexOf(
+    "await sendAcademyOwnerInvitationEmail({",
+  );
+
+  assert.ok(
+    approvalPersistence >= 0 && invitationEmailDelivery > approvalPersistence,
+    "Approval must be persisted before invitation email delivery is attempted.",
+  );
+
+  assert.match(
+    approvalRoute,
+    /emailDelivery,/,
+    "The approval response must surface email delivery status without removing the invitation fallback.",
   );
 
   assert.match(
@@ -217,6 +255,18 @@ test("Platform Admin approval surfaces the one-time owner onboarding invitation"
     client,
     /navigator\.clipboard\.writeText\(/,
     "Platform Admin must be able to copy the generated onboarding link.",
+  );
+
+  assert.match(
+    client,
+    /data\?\.onboarding\?\.emailDelivery\?\.ok === true/,
+    "The applications UI must surface whether automatic invitation email delivery succeeded.",
+  );
+
+  assert.match(
+    client,
+    /Email-i i ftesës nuk u dërgua\./,
+    "The applications UI must warn when automatic invitation email delivery fails.",
   );
 
   assert.doesNotMatch(
