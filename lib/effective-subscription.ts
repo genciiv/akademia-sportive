@@ -66,6 +66,50 @@ export function isCustomOfferActive(
   return true;
 }
 
+export type EffectiveCommercialTerms = {
+  source: "GLOBAL_PLAN" | "CUSTOM_OFFER";
+  customOfferActive: boolean;
+  planCode: string;
+  planName: string;
+  monthlyPrice: string;
+  currency: string;
+};
+
+export function resolveEffectiveCommercialTerms(input: {
+  plan: EffectivePlan;
+  customOffer?: EffectiveCustomOffer | null;
+  now: Date;
+}): EffectiveCommercialTerms {
+  const { plan, customOffer, now } = input;
+
+  const customOfferActive =
+    isCustomOfferActive(customOffer, now);
+
+  if (!customOfferActive || !customOffer) {
+    return {
+      source: "GLOBAL_PLAN",
+      customOfferActive: false,
+      planCode: plan.code,
+      planName: plan.name,
+      monthlyPrice: plan.monthlyPrice.toString(),
+      currency: plan.currency,
+    };
+  }
+
+  return {
+    source: "CUSTOM_OFFER",
+    customOfferActive: true,
+    planCode: plan.code,
+    planName: plan.name,
+    monthlyPrice:
+      customOffer.monthlyPrice?.toString() ??
+      plan.monthlyPrice.toString(),
+    currency:
+      customOffer.currency ??
+      plan.currency,
+  };
+}
+
 export function resolveEffectiveSubscriptionTerms(input: {
   status: SubscriptionAccessStatus;
   plan: EffectivePlan;

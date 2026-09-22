@@ -5,6 +5,7 @@ import {
   addUtcMonthsClamped,
   assertSubscriptionPaymentMonths,
   calculatePaidPeriod,
+  calculatePaymentLifecycle,
   calculateSubscriptionTotal,
   isSubscriptionPaymentMonths,
   resolveSubscriptionStatus,
@@ -84,6 +85,7 @@ test("active subscription extends from current period end", () => {
 
   const result = calculatePaidPeriod({
     paidAt,
+    trialEndsAt: null,
     currentPeriodEnd,
     months: 3,
   });
@@ -108,6 +110,7 @@ test("expired subscription starts from payment date", () => {
 
   const result = calculatePaidPeriod({
     paidAt,
+    trialEndsAt: null,
     currentPeriodEnd,
     months: 1,
   });
@@ -120,6 +123,31 @@ test("expired subscription starts from payment date", () => {
   assert.equal(
     result.periodEnd.toISOString(),
     "2026-10-17T12:00:00.000Z"
+  );
+});
+
+test("payment during trial starts after the trial ends", () => {
+  const paidAt =
+    new Date("2026-09-25T12:00:00.000Z");
+
+  const trialEndsAt =
+    new Date("2026-09-29T12:00:00.000Z");
+
+  const result = calculatePaidPeriod({
+    paidAt,
+    trialEndsAt,
+    currentPeriodEnd: null,
+    months: 3,
+  });
+
+  assert.equal(
+    result.periodStart.toISOString(),
+    "2026-09-29T12:00:00.000Z"
+  );
+
+  assert.equal(
+    result.periodEnd.toISOString(),
+    "2026-12-29T12:00:00.000Z"
   );
 });
 
@@ -211,5 +239,197 @@ test("subscription status resolves from lifecycle dates", () => {
         new Date("2026-09-15T12:00:00.000Z"),
     }),
     "CANCELLED"
+  );
+});
+
+test("scheduled paid period preserves trial until its start date", () => {
+  const trialEndsAt =
+    new Date("2026-09-29T12:00:00.000Z");
+
+  const currentPeriodStart =
+    new Date("2026-09-29T12:00:00.000Z");
+
+  const currentPeriodEnd =
+    new Date("2026-12-29T12:00:00.000Z");
+
+  const beforePaidPeriod =
+    resolveSubscriptionStatus({
+      currentStatus: "TRIALING",
+      now: new Date("2026-09-25T12:00:00.000Z"),
+      trialEndsAt,
+      currentPeriodStart,
+      currentPeriodEnd,
+      graceEndsAt: null,
+      cancelledAt: null,
+    });
+
+  assert.equal(beforePaidPeriod, "TRIALING");
+
+  const atPaidPeriodStart =
+    resolveSubscriptionStatus({
+      currentStatus: "TRIALING",
+      now: new Date("2026-09-29T12:00:00.000Z"),
+      trialEndsAt,
+      currentPeriodStart,
+      currentPeriodEnd,
+      graceEndsAt: null,
+      cancelledAt: null,
+    });
+
+  assert.equal(atPaidPeriodStart, "ACTIVE");
+});
+
+
+test("payment lifecycle preserves an active trial", () => {
+  const result = calculatePaymentLifecycle({
+    currentStatus: "TRIALING",
+    paidAt: new Date("2026-09-25T12:00:00.000Z"),
+    trialEndsAt:
+      new Date("2026-09-29T12:00:00.000Z"),
+    currentPeriodStart: null,
+    currentPeriodEnd: null,
+    graceEndsAt: null,
+    cancelledAt: null,
+    months: 3,
+  });
+
+  assert.equal(
+    result.statusBeforePayment,
+    "TRIALING"
+  );
+  assert.equal(result.status, "TRIALING");
+  assert.equal(
+    result.periodStart.toISOString(),
+    "2026-09-29T12:00:00.000Z"
+  );
+  assert.equal(
+    result.periodEnd.toISOString(),
+    "2026-12-29T12:00:00.000Z"
+  );
+  assert.equal(
+    result.subscriptionPeriodStart?.toISOString(),
+    "2026-09-29T12:00:00.000Z"
+  );
+  assert.equal(result.graceEndsAt, null);
+});
+
+test("payment lifecycle extends an active paid period", () => {
+  const result = calculatePaymentLifecycle({
+    currentStatus: "ACTIVE",
+    paidAt: new Date("2026-09-25T12:00:00.000Z"),
+    trialEndsAt:
+      new Date("2026-09-20T12:00:00.000Z"),
+    currentPeriodStart:
+      new Date("2026-09-20T12:00:00.000Z"),
+    currentPeriodEnd:
+      new Date("2026-10-20T12:00:00.000Z"),
+    graceEndsAt: null,
+    cancelledAt: null,
+    months: 3,
+  });
+
+  assert.equal(
+    result.statusBeforePayment,
+    "ACTIVE"
+  );
+  assert.equal(result.status, "ACTIVE");
+  assert.equal(
+    result.periodStart.toISOString(),
+    "2026-10-20T12:00:00.000Z"
+  );
+  assert.equal(
+    result.periodEnd.toISOString(),
+    "2027-01-20T12:00:00.000Z"
+  );
+  assert.equal(
+    result.subscriptionPeriodStart?.toISOString(),
+    "2026-09-20T12:00:00.000Z"
+  );
+});
+
+test("payment lifecycle reactivates an expired subscription", () => {
+  const paidAt =
+    new Date("2026-09-25T12:00:00.000Z");
+
+  const result = calculatePaymentLifecycle({
+    currentStatus: "EXPIRED",
+    paidAt,
+    trialEndsAt:
+      new Date("2026-09-10T12:00:00.000Z"),
+    currentPeriodStart:
+      new Date("2026-08-10T12:00:00.000Z"),
+    currentPeriodEnd:
+      new Date("2026-09-10T12:00:00.000Z"),
+    graceEndsAt: null,
+    cancelledAt: null,
+    months: 1,
+  });
+
+  assert.equal(
+    result.statusBeforePayment,
+    "EXPIRED"
+  );
+  assert.equal(result.status, "ACTIVE");
+  assert.equal(
+    result.periodStart.toISOString(),
+    paidAt.toISOString()
+  );
+  assert.equal(
+    result.periodEnd.toISOString(),
+    "2026-10-25T12:00:00.000Z"
+  );
+});
+
+test("payment lifecycle clears grace period and activates subscription", () => {
+  const paidAt =
+    new Date("2026-09-25T12:00:00.000Z");
+
+  const result = calculatePaymentLifecycle({
+    currentStatus: "GRACE_PERIOD",
+    paidAt,
+    trialEndsAt:
+      new Date("2026-08-01T12:00:00.000Z"),
+    currentPeriodStart:
+      new Date("2026-08-20T12:00:00.000Z"),
+    currentPeriodEnd:
+      new Date("2026-09-20T12:00:00.000Z"),
+    graceEndsAt:
+      new Date("2026-09-30T12:00:00.000Z"),
+    cancelledAt: null,
+    months: 1,
+  });
+
+  assert.equal(
+    result.statusBeforePayment,
+    "GRACE_PERIOD"
+  );
+  assert.equal(result.status, "ACTIVE");
+  assert.equal(
+    result.periodStart.toISOString(),
+    paidAt.toISOString()
+  );
+  assert.equal(
+    result.periodEnd.toISOString(),
+    "2026-10-25T12:00:00.000Z"
+  );
+  assert.equal(result.graceEndsAt, null);
+});
+
+test("payment lifecycle rejects a cancelled subscription", () => {
+  assert.throws(
+    () =>
+      calculatePaymentLifecycle({
+        currentStatus: "CANCELLED",
+        paidAt:
+          new Date("2026-09-25T12:00:00.000Z"),
+        trialEndsAt: null,
+        currentPeriodStart: null,
+        currentPeriodEnd: null,
+        graceEndsAt: null,
+        cancelledAt:
+          new Date("2026-09-20T12:00:00.000Z"),
+        months: 1,
+      }),
+    /riaktivizohet/
   );
 });
