@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import {
   resolveEffectiveCommercialTerms,
@@ -179,6 +179,7 @@ export async function POST(
                   maxTeams: true,
                   maxStaff: true,
                   maxFacilities: true,
+                  maxAthleteAccounts: true,
                   features: true,
                 },
               },
@@ -191,6 +192,7 @@ export async function POST(
                   maxTeams: true,
                   maxStaff: true,
                   maxFacilities: true,
+                  maxAthleteAccounts: true,
                   overrideFeatures: true,
                   features: true,
                   validFrom: true,

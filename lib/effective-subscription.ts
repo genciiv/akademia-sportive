@@ -13,6 +13,7 @@ export type EffectivePlan = {
   maxTeams: number;
   maxStaff: number;
   maxFacilities: number;
+  maxAthleteAccounts: number;
   features: readonly string[];
 };
 
@@ -23,6 +24,7 @@ export type EffectiveCustomOffer = {
   maxTeams: number | null;
   maxStaff: number | null;
   maxFacilities: number | null;
+  maxAthleteAccounts: number | null;
   overrideFeatures: boolean;
   features: readonly string[];
   validFrom: Date;
@@ -41,6 +43,7 @@ export type EffectiveSubscriptionTerms = {
   maxTeams: number;
   maxStaff: number;
   maxFacilities: number;
+  maxAthleteAccounts: number;
   features: string[];
 };
 
@@ -137,6 +140,7 @@ export function resolveEffectiveSubscriptionTerms(input: {
       maxTeams: plan.maxTeams,
       maxStaff: plan.maxStaff,
       maxFacilities: plan.maxFacilities,
+      maxAthleteAccounts: plan.maxAthleteAccounts,
       features: [...plan.features],
     };
   }
@@ -164,6 +168,9 @@ export function resolveEffectiveSubscriptionTerms(input: {
     maxFacilities:
       customOffer.maxFacilities ??
       plan.maxFacilities,
+    maxAthleteAccounts:
+      customOffer.maxAthleteAccounts ??
+      plan.maxAthleteAccounts,
     features: customOffer.overrideFeatures
       ? [...customOffer.features]
       : [...plan.features],

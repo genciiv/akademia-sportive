@@ -20,6 +20,7 @@ const plan: EffectivePlan = {
   maxTeams: 25,
   maxStaff: 50,
   maxFacilities: 15,
+  maxAthleteAccounts: 0,
   features: [
     "MEDICAL",
     "PERFORMANCE",
@@ -37,6 +38,7 @@ function offer(
     maxTeams: null,
     maxStaff: null,
     maxFacilities: null,
+    maxAthleteAccounts: null,
     overrideFeatures: false,
     features: [],
     validFrom: new Date("2026-09-01T00:00:00.000Z"),

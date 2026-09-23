@@ -37,6 +37,7 @@ export default async function PlatformAdminSettingsPage() {
         maxTeams: true,
         maxStaff: true,
         maxFacilities: true,
+        maxAthleteAccounts: true,
         features: true,
         isActive: true,
         sortOrder: true,

@@ -43,6 +43,10 @@ const PLAN_FEATURES = [
     key: "ADVANCED_REPORTS",
     label: "Raporte të avancuara",
   },
+  {
+    key: "ATHLETE_PORTAL",
+    label: "Portali i sportistit",
+  },
 ] as const;
 
 type Feature =
@@ -57,6 +61,7 @@ type Plan = {
   maxTeams: number;
   maxStaff: number;
   maxFacilities: number;
+  maxAthleteAccounts: number;
   features: string[];
 };
 
@@ -68,6 +73,7 @@ type CustomOffer = {
   maxTeams: number | null;
   maxStaff: number | null;
   maxFacilities: number | null;
+  maxAthleteAccounts: number | null;
   overrideFeatures: boolean;
   features: string[];
   note: string | null;
@@ -171,6 +177,11 @@ export function CustomOfferEditor({
       customOffer?.maxFacilities?.toString() ?? ""
     );
 
+  const [maxAthleteAccounts, setMaxAthleteAccounts] =
+    useState(
+      customOffer?.maxAthleteAccounts?.toString() ?? ""
+    );
+
   const [overrideFeatures, setOverrideFeatures] =
     useState(
       customOffer?.overrideFeatures ?? false
@@ -255,6 +266,8 @@ export function CustomOfferEditor({
               emptyToNull(maxStaff),
             maxFacilities:
               emptyToNull(maxFacilities),
+            maxAthleteAccounts:
+              emptyToNull(maxAthleteAccounts),
             overrideFeatures,
             features:
               overrideFeatures
@@ -498,6 +511,25 @@ export function CustomOfferEditor({
             }
             placeholder={String(
               plan.maxFacilities
+            )}
+            className={inputClassName}
+          />
+        </Field>
+
+        <Field
+          label="Maks. llogari sportistësh"
+          hint={`Plan: ${plan.maxAthleteAccounts}`}
+        >
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={maxAthleteAccounts}
+            onChange={(event) =>
+              setMaxAthleteAccounts(event.target.value)
+            }
+            placeholder={String(
+              plan.maxAthleteAccounts
             )}
             className={inputClassName}
           />

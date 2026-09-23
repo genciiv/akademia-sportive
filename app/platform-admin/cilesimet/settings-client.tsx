@@ -21,6 +21,7 @@ type Plan = {
   maxTeams: number;
   maxStaff: number;
   maxFacilities: number;
+  maxAthleteAccounts: number;
   features: string[];
   isActive: boolean;
   sortOrder: number;
@@ -47,6 +48,7 @@ const FEATURE_LABELS: Record<
     "Planifikimi i ambienteve",
   ADVANCED_REPORTS:
     "Raporte të avancuara",
+  ATHLETE_PORTAL: "Portali i sportistit",
 };
 
 export function PlatformSettingsClient({

@@ -18,6 +18,7 @@ const ALLOWED_FEATURES = [
   "KNOWLEDGE_BASE",
   "FACILITY_SCHEDULING",
   "ADVANCED_REPORTS",
+  "ATHLETE_PORTAL",
 ] as const;
 
 type AllowedFeature =
@@ -88,6 +89,7 @@ function serializeOffer(offer: {
   maxTeams: number | null;
   maxStaff: number | null;
   maxFacilities: number | null;
+  maxAthleteAccounts: number | null;
   overrideFeatures: boolean;
   features: readonly string[];
   note: string | null;
@@ -196,6 +198,8 @@ export async function PUT(
     parseOptionalLimit(body.maxStaff);
   const maxFacilities =
     parseOptionalLimit(body.maxFacilities);
+  const maxAthleteAccounts =
+    parseOptionalLimit(body.maxAthleteAccounts);
 
   if (
     (body.maxPlayers !== undefined &&
@@ -205,7 +209,9 @@ export async function PUT(
     (body.maxStaff !== undefined &&
       maxStaff === undefined) ||
     (body.maxFacilities !== undefined &&
-      maxFacilities === undefined)
+      maxFacilities === undefined) ||
+    (body.maxAthleteAccounts !== undefined &&
+      maxAthleteAccounts === undefined)
   ) {
     return NextResponse.json(
       {
@@ -406,6 +412,7 @@ export async function PUT(
     maxTeams: maxTeams ?? null,
     maxStaff: maxStaff ?? null,
     maxFacilities: maxFacilities ?? null,
+    maxAthleteAccounts: maxAthleteAccounts ?? null,
     overrideFeatures,
     features,
     note,
