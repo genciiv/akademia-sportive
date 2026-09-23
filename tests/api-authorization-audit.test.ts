@@ -69,6 +69,7 @@ const ACCESS_GUARDS = [
   "requireEveryAcademyPermission",
   "getCurrentAcademyAccess",
   "getPlatformAdminAccess",
+  "requireAthleteAccess",
 ];
 
 test("all academy API routes use an access guard or are explicitly allowlisted", () => {
