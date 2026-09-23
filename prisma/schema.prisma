@@ -65,6 +65,7 @@ enum PlanFeature {
   KNOWLEDGE_BASE
   FACILITY_SCHEDULING
   ADVANCED_REPORTS
+  ATHLETE_PORTAL
 }
 
 enum MembershipStatus {
@@ -103,6 +104,8 @@ model User {
   recordedSubscriptionPayments SubscriptionPayment[] @relation("SubscriptionPaymentRecorder")
   createdCustomOffers          AcademyCustomOffer[]  @relation("AcademyCustomOfferCreatedBy")
   updatedCustomOffers          AcademyCustomOffer[]  @relation("AcademyCustomOfferUpdatedBy")
+  athleteAccounts              AthleteAccount[]
+  sentAthleteInvitations       AthleteInvitation[]   @relation("AthleteInvitationSender")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -246,6 +249,8 @@ model Academy {
   facilities           Facility[]
   subscription         AcademySubscription?
   subscriptionPayments SubscriptionPayment[]
+  athleteAccounts      AthleteAccount[]
+  athleteInvitations   AthleteInvitation[]
 
   @@index([ownerId])
   @@index([status])
@@ -356,6 +361,56 @@ model AcademyInvitation {
   @@index([academyId, email])
   @@index([academyId, createdAt])
   @@index([staffId])
+  @@index([invitedByUserId])
+  @@index([expiresAt])
+}
+
+model AthleteAccount {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId, academyId], references: [id, academyId], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([playerId, academyId])
+  @@unique([academyId, userId])
+  @@index([academyId])
+  @@index([userId])
+}
+
+model AthleteInvitation {
+  id String @id @default(cuid())
+
+  academyId String
+  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId, academyId], references: [id, academyId], onDelete: Cascade)
+
+  email String
+  token String @unique
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  invitedByUserId String?
+  invitedByUser   User?   @relation("AthleteInvitationSender", fields: [invitedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academyId, email])
+  @@index([academyId, playerId])
+  @@index([playerId])
   @@index([invitedByUserId])
   @@index([expiresAt])
 }
@@ -534,10 +589,13 @@ model Player {
   guardians            PlayerGuardian[]
   physicalMeasurements PlayerPhysicalMeasurement[]
   medicalRecords       PlayerMedicalRecord[]
+  athleteAccount       AthleteAccount?
+  athleteInvitations   AthleteInvitation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([id, academyId])
   @@index([academyId])
   @@index([academyId, status])
   @@index([academyId, lastName, firstName])
@@ -1509,10 +1567,11 @@ model Plan {
   monthlyPrice Decimal @db.Decimal(12, 2)
   currency     String  @default("ALL")
 
-  maxPlayers    Int
-  maxTeams      Int
-  maxStaff      Int
-  maxFacilities Int
+  maxPlayers         Int
+  maxTeams           Int
+  maxStaff           Int
+  maxFacilities      Int
+  maxAthleteAccounts Int @default(0)
 
   features PlanFeature[] @default([])
 
@@ -1567,10 +1626,11 @@ model AcademyCustomOffer {
   monthlyPrice Decimal? @db.Decimal(12, 2)
   currency     String?
 
-  maxPlayers    Int?
-  maxTeams      Int?
-  maxStaff      Int?
-  maxFacilities Int?
+  maxPlayers         Int?
+  maxTeams           Int?
+  maxStaff           Int?
+  maxFacilities      Int?
+  maxAthleteAccounts Int?
 
   overrideFeatures Boolean       @default(false)
   features         PlanFeature[] @default([])

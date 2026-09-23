@@ -90,6 +90,7 @@ type Subscription = {
     maxTeams: number;
     maxStaff: number;
     maxFacilities: number;
+    maxAthleteAccounts: number;
     features: string[];
   };
 
@@ -101,6 +102,7 @@ type Subscription = {
     maxTeams: number | null;
     maxStaff: number | null;
     maxFacilities: number | null;
+    maxAthleteAccounts: number | null;
     overrideFeatures: boolean;
     features: string[];
     note: string | null;
