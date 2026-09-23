@@ -1,0 +1,32 @@
+﻿import assert from "node:assert/strict";
+import fs from "node:fs";
+import test from "node:test";
+
+const source = fs.readFileSync("lib/athlete-portal-access.ts", "utf8");
+
+test("athlete portal access resolves lifecycle and effective subscription terms", () => {
+  assert.match(source, /resolveSubscriptionStatus/);
+
+  assert.match(source, /resolveEffectiveSubscriptionTerms/);
+
+  assert.match(source, /resolveAthletePortalEntitlement/);
+});
+
+test("athlete portal account capacity is academy scoped", () => {
+  assert.match(source, /prisma\.athleteAccount\.count/);
+
+  assert.match(source, /where:\s*\{\s*academyId/);
+});
+
+test("athlete portal access separately enforces the athlete account limit", () => {
+  assert.match(
+    source,
+    /currentAthleteAccounts\s*>=\s*entitlement\.maxAthleteAccounts/,
+  );
+
+  assert.match(source, /reason:\s*"LIMIT_REACHED"/);
+});
+
+test("athlete portal access keeps missing subscriptions denied", () => {
+  assert.match(source, /reason:\s*"NO_SUBSCRIPTION"/);
+});

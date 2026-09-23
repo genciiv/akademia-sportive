@@ -9,7 +9,7 @@ import { authClient } from "@/lib/auth-client";
 
 type InvitationData = {
   valid: true;
-  type: "ACADEMY_OWNER" | "STAFF";
+  type: "ACADEMY_OWNER" | "STAFF" | "ATHLETE";
   email: string;
   accountExists: boolean;
   name?: string;
