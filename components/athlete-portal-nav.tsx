@@ -1,6 +1,12 @@
 "use client";
 
-import { CalendarDays, LayoutDashboard, LogOut, UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  ClipboardCheck,
+  LayoutDashboard,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,6 +28,11 @@ const navigation = [
     href: "/sportist/orari",
     label: "Orari",
     icon: CalendarDays,
+  },
+  {
+    href: "/sportist/prezenca",
+    label: "Prezenca",
+    icon: ClipboardCheck,
   },
 ] as const;
 
