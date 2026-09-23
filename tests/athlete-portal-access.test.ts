@@ -1,4 +1,4 @@
-﻿import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 
@@ -29,4 +29,15 @@ test("athlete portal access separately enforces the athlete account limit", () =
 
 test("athlete portal access keeps missing subscriptions denied", () => {
   assert.match(source, /reason:\s*"NO_SUBSCRIPTION"/);
+});
+
+test("athlete portal access can skip capacity enforcement for existing accounts", () => {
+  assert.match(source, /enforceCapacity\?:\s*boolean/);
+
+  assert.match(source, /options\.enforceCapacity\s*!==\s*false/);
+
+  assert.match(
+    source,
+    /currentAthleteAccounts\s*>=\s*entitlement\.maxAthleteAccounts/,
+  );
 });

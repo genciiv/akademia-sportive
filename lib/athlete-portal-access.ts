@@ -1,4 +1,4 @@
-﻿import {
+import {
   resolveAthletePortalEntitlement,
   type AthletePortalEntitlementReason,
 } from "@/lib/athlete-portal-entitlement";
@@ -18,8 +18,13 @@ export type AthletePortalAccessResult = {
   reason: AthletePortalAccessReason;
 };
 
+type AthletePortalAccessOptions = {
+  enforceCapacity?: boolean;
+};
+
 export async function checkAthletePortalAccess(
   academyId: string,
+  options: AthletePortalAccessOptions = {},
 ): Promise<AthletePortalAccessResult> {
   const subscription = await prisma.academySubscription.findUnique({
     where: {
@@ -119,7 +124,10 @@ export async function checkAthletePortalAccess(
     };
   }
 
-  if (currentAthleteAccounts >= entitlement.maxAthleteAccounts) {
+  if (
+    options.enforceCapacity !== false &&
+    currentAthleteAccounts >= entitlement.maxAthleteAccounts
+  ) {
     return {
       allowed: false,
       currentAthleteAccounts,
