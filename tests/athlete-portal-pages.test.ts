@@ -39,7 +39,7 @@ test("athlete dashboard exposes active team context only", () => {
 
   assert.match(dashboard, /isActive:\s*true/);
 
-  assert.match(dashboard, /team:/);
+  assert.match(dashboard, /team\.status\s*===\s*"ACTIVE"/);
 });
 
 test("athlete dashboard exposes only the latest physical measurement", () => {
@@ -59,5 +59,50 @@ test("athlete dashboard does not use academy staff permissions", () => {
   assert.doesNotMatch(
     dashboard,
     /requireAcademyPermission|getCurrentAcademyAccess/,
+  );
+});
+
+test("athlete dashboard scopes upcoming training sessions to the athlete active teams and academy", () => {
+  assert.match(dashboard, /prisma\.trainingSession\.findMany/);
+
+  assert.match(dashboard, /academyId:\s*access\.academyId/);
+
+  assert.match(dashboard, /teamId:\s*\{\s*in:\s*activeTeamIds/);
+
+  assert.match(dashboard, /status:\s*"SCHEDULED"/);
+});
+
+test("athlete dashboard limits upcoming training sessions to three", () => {
+  assert.match(dashboard, /prisma\.trainingSession\.findMany[\s\S]*?take:\s*3/);
+});
+
+test("athlete dashboard scopes upcoming matches to the athlete active teams and academy", () => {
+  assert.match(dashboard, /prisma\.match\.findMany/);
+
+  assert.match(dashboard, /teamId:\s*\{\s*in:\s*activeTeamIds/);
+
+  assert.match(dashboard, /startsAt:\s*\{\s*gte:\s*now/);
+});
+
+test("athlete dashboard scopes attendance strictly to the linked athlete", () => {
+  assert.match(dashboard, /prisma\.trainingAttendance\.findMany/);
+
+  assert.match(dashboard, /playerId:\s*access\.playerId/);
+
+  assert.match(
+    dashboard,
+    /trainingSession:\s*\{[\s\S]*?academyId:\s*access\.academyId/,
+  );
+
+  assert.match(
+    dashboard,
+    /trainingSession:\s*\{[\s\S]*?teamId:\s*\{\s*in:\s*activeTeamIds/,
+  );
+});
+
+test("athlete dashboard limits recent attendance history to five", () => {
+  assert.match(
+    dashboard,
+    /prisma\.trainingAttendance\.findMany[\s\S]*?take:\s*5/,
   );
 });

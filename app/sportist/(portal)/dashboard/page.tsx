@@ -16,6 +16,32 @@ function formatDate(value: Date | null) {
   }).format(value);
 }
 
+function formatDateTime(value: Date) {
+  return new Intl.DateTimeFormat("sq-AL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Tirane",
+  }).format(value);
+}
+
+function attendanceLabel(status: string) {
+  switch (status) {
+    case "PRESENT":
+      return "Prezent";
+    case "ABSENT":
+      return "Mungesë";
+    case "LATE":
+      return "Me vonesë";
+    case "EXCUSED":
+      return "E justifikuar";
+    default:
+      return status;
+  }
+}
+
 export default async function AthleteDashboardPage() {
   const access = await requireAthleteAccess();
 
@@ -94,6 +120,148 @@ export default async function AthleteDashboardPage() {
 
   const latestMeasurement = player.physicalMeasurements[0] ?? null;
 
+  const activeTeams = player.teams.filter(
+    ({ team }) => team.status === "ACTIVE",
+  );
+
+  const activeTeamIds = activeTeams.map(({ team }) => team.id);
+
+  const now = new Date();
+
+  const [upcomingSessions, upcomingMatches, recentAttendances] =
+    await Promise.all([
+      prisma.trainingSession.findMany({
+        where: {
+          academyId: access.academyId,
+          teamId: {
+            in: activeTeamIds,
+          },
+          startsAt: {
+            gte: now,
+          },
+          status: "SCHEDULED",
+        },
+
+        orderBy: {
+          startsAt: "asc",
+        },
+
+        take: 3,
+
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          endsAt: true,
+          location: true,
+
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          facility: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          branch: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
+
+      prisma.match.findMany({
+        where: {
+          academyId: access.academyId,
+          teamId: {
+            in: activeTeamIds,
+          },
+          startsAt: {
+            gte: now,
+          },
+          status: "SCHEDULED",
+        },
+
+        orderBy: {
+          startsAt: "asc",
+        },
+
+        take: 3,
+
+        select: {
+          id: true,
+          opponentName: true,
+          startsAt: true,
+          location: true,
+          isHome: true,
+          competitionName: true,
+
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          facility: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
+
+      prisma.trainingAttendance.findMany({
+        where: {
+          playerId: access.playerId,
+
+          trainingSession: {
+            academyId: access.academyId,
+            teamId: {
+              in: activeTeamIds,
+            },
+          },
+        },
+
+        orderBy: {
+          trainingSession: {
+            startsAt: "desc",
+          },
+        },
+
+        take: 5,
+
+        select: {
+          id: true,
+          status: true,
+
+          trainingSession: {
+            select: {
+              id: true,
+              title: true,
+              startsAt: true,
+
+              team: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
   return (
     <div className="space-y-6">
       <section>
@@ -144,12 +312,12 @@ export default async function AthleteDashboardPage() {
           <h2 className="text-lg font-semibold">Ekipet aktive</h2>
 
           <div className="mt-4 space-y-3">
-            {player.teams.length === 0 ? (
+            {activeTeams.length === 0 ? (
               <p className="text-sm text-slate-500">
                 Nuk je i lidhur me një ekip aktiv.
               </p>
             ) : (
-              player.teams.map(({ team }) => (
+              activeTeams.map(({ team }) => (
                 <div
                   key={team.id}
                   className="rounded-lg border border-slate-100 bg-slate-50 p-3"
@@ -178,6 +346,7 @@ export default async function AthleteDashboardPage() {
             <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
               <div>
                 <dt className="text-slate-500">Data</dt>
+
                 <dd className="mt-1 font-medium">
                   {formatDate(latestMeasurement.measuredAt)}
                 </dd>
@@ -185,6 +354,7 @@ export default async function AthleteDashboardPage() {
 
               <div>
                 <dt className="text-slate-500">Gjatësia</dt>
+
                 <dd className="mt-1 font-medium">
                   {latestMeasurement.heightCm != null
                     ? `${latestMeasurement.heightCm} cm`
@@ -194,6 +364,7 @@ export default async function AthleteDashboardPage() {
 
               <div>
                 <dt className="text-slate-500">Pesha</dt>
+
                 <dd className="mt-1 font-medium">
                   {latestMeasurement.weightKg != null
                     ? `${latestMeasurement.weightKg} kg`
@@ -203,6 +374,7 @@ export default async function AthleteDashboardPage() {
 
               <div>
                 <dt className="text-slate-500">Yndyra trupore</dt>
+
                 <dd className="mt-1 font-medium">
                   {latestMeasurement.bodyFatPercent != null
                     ? `${latestMeasurement.bodyFatPercent}%`
@@ -210,6 +382,126 @@ export default async function AthleteDashboardPage() {
                 </dd>
               </div>
             </dl>
+          )}
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold">Seancat e ardhshme</h2>
+
+          <div className="mt-4 space-y-3">
+            {upcomingSessions.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                Nuk ka seanca të ardhshme për ekipet e tua.
+              </p>
+            ) : (
+              upcomingSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="rounded-lg border border-slate-100 bg-slate-50 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-medium">{session.title}</p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        {session.team.name}
+                      </p>
+                    </div>
+
+                    <p className="text-sm font-medium">
+                      {formatDateTime(session.startsAt)}
+                    </p>
+                  </div>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    {session.facility?.name ||
+                      session.location ||
+                      session.branch?.name ||
+                      "Vendndodhja nuk është përcaktuar"}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold">Ndeshjet e ardhshme</h2>
+
+          <div className="mt-4 space-y-3">
+            {upcomingMatches.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                Nuk ka ndeshje të ardhshme për ekipet e tua.
+              </p>
+            ) : (
+              upcomingMatches.map((match) => (
+                <div
+                  key={match.id}
+                  className="rounded-lg border border-slate-100 bg-slate-50 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-medium">
+                        {match.isHome
+                          ? `${match.team.name} - ${match.opponentName}`
+                          : `${match.opponentName} - ${match.team.name}`}
+                      </p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        {match.competitionName || match.team.name}
+                      </p>
+                    </div>
+
+                    <p className="text-sm font-medium">
+                      {formatDateTime(match.startsAt)}
+                    </p>
+                  </div>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    {match.facility?.name ||
+                      match.location ||
+                      "Vendndodhja nuk është përcaktuar"}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-lg font-semibold">Prezenca e fundit</h2>
+
+        <div className="mt-4 space-y-3">
+          {recentAttendances.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              Ende nuk ka prezenca të regjistruara.
+            </p>
+          ) : (
+            recentAttendances.map((attendance) => (
+              <div
+                key={attendance.id}
+                className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium">
+                    {attendance.trainingSession.title}
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    {attendance.trainingSession.team.name}
+                    {" · "}
+                    {formatDateTime(attendance.trainingSession.startsAt)}
+                  </p>
+                </div>
+
+                <p className="text-sm font-semibold">
+                  {attendanceLabel(attendance.status)}
+                </p>
+              </div>
+            ))
           )}
         </div>
       </section>
