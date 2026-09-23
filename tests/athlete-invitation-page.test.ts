@@ -78,7 +78,7 @@ test("athlete invitation page shows athlete academy email and expiry context", (
   assert.match(page, /Europe\/Tirane/);
 });
 
-test("athlete invitation page keeps success state local until athlete portal navigation exists", () => {
+test("athlete invitation page redirects to the athlete dashboard after acceptance", () => {
   assert.match(page, /Ftesa u pranua me sukses\./);
 
   assert.match(
@@ -86,5 +86,5 @@ test("athlete invitation page keeps success state local until athlete portal nav
     /Llogaria jote tani është lidhur me profilin e sportistit\./,
   );
 
-  assert.doesNotMatch(page, /router\.push\(\s*["'`]\/sportist\/dashboard/);
+  assert.match(page, /router\.push\(\s*["'`]\/sportist\/dashboard["'`]\s*\)/);
 });
