@@ -6,6 +6,8 @@ const page = fs.readFileSync("app/sportist/(portal)/orari/page.tsx", "utf8");
 
 const layout = fs.readFileSync("app/sportist/(portal)/layout.tsx", "utf8");
 
+const navigation = fs.readFileSync("components/athlete-portal-nav.tsx", "utf8");
+
 test("athlete schedule page requires athlete access", () => {
   assert.match(page, /requireAthleteAccess/);
 
@@ -60,7 +62,9 @@ test("athlete schedule does not use academy staff permissions", () => {
 });
 
 test("athlete portal navigation exposes the schedule page", () => {
-  assert.match(layout, /href="\/sportist\/orari"/);
+  assert.match(layout, /AthletePortalNav/);
 
-  assert.match(layout, />\s*Orari\s*</);
+  assert.match(navigation, /href:\s*"\/sportist\/orari"/);
+
+  assert.match(navigation, /label:\s*"Orari"/);
 });

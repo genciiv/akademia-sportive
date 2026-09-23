@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AthletePortalNav } from "@/components/athlete-portal-nav";
 import { requireAthleteAccess } from "@/lib/athlete-access";
 
 export default async function AthletePortalLayout({
@@ -33,35 +34,28 @@ export default async function AthletePortalLayout({
               Portali i Sportistit
             </Link>
 
-            <p className="mt-1 text-sm text-slate-500">{access.academy.name}</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {access.academy.name}
+            </p>
           </div>
 
           <div className="text-right">
-            <p className="text-sm font-medium">{athleteName}</p>
+            <p className="text-sm font-medium">
+              {athleteName}
+            </p>
 
-            <p className="text-xs text-slate-500">Sportist</p>
+            <p className="text-xs text-slate-500">
+              Sportist
+            </p>
           </div>
         </div>
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[220px_1fr] lg:px-8">
-        <aside className="rounded-xl border border-slate-200 bg-white p-3">
-          <nav className="space-y-1">
-            <Link
-              href="/sportist/dashboard"
-              className="block rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white"
-            >
-              Përmbledhje
-            </Link>
-
-            <Link
-              href="/sportist/orari"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Orari
-            </Link>
-          </nav>
-        </aside>
+        <AthletePortalNav
+          athleteName={athleteName}
+          academyName={access.academy.name}
+        />
 
         <main>{children}</main>
       </div>
