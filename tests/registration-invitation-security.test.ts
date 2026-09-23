@@ -150,8 +150,8 @@ test("existing invited users are routed to login instead of signup", () => {
 
   assert.equal(
     (route.match(/accountExists: existingAccount/g) ?? []).length,
-    2,
-    "Both owner and staff invitation responses must expose accountExists.",
+    3,
+    "Owner, staff and athlete invitation responses must expose accountExists.",
   );
 
   assert.match(

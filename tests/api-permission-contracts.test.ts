@@ -832,6 +832,7 @@ test("Prisma academy routes retain an academy-scope marker", () => {
       "app/api/auth/[...all]/route.ts",
       "app/api/invitations/[token]/route.ts",
       "app/api/registration-invitations/[token]/route.ts",
+      "app/api/athlete-invitations/public/[token]/route.ts",
     ]);
 
   const apiRoot =

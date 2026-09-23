@@ -48,38 +48,56 @@ export const auth = betterAuth({
         invitationToken.length > 512
       ) {
         throw new APIError("FORBIDDEN", {
-          message: "Regjistrimi lejohet vetëm me një ftesë të vlefshme.",
+          message:
+            "Regjistrimi lejohet vet\u00ebm me nj\u00eb ftes\u00eb t\u00eb vlefshme.",
         });
       }
 
       const now = new Date();
+
       const onboardingTokenHash = hashInvitationToken(invitationToken);
 
-      const [ownerInvitation, staffInvitation] = await Promise.all([
-        prisma.academyApplication.findUnique({
-          where: {
-            onboardingTokenHash,
-          },
-          select: {
-            email: true,
-            status: true,
-            consumedAt: true,
-            onboardingExpiresAt: true,
-          },
-        }),
+      const [ownerInvitation, staffInvitation, athleteInvitation] =
+        await Promise.all([
+          prisma.academyApplication.findUnique({
+            where: {
+              onboardingTokenHash,
+            },
 
-        prisma.academyInvitation.findUnique({
-          where: {
-            token: invitationToken,
-          },
-          select: {
-            email: true,
-            expiresAt: true,
-            acceptedAt: true,
-            revokedAt: true,
-          },
-        }),
-      ]);
+            select: {
+              email: true,
+              status: true,
+              consumedAt: true,
+              onboardingExpiresAt: true,
+            },
+          }),
+
+          prisma.academyInvitation.findUnique({
+            where: {
+              token: invitationToken,
+            },
+
+            select: {
+              email: true,
+              expiresAt: true,
+              acceptedAt: true,
+              revokedAt: true,
+            },
+          }),
+
+          prisma.athleteInvitation.findUnique({
+            where: {
+              token: onboardingTokenHash,
+            },
+
+            select: {
+              email: true,
+              expiresAt: true,
+              acceptedAt: true,
+              revokedAt: true,
+            },
+          }),
+        ]);
 
       const ownerAllowed =
         ownerInvitation?.status === "APPROVED" &&
@@ -95,9 +113,17 @@ export const auth = betterAuth({
         staffInvitation.expiresAt > now &&
         normalizeEmail(staffInvitation.email) === email;
 
-      if (!ownerAllowed && !staffAllowed) {
+      const athleteAllowed =
+        athleteInvitation !== null &&
+        athleteInvitation.acceptedAt === null &&
+        athleteInvitation.revokedAt === null &&
+        athleteInvitation.expiresAt > now &&
+        normalizeEmail(athleteInvitation.email) === email;
+
+      if (!ownerAllowed && !staffAllowed && !athleteAllowed) {
         throw new APIError("FORBIDDEN", {
-          message: "Regjistrimi lejohet vetëm me një ftesë të vlefshme.",
+          message:
+            "Regjistrimi lejohet vet\u00ebm me nj\u00eb ftes\u00eb t\u00eb vlefshme.",
         });
       }
     }),
@@ -125,6 +151,7 @@ export const auth = betterAuth({
         where: {
           onboardingTokenHash,
         },
+
         select: {
           id: true,
           email: true,
@@ -148,10 +175,13 @@ export const auth = betterAuth({
       await prisma.academyApplication.updateMany({
         where: {
           id: ownerInvitation.id,
+
           onboardingTokenHash,
         },
+
         data: {
           onboardingTokenHash: null,
+
           onboardingExpiresAt: null,
         },
       });
