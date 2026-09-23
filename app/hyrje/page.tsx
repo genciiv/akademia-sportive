@@ -107,6 +107,28 @@ export default function Page() {
       // Nëse kontrolli dështon, ruajmë rrugën normale të login-it.
     }
 
+    if (destination === "/dashboard") {
+      try {
+        const athleteResponse =
+          await fetch("/api/athlete/session", {
+            method: "GET",
+            cache: "no-store",
+          });
+
+        if (athleteResponse.ok) {
+          const athleteData =
+            await athleteResponse.json();
+
+          if (athleteData?.athlete === true) {
+            destination =
+              "/sportist/dashboard";
+          }
+        }
+      } catch {
+        // Nëse kontrolli i sportistit dështon, ruajmë destinacionin normal.
+      }
+    }
+
     router.push(destination);
     router.refresh();
   }
