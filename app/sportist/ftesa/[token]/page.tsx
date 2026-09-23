@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CheckCircle2, LogIn, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
@@ -155,6 +155,8 @@ export default function Page() {
       }
 
       setSuccess(true);
+
+      router.push("/sportist/dashboard");
     } catch (err) {
       setError(
         err instanceof Error
