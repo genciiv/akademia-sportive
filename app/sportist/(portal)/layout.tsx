@@ -53,6 +53,13 @@ export default async function AthletePortalLayout({
             >
               Përmbledhje
             </Link>
+
+            <Link
+              href="/sportist/orari"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Orari
+            </Link>
           </nav>
         </aside>
 
