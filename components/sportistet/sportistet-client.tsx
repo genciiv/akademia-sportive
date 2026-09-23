@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import AthleteInvitationManager from "@/components/sportistet/athlete-invitation-manager";
 import PlayerPhysicalProfile from "@/components/sportistet/player-physical-profile";
 
 type PlayerPhysicalMeasurement = {
@@ -126,6 +127,9 @@ export default function SportistetClient({
     useState<Player | null>(null);
 
   const [playerPhysicalProfile, setPlayerPhysicalProfile] =
+    useState<Player | null>(null);
+
+  const [playerPortal, setPlayerPortal] =
     useState<Player | null>(null);
 
   const [dukeFshire, setDukeFshire] = useState(false);
@@ -637,6 +641,18 @@ export default function SportistetClient({
                           <Activity size={14} />
                           Profili fizik
                         </button>
+
+                        {canUpdatePlayers && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPlayerPortal(player)
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+                          >
+                            Portali
+                          </button>
+                        )}
                         {canUpdatePlayers && (
                           <button
                             onClick={() =>
@@ -671,6 +687,15 @@ export default function SportistetClient({
           </div>
         )}
       </div>
+
+      {playerPortal && (
+        <AthleteInvitationManager
+          player={playerPortal}
+          onClose={() =>
+            setPlayerPortal(null)
+          }
+        />
+      )}
 
       {playerPhysicalProfile && (
         <PlayerPhysicalProfile
