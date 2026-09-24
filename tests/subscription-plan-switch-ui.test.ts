@@ -88,3 +88,11 @@ test("subscriptions page wires plan switcher separately from custom offers", () 
 
   assert.match(client, /<CustomOfferEditor/);
 });
+
+test("plan switcher blocks trialing subscriptions in the UI", () => {
+  assert.match(switcher, /subscriptionStatus === "TRIALING"/);
+
+  assert.match(switcher, /isTrialing/);
+
+  assert.match(switcher, /Plani mund të ndryshohet pasi/);
+});

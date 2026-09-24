@@ -73,12 +73,14 @@ export function PlanSwitcher({
 
   const isCancelled = subscriptionStatus === "CANCELLED";
 
+  const isTrialing = subscriptionStatus === "TRIALING";
+
   const samePlan = planCode === currentPlanCode;
 
   const selectedPlan =
     STANDARD_PLANS.find((plan) => plan.code === planCode) ?? STANDARD_PLANS[1];
 
-  const blocked = isCancelled || hasUnexpiredPaidCoverage;
+  const blocked = isCancelled || isTrialing || hasUnexpiredPaidCoverage;
 
   async function changePlan() {
     setError(null);
@@ -92,6 +94,12 @@ export function PlanSwitcher({
       setError(
         "Abonimi i anuluar duhet të riaktivizohet para ndryshimit të planit.",
       );
+
+      return;
+    }
+
+    if (isTrialing) {
+      setError("Plani mund të ndryshohet pasi të përfundojë trial-i.");
 
       return;
     }
@@ -213,6 +221,13 @@ export function PlanSwitcher({
           {selectedPlan.description}
         </p>
       </div>
+
+      {isTrialing ? (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+          Akademia është ende në trial. Plani mund të ndryshohet pasi trial-i të
+          përfundojë.
+        </div>
+      ) : null}
 
       {hasUnexpiredPaidCoverage ? (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">

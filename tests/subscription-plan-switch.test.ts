@@ -92,3 +92,11 @@ test("subscription plan switch is idempotent when the plan is unchanged", () => 
 
   assert.match(source, /changed:\s*false/);
 });
+
+test("subscription plan switch rejects trialing subscriptions", () => {
+  assert.match(source, /resolvedStatus === "TRIALING"/);
+
+  assert.match(source, /kind:\s*"TRIALING"/);
+
+  assert.match(source, /Plani mund të ndryshohet pasi të përfundojë trial-i/);
+});
