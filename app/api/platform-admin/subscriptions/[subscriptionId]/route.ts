@@ -115,6 +115,12 @@ export async function PUT(request: Request, { params }: RouteContext) {
           };
         }
 
+        if (resolvedStatus === "TRIALING") {
+          return {
+            kind: "TRIALING" as const,
+          };
+        }
+
         if (subscription.plan.code === planCode) {
           return {
             kind: "UNCHANGED" as const,
@@ -188,6 +194,17 @@ export async function PUT(request: Request, { params }: RouteContext) {
         {
           error:
             "Abonimi i anuluar duhet të riaktivizohet para ndryshimit të planit.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    if (result.kind === "TRIALING") {
+      return NextResponse.json(
+        {
+          error: "Plani mund të ndryshohet pasi të përfundojë trial-i.",
         },
         {
           status: 409,
