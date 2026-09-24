@@ -226,9 +226,15 @@ export async function GET(
       };
     });
 
+  const canManage =
+    access.permissions.includes(
+      PERMISSIONS.PERFORMANCE_MANAGE
+    );
+
   return NextResponse.json({
     match,
     players,
+    canManage,
   });
 }
 

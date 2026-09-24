@@ -69,6 +69,9 @@ export function PerformanceSection({
   const [players, setPlayers] =
     useState<PerformancePlayer[]>([]);
 
+  const [canManage, setCanManage] =
+    useState(false);
+
   const [dukeNgarkuar, setDukeNgarkuar] =
     useState(true);
 
@@ -109,14 +112,17 @@ export function PerformanceSection({
           data.error ||
             "Performanca nuk mund të ngarkohej."
         );
+        setCanManage(false);
         return;
       }
 
       setPlayers(data.players || []);
+      setCanManage(Boolean(data.canManage));
     } catch {
       setGabimi(
         "Ndodhi një problem gjatë ngarkimit të performancës."
       );
+      setCanManage(false);
     } finally {
       setDukeNgarkuar(false);
     }
@@ -438,33 +444,37 @@ export function PerformanceSection({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            hapEditimin(player)
-                          }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                        >
-                          <Pencil size={15} />
-                          {p
-                            ? "Edito performancën"
-                            : "Shto performancën"}
-                        </button>
+                        {canManage && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                hapEditimin(player)
+                              }
+                              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                            >
+                              <Pencil size={15} />
+                              {p
+                                ? "Edito performancën"
+                                : "Shto performancën"}
+                            </button>
 
-                        {p && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setPerformancePerFshirje(
-                                player
-                              )
-                            }
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 text-red-600 transition hover:bg-red-50"
-                            aria-label="Fshi performancën"
-                            title="Fshi performancën"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                            {p && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPerformancePerFshirje(
+                                    player
+                                  )
+                                }
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 text-red-600 transition hover:bg-red-50"
+                                aria-label="Fshi performancën"
+                                title="Fshi performancën"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -547,7 +557,7 @@ export function PerformanceSection({
         </div>
       </div>
 
-      {playerNeEditim && (
+      {canManage && playerNeEditim && (
         <div className="fixed inset-0 z-[100] bg-slate-950/45 backdrop-blur-[2px]">
           <div className="absolute inset-y-0 right-0 flex w-full max-w-3xl flex-col bg-white shadow-2xl">
             <div className="shrink-0 flex items-start justify-between border-b border-slate-100 bg-white px-6 py-5">
@@ -803,7 +813,7 @@ export function PerformanceSection({
           </div>
         </div>
       )}
-      {performancePerFshirje && (
+      {canManage && performancePerFshirje && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-md rounded-[24px] bg-white p-6 shadow-2xl">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
