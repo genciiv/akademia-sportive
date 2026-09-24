@@ -178,7 +178,8 @@ model AcademyApplication {
   sport   String?
   message String?
 
-  status AcademyApplicationStatus @default(PENDING)
+  requestedPlanCode String?
+  status            AcademyApplicationStatus @default(PENDING)
 
   adminNotes String?
 

@@ -26,6 +26,7 @@ type Application = {
   address: string | null;
   sport: string | null;
   message: string | null;
+  requestedPlanCode: string | null;
   status: Status;
   adminNotes: string | null;
   contactedAt: string | null;
@@ -56,6 +57,11 @@ const statusLabels: Record<Status, string> = {
   CONTACTED: "Kontaktuar",
   APPROVED: "Aprovuar",
   REJECTED: "Refuzuar",
+};
+const planLabels: Record<string, string> = {
+  STARTER: "Starter",
+  PRO: "Pro",
+  PRO_PORTAL: "Pro + Athlete Portal",
 };
 
 export default function ApplicationsClient({
@@ -446,6 +452,16 @@ export default function ApplicationsClient({
                   icon={<Building2 size={15} />}
                   label="Sporti"
                   value={selected.sport || "—"}
+                />
+                <Info
+                  icon={<Building2 size={15} />}
+                  label="Paketa e interesit"
+                  value={
+                    selected.requestedPlanCode
+                      ? (planLabels[selected.requestedPlanCode] ??
+                        selected.requestedPlanCode)
+                      : "Pa paketë të zgjedhur"
+                  }
                 />
 
                 <Info

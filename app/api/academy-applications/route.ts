@@ -7,6 +7,25 @@ function cleanOptional(value: unknown) {
   return text || null;
 }
 
+const ALLOWED_PLAN_CODES = ["STARTER", "PRO", "PRO_PORTAL"] as const;
+
+type AllowedPlanCode = (typeof ALLOWED_PLAN_CODES)[number];
+
+function cleanRequestedPlanCode(value: unknown): AllowedPlanCode | null {
+  const code = String(value ?? "")
+    .trim()
+    .toUpperCase();
+
+  if (!code) {
+    return null;
+  }
+
+  if (!ALLOWED_PLAN_CODES.includes(code as AllowedPlanCode)) {
+    return null;
+  }
+
+  return code as AllowedPlanCode;
+}
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
 
@@ -15,55 +34,55 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       { error: "Kërkesa nuk është e vlefshme." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const academyName = String(body.academyName ?? "").trim();
   const contactName = String(body.contactName ?? "").trim();
-  const email = String(body.email ?? "").trim().toLowerCase();
+  const email = String(body.email ?? "")
+    .trim()
+    .toLowerCase();
   const phone = String(body.phone ?? "").trim();
 
   const city = cleanOptional(body.city);
   const address = cleanOptional(body.address);
   const sport = cleanOptional(body.sport);
   const message = cleanOptional(body.message);
+  const requestedPlanCode = cleanRequestedPlanCode(body.requestedPlanCode);
 
   if (academyName.length < 2) {
     return NextResponse.json(
       { error: "Shkruaj emrin e akademisë." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (contactName.length < 2) {
     return NextResponse.json(
       { error: "Shkruaj emrin e personit të kontaktit." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  if (
-    !email ||
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  ) {
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json(
       { error: "Shkruaj një adresë elektronike të vlefshme." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (phone.length < 6) {
     return NextResponse.json(
       { error: "Shkruaj një numër telefoni të vlefshëm." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (academyName.length > 160 || contactName.length > 120) {
     return NextResponse.json(
       { error: "Të dhënat e dërguara janë shumë të gjata." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -75,7 +94,7 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json(
       { error: "Të dhënat e dërguara janë shumë të gjata." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -99,7 +118,7 @@ export async function POST(request: Request) {
         error:
           "Ka tashmë një aplikim aktiv me këtë adresë elektronike. Do të kontaktoheni pasi aplikimi të shqyrtohet.",
       },
-      { status: 409 }
+      { status: 409 },
     );
   }
 
@@ -113,6 +132,7 @@ export async function POST(request: Request) {
       address,
       sport,
       message,
+      requestedPlanCode,
     },
     select: {
       id: true,
@@ -126,6 +146,6 @@ export async function POST(request: Request) {
       application,
       message: "Aplikimi u dërgua me sukses.",
     },
-    { status: 201 }
+    { status: 201 },
   );
 }
