@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Dumbbell,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Dumbbell } from "lucide-react";
 import { FormEvent, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type FormState = {
   academyName: string;
@@ -19,6 +15,26 @@ type FormState = {
   sport: string;
   message: string;
 };
+
+const planOptions = {
+  STARTER: {
+    name: "Starter",
+    price: "12,000 ALL / muaj",
+    description: "Për akademi të vogla dhe proceset bazë.",
+  },
+  PRO: {
+    name: "Pro",
+    price: "20,000 ALL / muaj",
+    description: "Menaxhim sportiv dhe administrativ i avancuar.",
+  },
+  PRO_PORTAL: {
+    name: "Pro + Athlete Portal",
+    price: "25,000 ALL / muaj",
+    description: "Pro me portal të dedikuar për sportistët.",
+  },
+} as const;
+
+type PlanCode = keyof typeof planOptions;
 
 const initialForm: FormState = {
   academyName: "",
@@ -32,15 +48,27 @@ const initialForm: FormState = {
 };
 
 export default function ApplyPage() {
+  const searchParams = useSearchParams();
+
+  const requestedPlan = searchParams.get("plan");
+
+  const selectedPlan =
+    requestedPlan &&
+    Object.prototype.hasOwnProperty.call(planOptions, requestedPlan)
+      ? planOptions[requestedPlan as PlanCode]
+      : null;
+  const selectedPlanCode =
+    requestedPlan &&
+    Object.prototype.hasOwnProperty.call(planOptions, requestedPlan)
+      ? (requestedPlan as PlanCode)
+      : null;
+
   const [form, setForm] = useState<FormState>(initialForm);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  function update<K extends keyof FormState>(
-    key: K,
-    value: FormState[K]
-  ) {
+  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({
       ...current,
       [key]: value,
@@ -59,15 +87,17 @@ export default function ApplyPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          requestedPlanCode: selectedPlanCode,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         setError(
-          data?.error ||
-            "Aplikimi nuk mund të dërgohej. Provo përsëri."
+          data?.error || "Aplikimi nuk mund të dërgohej. Provo përsëri.",
         );
         return;
       }
@@ -76,7 +106,7 @@ export default function ApplyPage() {
       setForm(initialForm);
     } catch {
       setError(
-        "Aplikimi nuk mund të dërgohej. Kontrollo lidhjen dhe provo përsëri."
+        "Aplikimi nuk mund të dërgohej. Kontrollo lidhjen dhe provo përsëri.",
       );
     } finally {
       setSending(false);
@@ -97,9 +127,9 @@ export default function ApplyPage() {
             </h1>
 
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">
-              Faleminderit për interesin. Do ta shqyrtojmë aplikimin dhe do
-              të të kontaktojmë në adresën elektronike ose numrin e telefonit
-              që na dërgove.
+              Faleminderit për interesin. Do ta shqyrtojmë aplikimin dhe do të
+              të kontaktojmë në adresën elektronike ose numrin e telefonit që na
+              dërgove.
             </p>
 
             <Link
@@ -156,9 +186,8 @@ export default function ApplyPage() {
             </h1>
 
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Na dërgo disa të dhëna për akademinë. Do ta shqyrtojmë
-              aplikimin dhe do të kontaktojmë personalisht për hapat e
-              ardhshëm.
+              Na dërgo disa të dhëna për akademinë. Do ta shqyrtojmë aplikimin
+              dhe do të kontaktojmë personalisht për hapat e ardhshëm.
             </p>
 
             <div className="mt-7 space-y-3 text-sm text-slate-600">
@@ -181,6 +210,36 @@ export default function ApplyPage() {
             onSubmit={submit}
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
           >
+            {selectedPlan ? (
+              <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50/70 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-600">
+                  Paketa e zgjedhur
+                </p>
+
+                <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-slate-950">
+                      {selectedPlan.name}
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {selectedPlan.description}
+                    </p>
+                  </div>
+
+                  <p className="mt-2 text-sm font-semibold text-blue-700 sm:mt-0">
+                    {selectedPlan.price}
+                  </p>
+                </div>
+
+                <Link
+                  href="/#planet"
+                  className="mt-3 inline-flex text-xs font-semibold text-blue-600 hover:text-blue-700"
+                >
+                  Ndrysho paketën
+                </Link>
+              </div>
+            ) : null}
             <div className="grid gap-5 sm:grid-cols-2">
               <Field
                 label="Emri i akademisë"
@@ -246,9 +305,7 @@ export default function ApplyPage() {
 
                 <textarea
                   value={form.message}
-                  onChange={(event) =>
-                    update("message", event.target.value)
-                  }
+                  onChange={(event) => update("message", event.target.value)}
                   rows={5}
                   maxLength={2000}
                   placeholder="Na trego shkurt për akademinë dhe çfarë kërkon nga platforma."

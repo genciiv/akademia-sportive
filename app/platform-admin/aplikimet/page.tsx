@@ -16,13 +16,12 @@ export default async function PlatformAdminApplicationsPage() {
     redirect("/");
   }
 
-  const applications =
-    await prisma.academyApplication.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 200,
-    });
+  const applications = await prisma.academyApplication.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 200,
+  });
 
   const serialized = applications.map((application) => ({
     id: application.id,
@@ -34,6 +33,7 @@ export default async function PlatformAdminApplicationsPage() {
     address: application.address,
     sport: application.sport,
     message: application.message,
+    requestedPlanCode: application.requestedPlanCode,
     status: application.status,
     adminNotes: application.adminNotes,
     contactedAt: application.contactedAt?.toISOString() ?? null,

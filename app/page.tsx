@@ -32,8 +32,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Performanca",
-    description:
-      "Ndiq progresin dhe të dhënat sportive me një pamje të qartë.",
+    description: "Ndiq progresin dhe të dhënat sportive me një pamje të qartë.",
   },
   {
     icon: HeartPulse,
@@ -44,8 +43,7 @@ const features = [
   {
     icon: Target,
     title: "Taktika & skautim",
-    description:
-      "Organizo vlerësimet, kandidatët dhe punën taktike të stafit.",
+    description: "Organizo vlerësimet, kandidatët dhe punën taktike të stafit.",
   },
   {
     icon: Building2,
@@ -71,6 +69,14 @@ const proFeatures = [
   "Performancë, skautim dhe taktika",
   "Raporte të avancuara",
 ];
+const proPortalFeatures = [
+  "Gjithçka nga plani Pro",
+  "Deri në 50 llogari sportistësh",
+  "Dashboard personal për sportistin",
+  "Orari personal i stërvitjeve dhe ndeshjeve",
+  "Historia dhe statistikat e prezencës",
+  "Ftesa dhe hyrje e dedikuar për sportistët",
+];
 
 export default function HomePage() {
   return (
@@ -81,31 +87,30 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-[#f7fbff]">
         <div className="absolute right-[-120px] top-[-120px] h-[420px] w-[420px] rounded-full bg-blue-100/70 blur-3xl" />
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:py-20 lg:min-h-[680px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-14 lg:px-8 lg:py-24">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center rounded-full border border-blue-200 bg-white px-3.5 py-2 text-xs font-semibold text-blue-700 shadow-sm">
-              7 ditë PRO falas
+        <div className="relative mx-auto grid min-h-[720px] max-w-7xl items-center gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[1.02fr_.98fr] lg:gap-14 lg:px-8 lg:py-24">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-blue-500" />7 ditë PRO
+              falas për çdo akademi të re
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-[56px]">
-              Menaxhimi i akademisë,
-              <span className="block text-blue-600">
-                më i thjeshtë.
-              </span>
+            <h1 className="mt-7 text-4xl font-bold leading-[1.05] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[64px]">
+              Drejto akademinë.
+              <span className="block text-blue-600">Zhvillo sportistët.</span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-base leading-7 text-slate-600 sm:text-lg">
-              Organizo sportistët, ekipet, trajnerët, stërvitjet,
-              performancën dhe administrimin e akademisë nga një
-              platformë e vetme.
+            <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+              Një platformë e vetme për sportistët, ekipet, trajnerët,
+              stërvitjet, performancën, financat dhe punën e përditshme të
+              akademisë.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/apliko"
+                href="/apliko?plan=STARTER"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700"
               >
-                Apliko
+                Fillo me 7 ditë falas
                 <ArrowRight size={16} />
               </Link>
 
@@ -113,50 +118,64 @@ export default function HomePage() {
                 href="#platforma"
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
               >
-                Shiko platformën
+                Shiko si funksionon
               </a>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-500">
-              <span className="flex items-center gap-2">
-                <Check size={15} className="text-blue-600" />
-                Pa kartë pagese
-              </span>
-              <span className="flex items-center gap-2">
-                <Check size={15} className="text-blue-600" />
-                Aktivizim i shpejtë
-              </span>
-              <span className="flex items-center gap-2">
-                <Check size={15} className="text-blue-600" />
-                PRO për 7 ditë
-              </span>
+            <div className="mt-9 grid max-w-xl gap-3 text-sm text-slate-500 sm:grid-cols-3">
+              {[
+                "Pa kartë pagese",
+                "Role & akses të kontrolluar",
+                "Multi-sport",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <Check size={13} />
+                  </span>
+
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="relative">
-            <div className="overflow-hidden rounded-[28px] border border-blue-100 bg-white p-3 shadow-[0_24px_70px_rgba(30,64,175,0.12)]">
-              <div className="rounded-[22px] bg-[#f7f9fc] p-5 sm:p-6">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <div className="absolute -left-8 top-12 z-10 hidden w-52 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl lg:block">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-blue-600">
+                Sot
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-slate-950">6</p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                aktivitete të planifikuara
+              </p>
+            </div>
+
+            <div className="ml-auto max-w-[520px] overflow-hidden rounded-[30px] border border-blue-100 bg-white p-3 shadow-[0_24px_70px_rgba(30,64,175,0.12)]">
+              <div className="rounded-[24px] bg-[#f7f9fc] p-5">
+                <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-slate-400">
-                      Paneli kryesor
-                    </p>
-                    <p className="mt-1 text-sm font-bold">
                       Akademia Sportive
+                    </p>
+
+                    <p className="mt-1 text-base font-bold text-slate-950">
+                      Paneli i sotëm
                     </p>
                   </div>
 
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
-                    <BarChart3 size={17} />
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white">
+                    <BarChart3 size={18} />
                   </span>
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="mt-5 grid grid-cols-2 gap-3">
                   {[
                     ["Sportistë", "128"],
                     ["Ekipe", "12"],
-                    ["Seanca", "36"],
                     ["Trajnerë", "14"],
+                    ["Seanca", "36"],
                   ].map(([label, value]) => (
                     <div
                       key={label}
@@ -165,51 +184,51 @@ export default function HomePage() {
                       <p className="text-[11px] font-medium text-slate-400">
                         {label}
                       </p>
-                      <p className="mt-2 text-xl font-bold">{value}</p>
+
+                      <p className="mt-2 text-2xl font-bold text-slate-950">
+                        {value}
+                      </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-3 grid gap-3 sm:grid-cols-[1.4fr_0.6fr]">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                    <p className="text-xs font-medium text-slate-400">
-                      Aktiviteti i javës
-                    </p>
+                <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-slate-400">
+                        Aktiviteti i javës
+                      </p>
 
-                    <div className="mt-6 flex h-28 items-end gap-2">
-                      {[42, 70, 54, 86, 64, 92, 76].map(
-                        (height, index) => (
-                          <div
-                            key={index}
-                            className="flex-1 rounded-t-md bg-blue-500"
-                            style={{ height: `${height}%` }}
-                          />
-                        )
-                      )}
+                      <p className="mt-1 text-sm font-semibold text-slate-900">
+                        Ecuria e akademisë
+                      </p>
                     </div>
+
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-600">
+                      +18%
+                    </span>
                   </div>
 
-                  <div className="rounded-2xl bg-blue-600 p-5 text-white">
-                    <p className="text-[11px] font-medium text-blue-100">
-                      Sot
-                    </p>
-                    <p className="mt-3 text-2xl font-bold">
-                      6 aktivitete
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-blue-100">
-                      Stërvitje dhe ndeshje të planifikuara.
-                    </p>
+                  <div className="mt-6 flex h-28 items-end gap-2">
+                    {[46, 72, 58, 88, 66, 94, 82].map((height, index) => (
+                      <div
+                        key={index}
+                        className="flex-1 rounded-t-md bg-blue-500"
+                        style={{ height: `${height}%` }}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="absolute -bottom-6 -left-6 hidden w-52 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg lg:block">
+            <div className="absolute -bottom-8 right-6 hidden w-64 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl lg:block">
               <p className="text-xs font-semibold text-blue-600">
-                Gjithçka në një vend
+                Nga zyra te fusha
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-800">
-                Nga administrimi te fusha.
+
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Të dhënat sportive dhe administrative në të njëjtin sistem.
               </p>
             </div>
           </div>
@@ -303,9 +322,9 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Organizimi i akademisë nuk duhet të varet nga tabela,
-              mesazhe dhe dokumente të shpërndara. Mbaji proceset në
-              një vend të vetëm dhe jepi stafit qartësi.
+              Organizimi i akademisë nuk duhet të varet nga tabela, mesazhe dhe
+              dokumente të shpërndara. Mbaji proceset në një vend të vetëm dhe
+              jepi stafit qartësi.
             </p>
 
             <div className="mt-7 space-y-4">
@@ -348,24 +367,21 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Struktura e platformës është ndërtuar për ekipe,
-              akademi dhe programe sportive me nevoja të ndryshme.
+              Struktura e platformës është ndërtuar për ekipe, akademi dhe
+              programe sportive me nevoja të ndryshme.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-3">
-              {[
-                "Performancë",
-                "Mjekësore",
-                "Skautim",
-                "Taktika",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
-                >
-                  {item}
-                </div>
-              ))}
+              {["Performancë", "Mjekësore", "Skautim", "Taktika"].map(
+                (item) => (
+                  <div
+                    key={item}
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+                  >
+                    {item}
+                  </div>
+                ),
+              )}
             </div>
           </div>
 
@@ -385,85 +401,157 @@ export default function HomePage() {
         id="planet"
         className="bg-[#f7fbff] px-5 py-16 sm:py-20 lg:px-8 lg:py-24"
       >
-        <div className="mx-auto max-w-5xl">
-          <div className="mx-auto max-w-xl text-center">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
               Planet
             </p>
 
-            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Zgjidh planin që i përshtatet akademisë.
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              Një plan për çdo fazë të akademisë.
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-slate-500">
-              Çdo akademi e re fillon me 7 ditë PRO falas.
+              Fillo me 7 ditë PRO falas dhe zgjidh planin që i përshtatet
+              strukturës dhe mënyrës së punës së akademisë.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <div className="rounded-[24px] border border-slate-200 bg-white p-7 shadow-sm">
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            <div className="rounded-[26px] border border-slate-200 bg-white p-7 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
                 Starter
               </p>
 
-              <div className="mt-4 flex items-end gap-2">
-                <span className="text-3xl font-bold">12,000</span>
-                <span className="pb-1 text-xs text-slate-500">
-                  ALL / muaj
+              <p className="mt-3 text-sm text-slate-500">
+                Për akademi të vogla që duan të organizojnë proceset bazë.
+              </p>
+
+              <div className="mt-6 flex items-end gap-2">
+                <span className="text-3xl font-bold text-slate-950">
+                  12,000
                 </span>
+
+                <span className="pb-1 text-xs text-slate-500">ALL / muaj</span>
               </div>
 
               <div className="mt-7 space-y-3">
                 {starterFeatures.map((feature) => (
-                  <div key={feature} className="flex items-center gap-3">
-                    <Check size={15} className="text-blue-600" />
-                    <span className="text-sm text-slate-600">{feature}</span>
+                  <div key={feature} className="flex items-start gap-3">
+                    <Check
+                      size={15}
+                      className="mt-0.5 shrink-0 text-blue-600"
+                    />
+                    <span className="text-sm leading-5 text-slate-600">
+                      {feature}
+                    </span>
                   </div>
                 ))}
               </div>
 
               <Link
-                href="/apliko"
+                href="/apliko?plan=STARTER"
                 className="mt-8 flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Apliko
               </Link>
             </div>
 
-            <div className="relative rounded-[24px] border border-blue-200 bg-white p-7 shadow-[0_18px_55px_rgba(37,99,235,0.10)]">
-              <span className="absolute right-5 top-5 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-600">
-                7 ditë falas
+            <div className="relative rounded-[26px] border border-blue-300 bg-white p-7 shadow-[0_20px_60px_rgba(37,99,235,0.12)]">
+              <span className="absolute right-5 top-5 rounded-full bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white">
+                Më i plotë
               </span>
 
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-600">
                 Pro
               </p>
 
-              <div className="mt-4 flex items-end gap-2">
-                <span className="text-3xl font-bold">20,000</span>
-                <span className="pb-1 text-xs text-slate-500">
-                  ALL / muaj
+              <p className="mt-3 pr-24 text-sm text-slate-500">
+                Për akademi që duan menaxhim sportiv dhe administrativ të
+                avancuar.
+              </p>
+
+              <div className="mt-6 flex items-end gap-2">
+                <span className="text-3xl font-bold text-slate-950">
+                  20,000
                 </span>
+
+                <span className="pb-1 text-xs text-slate-500">ALL / muaj</span>
               </div>
 
               <div className="mt-7 space-y-3">
                 {proFeatures.map((feature) => (
-                  <div key={feature} className="flex items-center gap-3">
-                    <Check size={15} className="text-blue-600" />
-                    <span className="text-sm text-slate-600">{feature}</span>
+                  <div key={feature} className="flex items-start gap-3">
+                    <Check
+                      size={15}
+                      className="mt-0.5 shrink-0 text-blue-600"
+                    />
+                    <span className="text-sm leading-5 text-slate-600">
+                      {feature}
+                    </span>
                   </div>
                 ))}
               </div>
 
               <Link
-                href="/apliko"
+                href="/apliko?plan=PRO"
                 className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 Apliko
                 <ArrowRight size={15} />
               </Link>
             </div>
+
+            <div className="relative overflow-hidden rounded-[26px] border border-slate-800 bg-slate-950 p-7 text-white shadow-[0_22px_65px_rgba(15,23,42,0.18)]">
+              <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-blue-500/20 blur-3xl" />
+
+              <div className="relative">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-300">
+                  Pro + Athlete Portal
+                </p>
+
+                <p className="mt-3 text-sm leading-6 text-slate-300">
+                  Për akademi që duan t’u japin sportistëve akses në portalin e
+                  tyre.
+                </p>
+
+                <div className="mt-6 flex items-end gap-2">
+                  <span className="text-3xl font-bold">25,000</span>
+
+                  <span className="pb-1 text-xs text-slate-400">
+                    ALL / muaj
+                  </span>
+                </div>
+
+                <div className="mt-7 space-y-3">
+                  {proPortalFeatures.map((feature) => (
+                    <div key={feature} className="flex items-start gap-3">
+                      <Check
+                        size={15}
+                        className="mt-0.5 shrink-0 text-blue-300"
+                      />
+                      <span className="text-sm leading-5 text-slate-300">
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  href="/apliko?plan=PRO_PORTAL"
+                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+                >
+                  Apliko
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
           </div>
+
+          <p className="mt-7 text-center text-xs leading-5 text-slate-400">
+            Ke nevoja të veçanta? Mund të konfigurohet edhe një ofertë e
+            personalizuar për akademinë.
+          </p>
         </div>
       </section>
 
@@ -502,9 +590,7 @@ export default function HomePage() {
 
             <div>
               <p className="text-sm font-bold">Akademia Sportive</p>
-              <p className="text-xs text-slate-400">
-                Platforma e menaxhimit
-              </p>
+              <p className="text-xs text-slate-400">Platforma e menaxhimit</p>
             </div>
           </div>
 
@@ -525,7 +611,8 @@ export default function HomePage() {
         </div>
 
         <div className="mx-auto mt-8 max-w-7xl border-t border-slate-100 pt-6 text-xs text-slate-400">
-          © {new Date().getFullYear()} Akademia Sportive. Të gjitha të drejtat e rezervuara.
+          © {new Date().getFullYear()} Akademia Sportive. Të gjitha të drejtat e
+          rezervuara.
         </div>
       </footer>
     </main>
