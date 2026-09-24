@@ -252,7 +252,14 @@ export async function GET(request: Request) {
       },
     });
 
+  const canManage =
+    access.permissions.includes(
+      PERMISSIONS.SCOUTING_MANAGE
+    );
+
   return NextResponse.json({
+    canManage,
+
     candidates: candidates.map(
       (candidate) => ({
         ...candidate,

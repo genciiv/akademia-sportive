@@ -52,6 +52,7 @@ type Candidate = {
 
 type Props = {
   candidateId: string;
+  canManage: boolean;
   onClose: () => void;
   onDeleted: () => void;
   onEdit: (candidate: Candidate) => void;
@@ -127,6 +128,7 @@ function formatoDate(value: string) {
 
 export default function CandidateDetails({
   candidateId,
+  canManage,
   onClose,
   onDeleted,
   onEdit,
@@ -429,18 +431,20 @@ export default function CandidateDetails({
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    onAddObservation(
-                      candidate
-                    )
-                  }
-                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-50 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
-                >
-                  <Plus className="h-4 w-4" />
-                  Shto vëzhgim
-                </button>
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onAddObservation(
+                        candidate
+                      )
+                    }
+                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-50 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Shto vëzhgim
+                  </button>
+                )}
               </div>
 
               {candidate.observations
@@ -497,59 +501,63 @@ export default function CandidateDetails({
                               {observation.overallRating ?? "-"}
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                onEditObservation(
-                                  candidate,
-                                  observation
-                                )
-                              }
-                              className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
-                              aria-label="Edito vëzhgimin"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
+                            {canManage && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    onEditObservation(
+                                      candidate,
+                                      observation
+                                    )
+                                  }
+                                  className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
+                                  aria-label="Edito vëzhgimin"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
 
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                const konfirmim =
-                                  window.confirm(
-                                    "Je i sigurt që dëshiron ta fshish këtë vëzhgim?"
-                                  );
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const konfirmim =
+                                      window.confirm(
+                                        "Je i sigurt që dëshiron ta fshish këtë vëzhgim?"
+                                      );
 
-                                if (!konfirmim) {
-                                  return;
-                                }
-
-                                const response =
-                                  await fetch(
-                                    `/api/scouting/${candidate.id}/observations/${observation.id}`,
-                                    {
-                                      method: "DELETE",
+                                    if (!konfirmim) {
+                                      return;
                                     }
-                                  );
 
-                                if (!response.ok) {
-                                  const result =
-                                    await response.json();
+                                    const response =
+                                      await fetch(
+                                        `/api/scouting/${candidate.id}/observations/${observation.id}`,
+                                        {
+                                          method: "DELETE",
+                                        }
+                                      );
 
-                                  window.alert(
-                                    result.error ||
-                                      "Vëzhgimi nuk u fshi."
-                                  );
+                                    if (!response.ok) {
+                                      const result =
+                                        await response.json();
 
-                                  return;
-                                }
+                                      window.alert(
+                                        result.error ||
+                                          "Vëzhgimi nuk u fshi."
+                                      );
 
-                                await ngarko();
-                              }}
-                              className="rounded-lg p-2 text-red-500 transition hover:bg-red-50"
-                              aria-label="Fshi vëzhgimin"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                                      return;
+                                    }
+
+                                    await ngarko();
+                                  }}
+                                  className="rounded-lg p-2 text-red-500 transition hover:bg-red-50"
+                                  aria-label="Fshi vëzhgimin"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
 
@@ -567,35 +575,37 @@ export default function CandidateDetails({
               )}
             </section>
 
-            <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={() =>
-                  onEdit(candidate)
-                }
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                <Pencil className="h-4 w-4" />
-                Edito kandidatin
-              </button>
+            {canManage && (
+              <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onEdit(candidate)
+                  }
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edito kandidatin
+                </button>
 
-              <button
-                type="button"
-                onClick={
-                  fshiKandidatin
-                }
-                disabled={deleting}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-              >
-                {deleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
+                <button
+                  type="button"
+                  onClick={
+                    fshiKandidatin
+                  }
+                  disabled={deleting}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                >
+                  {deleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
 
-                Fshi kandidatin
-              </button>
-            </div>
+                  Fshi kandidatin
+                </button>
+              </div>
+            )}
           </div>
         ) : null}
       </div>
