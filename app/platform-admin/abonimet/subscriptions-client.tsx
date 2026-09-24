@@ -17,6 +17,7 @@ import {
 
 import { CustomOfferEditor } from "./custom-offer-editor";
 import { PaymentRecorder } from "./payment-recorder";
+import { PlanSwitcher } from "./plan-switcher";
 
 type Status =
   | "TRIALING"
@@ -571,6 +572,19 @@ export function SubscriptionsClient({
               )}
                 />
               </div>
+
+              <PlanSwitcher
+                key={`${selected.id}-${selected.plan.code}`}
+                subscriptionId={selected.id}
+                subscriptionStatus={selected.status}
+                currentPlanCode={selected.plan.code}
+                currentPlanName={selected.plan.name}
+                currentPeriodEnd={selected.currentPeriodEnd}
+                customOfferActive={
+                  selected.commercialTerms
+                    .customOfferActive
+                }
+              />
 
               <CustomOfferEditor
                 key={selected.id}
