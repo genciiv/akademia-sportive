@@ -39,6 +39,7 @@ type Candidate = {
 type ResponseData = {
   candidates: Candidate[];
   summary: Record<string, number>;
+  canManage: boolean;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -73,6 +74,7 @@ export default function ScoutingClient() {
   const [data, setData] = useState<ResponseData>({
     candidates: [],
     summary: {},
+    canManage: false,
   });
 
   const [loading, setLoading] = useState(true);
@@ -125,6 +127,7 @@ export default function ScoutingClient() {
       setData({
         candidates: [],
         summary: {},
+        canManage: false,
       });
     } finally {
       setLoading(false);
@@ -168,6 +171,7 @@ export default function ScoutingClient() {
     data.candidates,
     search,
   ]);
+  const canManage = data.canManage;
 
   const total = data.candidates.length;
 
@@ -200,18 +204,19 @@ export default function ScoutingClient() {
               Menaxho kandidatët, vlerësimet dhe historikun e vëzhgimeve sportive.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-            setKandidatiPerEditim(null);
-            setModalHapur(true);
-          }}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-          >
-            <Plus className="h-4 w-4" />
-            Shto kandidat
-          </button>
+          {canManage && (
+            <button
+              type="button"
+              onClick={() => {
+                setKandidatiPerEditim(null);
+                setModalHapur(true);
+              }}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            >
+              <Plus className="h-4 w-4" />
+              Shto kandidat
+            </button>
+          )}
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -454,6 +459,7 @@ export default function ScoutingClient() {
       {candidateIdAktiv && (
         <CandidateDetails
           candidateId={candidateIdAktiv}
+          canManage={canManage}
           onClose={() =>
             setCandidateIdAktiv(null)
           }
@@ -476,7 +482,7 @@ export default function ScoutingClient() {
           }}
         />
       )}
-      {candidateIdVezhgim && (
+      {canManage && candidateIdVezhgim && (
         <ObservationModal
           candidateId={candidateIdVezhgim}
           observation={vezhgimiAktiv}
@@ -490,7 +496,7 @@ export default function ScoutingClient() {
           }}
         />
       )}
-      {modalHapur && (
+      {canManage && modalHapur && (
         <CandidateModal
           candidate={kandidatiPerEditim}
           onClose={() => {
