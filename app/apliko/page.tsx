@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2, Dumbbell } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type FormState = {
@@ -54,6 +54,14 @@ const initialForm: FormState = {
 };
 
 export default function ApplyPage() {
+  return (
+    <Suspense fallback={null}>
+      <ApplyPageContent />
+    </Suspense>
+  );
+}
+
+function ApplyPageContent() {
   const searchParams = useSearchParams();
 
   const requestedPlan = searchParams.get("plan");
