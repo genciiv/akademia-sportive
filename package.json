@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test tests/**/*.test.ts"
+    "test": "tsx --test tests/**/*.test.ts",
+    "env:check": "node --import tsx scripts/validate-env.mjs",
+    "db:migrate:deploy": "node scripts/migrate-deploy.mjs"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.7.2",
