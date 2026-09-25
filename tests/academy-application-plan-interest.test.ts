@@ -31,6 +31,7 @@ test("application page sends the validated selected plan", () => {
 test("public application API only accepts standard plan codes", () => {
   assert.match(publicApi, /STARTER/);
   assert.match(publicApi, /PRO_PORTAL/);
+  assert.match(publicApi, /UNLIMITED/);
   assert.match(publicApi, /requestedPlanCode/);
 });
 
@@ -47,4 +48,5 @@ test("platform admin exposes the requested plan", () => {
   assert.match(adminClient, /Paketa e interesit/);
 
   assert.match(adminClient, /Pro \+ Athlete Portal/);
+  assert.match(adminClient, /Unlimited/);
 });

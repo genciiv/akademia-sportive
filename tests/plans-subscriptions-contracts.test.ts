@@ -135,65 +135,26 @@ test("migration grants existing academies a fresh 7-day PRO trial", () => {
   );
 });
 
-test("custom academy offers are defined as subscription overrides", () => {
+test("current plan schema uses nullable limits and no custom-offer model", () => {
   const schema = readFileSync(
     join(root, "prisma/schema.prisma"),
     "utf8"
   );
 
-  assert.match(
+  assert.match(schema, /maxPlayers\s+Int\?/);
+  assert.match(schema, /maxTeams\s+Int\?/);
+  assert.match(schema, /maxStaff\s+Int\?/);
+  assert.match(schema, /maxFacilities\s+Int\?/);
+  assert.match(schema, /maxAthleteAccounts\s+Int\?/);
+
+  assert.doesNotMatch(
     schema,
     /model AcademyCustomOffer\s*\{/
   );
 
-  assert.match(
+  assert.doesNotMatch(
     schema,
-    /subscriptionId\s+String\s+@unique/
-  );
-
-  assert.match(
-    schema,
-    /subscription\s+AcademySubscription\s+@relation/
-  );
-
-  assert.match(
-    schema,
-    /monthlyPrice\s+Decimal\?/
-  );
-
-  assert.match(
-    schema,
-    /maxPlayers\s+Int\?/
-  );
-
-  assert.match(
-    schema,
-    /maxTeams\s+Int\?/
-  );
-
-  assert.match(
-    schema,
-    /maxStaff\s+Int\?/
-  );
-
-  assert.match(
-    schema,
-    /maxFacilities\s+Int\?/
-  );
-
-  assert.match(
-    schema,
-    /overrideFeatures\s+Boolean\s+@default\(false\)/
-  );
-
-  assert.match(
-    schema,
-    /features\s+PlanFeature\[\]\s+@default\(\[\]\)/
-  );
-
-  assert.match(
-    schema,
-    /customOffer\s+AcademyCustomOffer\?/
+    /customOffer\s+AcademyCustomOffer/
   );
 });
 
@@ -252,58 +213,78 @@ test("custom offer migration enforces database safety constraints", () => {
   );
 });
 
-test("platform admin custom offer API is protected and preserves audit history", () => {
-  const source = readFileSync(
+test("fixed-plan migration updates prices, adds UNLIMITED, and preserves the legacy custom-offer table for deployment safety", () => {
+  const migration = readFileSync(
     join(
       root,
-      "app/api/platform-admin/subscriptions/[subscriptionId]/custom-offer/route.ts"
+      "prisma/migrations/20260925070000_fixed_plans_unlimited/migration.sql"
     ),
     "utf8"
   );
 
+  assert.match(migration, /10000\.00/);
+  assert.match(migration, /15000\.00/);
+  assert.match(migration, /20000\.00/);
+  assert.match(migration, /30000\.00/);
+
   assert.match(
-    source,
-    /getPlatformAdminAccess\(\)/
+    migration,
+    /WHERE "code" = 'STARTER'/
   );
 
   assert.match(
-    source,
-    /export async function PUT/
+    migration,
+    /WHERE "code" = 'PRO'/
   );
 
   assert.match(
-    source,
-    /academyCustomOffer\.upsert/
+    migration,
+    /WHERE "code" = 'PRO_PORTAL'/
   );
 
   assert.match(
-    source,
-    /createdById:\s*access\.user\.id/
+    migration,
+    /'UNLIMITED'/
   );
 
   assert.match(
-    source,
-    /updatedById:\s*access\.user\.id/
+    migration,
+    /ALTER COLUMN "maxPlayers" DROP NOT NULL/
   );
 
   assert.match(
-    source,
-    /export async function DELETE/
+    migration,
+    /ALTER COLUMN "maxTeams" DROP NOT NULL/
   );
 
   assert.match(
-    source,
-    /academyCustomOffer\.update/
+    migration,
+    /ALTER COLUMN "maxStaff" DROP NOT NULL/
   );
 
   assert.match(
-    source,
-    /isActive:\s*false/
+    migration,
+    /ALTER COLUMN "maxFacilities" DROP NOT NULL/
+  );
+
+  assert.match(
+    migration,
+    /ALTER COLUMN "maxAthleteAccounts" DROP NOT NULL/
+  );
+
+  assert.match(
+    migration,
+    /"planId"\s*=\s*'plan_pro_portal'/
+  );
+
+  assert.match(
+    migration,
+    /'ATHLETE_PORTAL'::"PlanFeature"/
   );
 
   assert.doesNotMatch(
-    source,
-    /academyCustomOffer\.delete\s*\(/
+    migration,
+    /DROP TABLE\s+"AcademyCustomOffer"/
   );
 });
 
@@ -629,7 +610,7 @@ test("platform admin payment UI uses effective commercial terms and preserves pa
   );
 });
 
-test("plan limits resolve custom offers through the centralized entitlement resolver", () => {
+test("plan limits use fixed subscription terms and treat null as unlimited", () => {
   const source = readFileSync(
     join(root, "lib/plan-limits.ts"),
     "utf8"
@@ -642,36 +623,31 @@ test("plan limits resolve custom offers through the centralized entitlement reso
 
   assert.match(
     source,
-    /customOffer:/
-  );
-
-  assert.match(
-    source,
     /resolveSubscriptionStatus/
   );
 
   assert.match(
     source,
-    /effective\.maxPlayers/
+    /limit:\s*number\s*\|\s*null/
+  );
+
+  assert.match(source, /effective\.maxPlayers/);
+  assert.match(source, /effective\.maxTeams/);
+  assert.match(source, /effective\.maxStaff/);
+  assert.match(source, /effective\.maxFacilities/);
+
+  assert.match(
+    source,
+    /limit\s*!==\s*null\s*&&\s*current\s*>=\s*limit/
   );
 
   assert.match(
     source,
-    /effective\.maxTeams/
+    /planCode:\s*effective\.planCode/
   );
 
-  assert.match(
+  assert.doesNotMatch(
     source,
-    /effective\.maxStaff/
-  );
-
-  assert.match(
-    source,
-    /effective\.maxFacilities/
-  );
-
-  assert.match(
-    source,
-    /planCode: effective\.planCode/
+    /customOffer:/
   );
 });

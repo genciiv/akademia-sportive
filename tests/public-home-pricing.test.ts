@@ -5,12 +5,12 @@ import test from "node:test";
 
 const source = readFileSync(join(process.cwd(), "app/page.tsx"), "utf8");
 
-test("public homepage exposes the three commercial plans", () => {
+test("public homepage exposes the current three pricing cards", () => {
   assert.match(source, /Starter/);
   assert.match(source, /Pro \+ Athlete Portal/);
-  assert.match(source, /12,000/);
+  assert.match(source, /10,000/);
   assert.match(source, /20,000/);
-  assert.match(source, /25,000/);
+  assert.match(source, /15,000/);
 });
 
 test("public homepage includes athlete portal value", () => {

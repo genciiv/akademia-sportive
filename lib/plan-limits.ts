@@ -16,7 +16,7 @@ export type PlanLimitResult = {
   allowed: boolean;
   resource: PlanLimitResource;
   current: number;
-  limit: number;
+  limit: number | null;
   planCode: string;
   subscriptionStatus: string;
   reason:
@@ -58,22 +58,6 @@ export async function checkPlanLimit(
           },
         },
 
-        customOffer: {
-          select: {
-            monthlyPrice: true,
-            currency: true,
-            maxPlayers: true,
-            maxTeams: true,
-            maxStaff: true,
-            maxFacilities: true,
-            maxAthleteAccounts: true,
-            overrideFeatures: true,
-            features: true,
-            validFrom: true,
-            validUntil: true,
-            isActive: true,
-          },
-        },
       },
     });
 
@@ -110,7 +94,6 @@ export async function checkPlanLimit(
     resolveEffectiveSubscriptionTerms({
       status: subscriptionStatus,
       plan: subscription.plan,
-      customOffer: subscription.customOffer,
       now,
     });
 
@@ -183,7 +166,7 @@ export async function checkPlanLimit(
     };
   }
 
-  if (current >= limit) {
+  if (limit !== null && current >= limit) {
     return {
       allowed: false,
       resource,

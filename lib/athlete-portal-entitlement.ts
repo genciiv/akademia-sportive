@@ -11,7 +11,7 @@ export type AthletePortalEntitlementReason =
 export type AthletePortalEntitlement = {
   allowed: boolean;
   reason: AthletePortalEntitlementReason;
-  maxAthleteAccounts: number;
+  maxAthleteAccounts: number | null;
 };
 
 export function resolveAthletePortalEntitlement(input: {
@@ -47,7 +47,10 @@ export function resolveAthletePortalEntitlement(input: {
     };
   }
 
-  if (terms.maxAthleteAccounts <= 0) {
+  if (
+    terms.maxAthleteAccounts !== null &&
+    terms.maxAthleteAccounts <= 0
+  ) {
     return {
       allowed: false,
       reason: "ACCOUNT_LIMIT_DISABLED",

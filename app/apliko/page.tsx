@@ -19,19 +19,25 @@ type FormState = {
 const planOptions = {
   STARTER: {
     name: "Starter",
-    price: "12,000 ALL / muaj",
+    price: "10,000 ALL / muaj",
     description: "Për akademi të vogla dhe proceset bazë.",
   },
   PRO: {
     name: "Pro",
-    price: "20,000 ALL / muaj",
+    price: "15,000 ALL / muaj",
     description: "Menaxhim sportiv dhe administrativ i avancuar.",
   },
   PRO_PORTAL: {
     name: "Pro + Athlete Portal",
-    price: "25,000 ALL / muaj",
+    price: "20,000 ALL / muaj",
     description: "Pro me portal të dedikuar për sportistët.",
   },
+  UNLIMITED: {
+    name: "Unlimited",
+    price: "30,000 ALL / muaj",
+    description: "Të gjitha funksionet dhe kapacitet pa limite.",
+  },
+
 } as const;
 
 type PlanCode = keyof typeof planOptions;

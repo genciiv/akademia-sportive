@@ -18,7 +18,12 @@ test("athlete portal account capacity is academy scoped", () => {
   assert.match(source, /where:\s*\{\s*academyId/);
 });
 
-test("athlete portal access separately enforces the athlete account limit", () => {
+test("athlete portal access enforces finite capacity and allows null unlimited capacity", () => {
+  assert.match(
+    source,
+    /entitlement\.maxAthleteAccounts\s*!==\s*null/,
+  );
+
   assert.match(
     source,
     /currentAthleteAccounts\s*>=\s*entitlement\.maxAthleteAccounts/,

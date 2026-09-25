@@ -110,6 +110,11 @@ test("athlete invitation acceptance rechecks academy capacity inside the transac
 
   assert.match(
     source,
+    /portalAccess\.maxAthleteAccounts\s*!==\s*null/,
+  );
+
+  assert.match(
+    source,
     /currentAthleteAccounts\s*>=\s*portalAccess\.maxAthleteAccounts/,
   );
 });
