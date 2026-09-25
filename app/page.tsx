@@ -429,7 +429,7 @@ export default function HomePage() {
 
               <div className="mt-6 flex items-end gap-2">
                 <span className="text-3xl font-bold text-slate-950">
-                  12,000
+                  10,000
                 </span>
 
                 <span className="pb-1 text-xs text-slate-500">ALL / muaj</span>
@@ -473,7 +473,7 @@ export default function HomePage() {
 
               <div className="mt-6 flex items-end gap-2">
                 <span className="text-3xl font-bold text-slate-950">
-                  20,000
+                  15,000
                 </span>
 
                 <span className="pb-1 text-xs text-slate-500">ALL / muaj</span>
@@ -516,7 +516,7 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-6 flex items-end gap-2">
-                  <span className="text-3xl font-bold">25,000</span>
+                  <span className="text-3xl font-bold">20,000</span>
 
                   <span className="pb-1 text-xs text-slate-400">
                     ALL / muaj
@@ -548,10 +548,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="mt-7 text-center text-xs leading-5 text-slate-400">
-            Ke nevoja të veçanta? Mund të konfigurohet edhe një ofertë e
-            personalizuar për akademinë.
-          </p>
         </div>
       </section>
 

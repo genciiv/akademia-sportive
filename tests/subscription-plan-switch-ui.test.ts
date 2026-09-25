@@ -15,12 +15,11 @@ const client = readFileSync(
   "utf8",
 );
 
-test("plan switcher exposes only the three standard plans", () => {
+test("plan switcher exposes the four fixed plans", () => {
   assert.match(switcher, /code:\s*"STARTER"/);
   assert.match(switcher, /code:\s*"PRO"/);
   assert.match(switcher, /code:\s*"PRO_PORTAL"/);
-
-  assert.doesNotMatch(switcher, /code:\s*"CUSTOM"/);
+  assert.match(switcher, /code:\s*"UNLIMITED"/);
 });
 
 test("plan switcher calls the protected subscription endpoint", () => {
@@ -58,35 +57,31 @@ test("plan switcher blocks any unexpired paid coverage in the UI", () => {
   assert.match(switcher, /hasUnexpiredPaidCoverage/);
 });
 
-test("plan switcher preserves and warns about active custom offers", () => {
-  assert.match(switcher, /customOfferActive/);
-
-  assert.match(switcher, /Ndryshimi i planit nuk e/);
-
-  assert.match(switcher, /ofertën custom/);
-});
-
 test("plan switcher refreshes server data after success", () => {
   assert.match(switcher, /useRouter/);
 
   assert.match(switcher, /router\.refresh\(\)/);
 });
 
-test("subscriptions page wires plan switcher separately from custom offers", () => {
+test("subscriptions page wires the fixed-plan switcher", () => {
   assert.match(client, /import \{ PlanSwitcher \}/);
 
   assert.match(client, /<PlanSwitcher/);
 
-  assert.match(client, /currentPlanCode=\{selected\.plan\.code\}/);
-
-  assert.match(client, /currentPeriodEnd=\{selected\.currentPeriodEnd\}/);
+  assert.match(
+    client,
+    /currentPlanCode=\{selected\.plan\.code\}/
+  );
 
   assert.match(
     client,
-    /customOfferActive=\{[\s\S]*selected\.commercialTerms[\s\S]*\.customOfferActive/,
+    /currentPeriodEnd=\{selected\.currentPeriodEnd\}/
   );
 
-  assert.match(client, /<CustomOfferEditor/);
+  assert.doesNotMatch(
+    client,
+    /<CustomOfferEditor/
+  );
 });
 
 test("plan switcher blocks trialing subscriptions in the UI", () => {

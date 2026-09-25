@@ -62,6 +62,7 @@ const planLabels: Record<string, string> = {
   STARTER: "Starter",
   PRO: "Pro",
   PRO_PORTAL: "Pro + Athlete Portal",
+  UNLIMITED: "Unlimited",
 };
 
 export default function ApplicationsClient({

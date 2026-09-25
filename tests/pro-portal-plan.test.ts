@@ -7,7 +7,7 @@ const migration = fs.readFileSync(
   "utf8",
 );
 
-test("PRO_PORTAL is a standard active plan with the agreed price", () => {
+test("historical PRO_PORTAL migration seeded the original active plan price", () => {
   assert.match(migration, /'PRO_PORTAL'/);
 
   assert.match(migration, /'Pro \+ Athlete Portal'/);
@@ -45,6 +45,3 @@ test("PRO_PORTAL includes all professional features and ATHLETE_PORTAL", () => {
   }
 });
 
-test("CUSTOM remains an academy custom offer and is not seeded as a Plan", () => {
-  assert.doesNotMatch(migration, /'CUSTOM'\s*,/);
-});

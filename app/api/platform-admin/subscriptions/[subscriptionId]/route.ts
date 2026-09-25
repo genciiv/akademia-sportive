@@ -10,7 +10,7 @@ type RouteContext = {
   }>;
 };
 
-const STANDARD_PLAN_CODES = ["STARTER", "PRO", "PRO_PORTAL"] as const;
+const STANDARD_PLAN_CODES = ["STARTER", "PRO", "PRO_PORTAL", "UNLIMITED"] as const;
 
 type StandardPlanCode = (typeof STANDARD_PLAN_CODES)[number];
 
@@ -57,7 +57,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
   if (!isStandardPlanCode(planCode)) {
     return NextResponse.json(
       {
-        error: "Plani duhet të jetë STARTER, PRO ose PRO_PORTAL.",
+        error: "Plani duhet të jetë STARTER, PRO, PRO_PORTAL ose UNLIMITED.",
       },
       {
         status: 400,

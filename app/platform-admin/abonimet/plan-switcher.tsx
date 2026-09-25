@@ -20,6 +20,12 @@ const STANDARD_PLANS = [
     name: "Pro + Athlete Portal",
     description: "Plani Pro me portal të dedikuar për sportistët.",
   },
+  {
+    code: "UNLIMITED",
+    name: "Unlimited",
+    description: "Te gjitha funksionet dhe kapacitet pa limite.",
+  },
+
 ] as const;
 
 type StandardPlanCode = (typeof STANDARD_PLANS)[number]["code"];
@@ -33,10 +39,7 @@ type Props = {
   currentPlanCode: string;
   currentPlanName: string;
 
-  currentPeriodEnd: string | null;
-
-  customOfferActive: boolean;
-};
+  currentPeriodEnd: string | null;};
 
 function isStandardPlanCode(value: string): value is StandardPlanCode {
   return STANDARD_PLANS.some((plan) => plan.code === value);
@@ -47,9 +50,7 @@ export function PlanSwitcher({
   subscriptionStatus,
   currentPlanCode,
   currentPlanName,
-  currentPeriodEnd,
-  customOfferActive,
-}: Props) {
+  currentPeriodEnd,}: Props) {
   const router = useRouter();
 
   const [planCode, setPlanCode] = useState<StandardPlanCode>(
@@ -112,12 +113,8 @@ export function PlanSwitcher({
       return;
     }
 
-    const customOfferWarning = customOfferActive
-      ? "\n\nOferta custom mbetet aktive. Vlerat që trashëgohen nga plani global do të bazohen te plani i ri."
-      : "";
-
-    const confirmed = window.confirm(
-      `Ndrysho planin nga "${currentPlanName}" në "${selectedPlan.name}"?${customOfferWarning}`,
+const confirmed = window.confirm(
+      `Ndrysho planin nga "${currentPlanName}" në "${selectedPlan.name}"?`,
     );
 
     if (!confirmed) {
@@ -242,15 +239,7 @@ export function PlanSwitcher({
           planit.
         </div>
       ) : null}
-
-      {customOfferActive ? (
-        <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs leading-5 text-indigo-700">
-          Kjo akademi ka një ofertë custom aktive. Ndryshimi i planit nuk e
-          çaktivizon ofertën custom.
-        </div>
-      ) : null}
-
-      {error ? (
+{error ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
           {error}
         </div>

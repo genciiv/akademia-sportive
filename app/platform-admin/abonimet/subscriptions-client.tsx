@@ -15,7 +15,6 @@ import {
   useState,
 } from "react";
 
-import { CustomOfferEditor } from "./custom-offer-editor";
 import { PaymentRecorder } from "./payment-recorder";
 import { PlanSwitcher } from "./plan-switcher";
 
@@ -60,10 +59,7 @@ type Subscription = {
   createdAt: string;
 
   commercialTerms: {
-    source:
-      | "GLOBAL_PLAN"
-      | "CUSTOM_OFFER";
-    customOfferActive: boolean;
+    source: "GLOBAL_PLAN";
     planCode: string;
     planName: string;
     monthlyPrice: string;
@@ -87,34 +83,15 @@ type Subscription = {
     name: string;
     monthlyPrice: string;
     currency: string;
-    maxPlayers: number;
-    maxTeams: number;
-    maxStaff: number;
-    maxFacilities: number;
-    maxAthleteAccounts: number;
-    features: string[];
-  };
-
-  customOffer: {
-    id: string;
-    monthlyPrice: string | null;
-    currency: string | null;
     maxPlayers: number | null;
     maxTeams: number | null;
     maxStaff: number | null;
     maxFacilities: number | null;
     maxAthleteAccounts: number | null;
-    overrideFeatures: boolean;
     features: string[];
-    note: string | null;
-    validFrom: string;
-    validUntil: string | null;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-  } | null;
+  };
 
-  payments: Payment[];
+payments: Payment[];
 
   _count: {
     payments: number;
@@ -580,21 +557,8 @@ export function SubscriptionsClient({
                 currentPlanCode={selected.plan.code}
                 currentPlanName={selected.plan.name}
                 currentPeriodEnd={selected.currentPeriodEnd}
-                customOfferActive={
-                  selected.commercialTerms
-                    .customOfferActive
-                }
               />
-
-              <CustomOfferEditor
-                key={selected.id}
-                subscriptionId={selected.id}
-                subscriptionStatus={selected.status}
-                plan={selected.plan}
-                customOffer={selected.customOffer}
-              />
-
-              <div className="border-t border-slate-100 p-5 sm:p-6">
+<div className="border-t border-slate-100 p-5 sm:p-6">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
                   Cikli i abonimit
                 </p>

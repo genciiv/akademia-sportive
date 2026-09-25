@@ -7,7 +7,7 @@ function cleanOptional(value: unknown) {
   return text || null;
 }
 
-const ALLOWED_PLAN_CODES = ["STARTER", "PRO", "PRO_PORTAL"] as const;
+const ALLOWED_PLAN_CODES = ["STARTER", "PRO", "PRO_PORTAL", "UNLIMITED"] as const;
 
 type AllowedPlanCode = (typeof ALLOWED_PLAN_CODES)[number];
 

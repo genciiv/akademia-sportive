@@ -74,26 +74,6 @@ export default async function PlatformAdminSubscriptionsPage() {
           },
         },
 
-        customOffer: {
-          select: {
-            id: true,
-            monthlyPrice: true,
-            currency: true,
-            maxPlayers: true,
-            maxTeams: true,
-            maxStaff: true,
-            maxFacilities: true,
-            maxAthleteAccounts: true,
-            overrideFeatures: true,
-            features: true,
-            note: true,
-            validFrom: true,
-            validUntil: true,
-            isActive: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
 
         payments: {
           orderBy: {
@@ -158,8 +138,6 @@ export default async function PlatformAdminSubscriptionsPage() {
         commercialTerms:
           resolveEffectiveCommercialTerms({
             plan: subscription.plan,
-            customOffer:
-              subscription.customOffer,
             now,
           }),
 
@@ -196,25 +174,7 @@ export default async function PlatformAdminSubscriptionsPage() {
             subscription.plan.monthlyPrice.toString(),
         },
 
-        customOffer: subscription.customOffer
-          ? {
-              ...subscription.customOffer,
-              monthlyPrice:
-                subscription.customOffer.monthlyPrice?.toString() ??
-                null,
-              validFrom:
-                subscription.customOffer.validFrom.toISOString(),
-              validUntil:
-                subscription.customOffer.validUntil?.toISOString() ??
-                null,
-              createdAt:
-                subscription.customOffer.createdAt.toISOString(),
-              updatedAt:
-                subscription.customOffer.updatedAt.toISOString(),
-            }
-          : null,
-
-        payments:
+payments:
           subscription.payments.map(
             (payment) => ({
               ...payment,

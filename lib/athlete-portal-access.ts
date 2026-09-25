@@ -12,7 +12,7 @@ export type AthletePortalAccessReason =
 export type AthletePortalAccessResult = {
   allowed: boolean;
   currentAthleteAccounts: number;
-  maxAthleteAccounts: number;
+  maxAthleteAccounts: number | null;
   planCode: string;
   subscriptionStatus: string;
   reason: AthletePortalAccessReason;
@@ -53,22 +53,6 @@ export async function checkAthletePortalAccess(
         },
       },
 
-      customOffer: {
-        select: {
-          monthlyPrice: true,
-          currency: true,
-          maxPlayers: true,
-          maxTeams: true,
-          maxStaff: true,
-          maxFacilities: true,
-          maxAthleteAccounts: true,
-          overrideFeatures: true,
-          features: true,
-          validFrom: true,
-          validUntil: true,
-          isActive: true,
-        },
-      },
     },
   });
 
@@ -98,7 +82,6 @@ export async function checkAthletePortalAccess(
   const terms = resolveEffectiveSubscriptionTerms({
     status: subscriptionStatus,
     plan: subscription.plan,
-    customOffer: subscription.customOffer,
     now,
   });
 
@@ -126,6 +109,7 @@ export async function checkAthletePortalAccess(
 
   if (
     options.enforceCapacity !== false &&
+    entitlement.maxAthleteAccounts !== null &&
     currentAthleteAccounts >= entitlement.maxAthleteAccounts
   ) {
     return {

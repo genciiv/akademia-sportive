@@ -21,10 +21,7 @@ type Status =
   | "CANCELLED";
 
 type CommercialTerms = {
-  source:
-    | "GLOBAL_PLAN"
-    | "CUSTOM_OFFER";
-  customOfferActive: boolean;
+  source: "GLOBAL_PLAN";
   planCode: string;
   planName: string;
   monthlyPrice: string;
@@ -236,10 +233,7 @@ export function PaymentRecorder({
           </p>
 
           <p className="mt-0.5 text-xs font-bold text-slate-700">
-            {commercialTerms.source ===
-            "CUSTOM_OFFER"
-              ? "Ofertë e personalizuar"
-              : "Plan global"}
+            {"Plan global"}
           </p>
         </div>
       </div>

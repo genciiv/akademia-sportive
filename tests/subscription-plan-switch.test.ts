@@ -25,6 +25,8 @@ test("subscription plan switch only allows standard plan codes", () => {
 
   assert.match(source, /"PRO_PORTAL"/);
 
+  assert.match(source, /"UNLIMITED"/);
+
   assert.doesNotMatch(source, /"CUSTOM"/);
 });
 
@@ -73,10 +75,6 @@ test("subscription plan switch changes only the current subscription plan", () =
     /subscriptionPayment\.(update|delete|updateMany|deleteMany)/,
   );
 
-  assert.doesNotMatch(
-    source,
-    /academyCustomOffer\.(update|delete|upsert|create)/,
-  );
 });
 
 test("subscription plan switch uses a serializable transaction", () => {

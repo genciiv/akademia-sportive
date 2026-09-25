@@ -184,22 +184,6 @@ export async function POST(
                 },
               },
 
-              customOffer: {
-                select: {
-                  monthlyPrice: true,
-                  currency: true,
-                  maxPlayers: true,
-                  maxTeams: true,
-                  maxStaff: true,
-                  maxFacilities: true,
-                  maxAthleteAccounts: true,
-                  overrideFeatures: true,
-                  features: true,
-                  validFrom: true,
-                  validUntil: true,
-                  isActive: true,
-                },
-              },
             },
           });
 
@@ -212,7 +196,6 @@ export async function POST(
         const commercial =
           resolveEffectiveCommercialTerms({
             plan: subscription.plan,
-            customOffer: subscription.customOffer,
             now: paidAt,
           });
 

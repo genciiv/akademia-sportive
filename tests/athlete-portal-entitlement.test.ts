@@ -10,16 +10,15 @@ import type {
 
 const baseTerms: EffectiveSubscriptionTerms = {
   source: "GLOBAL_PLAN",
-  customOfferActive: false,
-  planCode: "PRO",
-  planName: "PRO",
+  planCode: "PRO_PORTAL",
+  planName: "Pro + Athlete Portal",
   monthlyPrice: "20000",
   currency: "ALL",
   maxPlayers: 300,
   maxTeams: 25,
   maxStaff: 50,
   maxFacilities: 15,
-  maxAthleteAccounts: 100,
+  maxAthleteAccounts: 50,
   features: [
     "MEDICAL",
     "PERFORMANCE",
@@ -27,7 +26,7 @@ const baseTerms: EffectiveSubscriptionTerms = {
   ],
 };
 
-test("athlete portal denies TRIALING even when the plan includes the feature and limit", () => {
+test("athlete portal denies TRIALING even when the plan includes portal access", () => {
   const result = resolveAthletePortalEntitlement({
     status: "TRIALING",
     terms: baseTerms,
@@ -35,7 +34,7 @@ test("athlete portal denies TRIALING even when the plan includes the feature and
 
   assert.equal(result.allowed, false);
   assert.equal(result.reason, "TRIAL_NOT_ELIGIBLE");
-  assert.equal(result.maxAthleteAccounts, 100);
+  assert.equal(result.maxAthleteAccounts, 50);
 });
 
 test("athlete portal allows ACTIVE subscriptions with feature and positive limit", () => {
@@ -48,7 +47,7 @@ test("athlete portal allows ACTIVE subscriptions with feature and positive limit
   assert.equal(result.reason, "ALLOWED");
 });
 
-test("athlete portal allows GRACE_PERIOD subscriptions with feature and positive limit", () => {
+test("athlete portal allows GRACE_PERIOD subscriptions", () => {
   const result = resolveAthletePortalEntitlement({
     status: "GRACE_PERIOD",
     terms: baseTerms,
@@ -70,7 +69,7 @@ test("athlete portal denies EXPIRED and CANCELLED subscriptions", () => {
   }
 });
 
-test("athlete portal requires ATHLETE_PORTAL in effective features", () => {
+test("athlete portal requires ATHLETE_PORTAL in plan features", () => {
   const result = resolveAthletePortalEntitlement({
     status: "ACTIVE",
     terms: {
@@ -83,7 +82,7 @@ test("athlete portal requires ATHLETE_PORTAL in effective features", () => {
   assert.equal(result.reason, "FEATURE_NOT_INCLUDED");
 });
 
-test("athlete portal requires a positive athlete account limit", () => {
+test("zero athlete account limit disables portal accounts", () => {
   const result = resolveAthletePortalEntitlement({
     status: "ACTIVE",
     terms: {
@@ -96,18 +95,19 @@ test("athlete portal requires a positive athlete account limit", () => {
   assert.equal(result.reason, "ACCOUNT_LIMIT_DISABLED");
 });
 
-test("effective custom offer terms are honored by athlete portal entitlement", () => {
+test("null athlete account limit means unlimited capacity", () => {
   const result = resolveAthletePortalEntitlement({
     status: "ACTIVE",
     terms: {
       ...baseTerms,
-      source: "CUSTOM_OFFER",
-      customOfferActive: true,
-      maxAthleteAccounts: 25,
-      features: ["ATHLETE_PORTAL"],
+      planCode: "UNLIMITED",
+      planName: "Unlimited",
+      monthlyPrice: "30000",
+      maxAthleteAccounts: null,
     },
   });
 
   assert.equal(result.allowed, true);
-  assert.equal(result.maxAthleteAccounts, 25);
+  assert.equal(result.reason, "ALLOWED");
+  assert.equal(result.maxAthleteAccounts, null);
 });

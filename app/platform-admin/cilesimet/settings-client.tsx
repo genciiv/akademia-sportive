@@ -17,11 +17,11 @@ type Plan = {
   description: string | null;
   monthlyPrice: string;
   currency: string;
-  maxPlayers: number;
-  maxTeams: number;
-  maxStaff: number;
-  maxFacilities: number;
-  maxAthleteAccounts: number;
+  maxPlayers: number | null;
+  maxTeams: number | null;
+  maxStaff: number | null;
+  maxFacilities: number | null;
+  maxAthleteAccounts: number | null;
   features: string[];
   isActive: boolean;
   sortOrder: number;
@@ -283,7 +283,7 @@ function Limit({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value: number | null;
 }) {
   return (
     <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
@@ -296,7 +296,7 @@ function Limit({
       </div>
 
       <span className="text-sm font-bold text-slate-950">
-        {value}
+        {value === null ? "Pa limit" : value}
       </span>
     </div>
   );

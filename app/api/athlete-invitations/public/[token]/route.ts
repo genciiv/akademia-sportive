@@ -323,7 +323,10 @@ export async function POST(_request: Request, { params }: RouteContext) {
             },
           });
 
-          if (currentAthleteAccounts >= portalAccess.maxAthleteAccounts) {
+          if (
+            portalAccess.maxAthleteAccounts !== null &&
+            currentAthleteAccounts >= portalAccess.maxAthleteAccounts
+          ) {
             throw new Error("ATHLETE_ACCOUNT_LIMIT_REACHED");
           }
 
