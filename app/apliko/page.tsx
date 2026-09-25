@@ -58,17 +58,15 @@ export default function ApplyPage() {
 
   const requestedPlan = searchParams.get("plan");
 
-  const selectedPlan =
-    requestedPlan &&
-    Object.prototype.hasOwnProperty.call(planOptions, requestedPlan)
-      ? planOptions[requestedPlan as PlanCode]
-      : null;
-  const selectedPlanCode =
+  const initialPlanCode =
     requestedPlan &&
     Object.prototype.hasOwnProperty.call(planOptions, requestedPlan)
       ? (requestedPlan as PlanCode)
       : null;
 
+  const [selectedPlanCode, setSelectedPlanCode] = useState<PlanCode | null>(
+    initialPlanCode,
+  );
   const [form, setForm] = useState<FormState>(initialForm);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
@@ -85,6 +83,11 @@ export default function ApplyPage() {
     event.preventDefault();
 
     setError("");
+    if (!selectedPlanCode) {
+      setError("Zgjidh një paketë përpara se të dërgosh aplikimin.");
+      return;
+    }
+
     setSending(true);
 
     try {
@@ -216,36 +219,67 @@ export default function ApplyPage() {
             onSubmit={submit}
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
           >
-            {selectedPlan ? (
-              <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50/70 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-600">
-                  Paketa e zgjedhur
+            <div className="mb-7">
+              <div className="flex flex-col gap-1">
+                <p className="text-xs font-semibold text-slate-700">
+                  Paketa që të intereson
                 </p>
-
-                <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-lg font-bold text-slate-950">
-                      {selectedPlan.name}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {selectedPlan.description}
-                    </p>
-                  </div>
-
-                  <p className="mt-2 text-sm font-semibold text-blue-700 sm:mt-0">
-                    {selectedPlan.price}
-                  </p>
-                </div>
-
-                <Link
-                  href="/#planet"
-                  className="mt-3 inline-flex text-xs font-semibold text-blue-600 hover:text-blue-700"
-                >
-                  Ndrysho paketën
-                </Link>
+                <p className="text-xs leading-5 text-slate-500">
+                  Zgjidh një paketë. Mund ta ndryshosh përpara se të dërgosh
+                  aplikimin.
+                </p>
               </div>
-            ) : null}
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {(
+                  Object.entries(planOptions) as [
+                    PlanCode,
+                    (typeof planOptions)[PlanCode],
+                  ][]
+                ).map(([code, plan]) => {
+                  const isSelected = selectedPlanCode === code;
+
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedPlanCode(code)}
+                      className={`rounded-2xl border p-4 text-left transition ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-50 ring-2 ring-blue-100"
+                          : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-950">
+                            {plan.name}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-slate-500">
+                            {plan.description}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                            isSelected
+                              ? "border-blue-600 bg-blue-600 text-white"
+                              : "border-slate-300 bg-white text-transparent"
+                          }`}
+                        >
+                          <CheckCircle2 size={13} />
+                        </span>
+                      </div>
+
+                      <p className="mt-3 text-sm font-semibold text-blue-700">
+                        {plan.price}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <Field
                 label="Emri i akademisë"
