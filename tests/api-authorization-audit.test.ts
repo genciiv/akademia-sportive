@@ -56,6 +56,8 @@ function normalizePath(
 const PUBLIC_OR_SPECIAL_ROUTES =
   new Set([
     "app/api/auth/[...all]/route.ts",
+    "app/api/health/live/route.ts",
+    "app/api/health/ready/route.ts",
     "app/api/academy/route.ts",
     "app/api/academy-applications/route.ts",
     "app/api/invitations/[token]/route.ts",
