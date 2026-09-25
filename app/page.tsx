@@ -78,6 +78,15 @@ const proPortalFeatures = [
   "Ftesa dhe hyrje e dedikuar për sportistët",
 ];
 
+const unlimitedFeatures = [
+  "Gjithçka nga Pro + Athlete Portal",
+  "Sportistë pa limit",
+  "Ekipe pa limit",
+  "Anëtarë stafi pa limit",
+  "Ambiente pa limit",
+  "Llogari sportistësh pa limit",
+];
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-white text-slate-950">
@@ -417,8 +426,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            <div className="rounded-[26px] border border-slate-200 bg-white p-7 shadow-sm">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="flex h-full flex-col rounded-[26px] border border-slate-200 bg-white p-7 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
                 Starter
               </p>
@@ -451,13 +460,13 @@ export default function HomePage() {
 
               <Link
                 href="/apliko?plan=STARTER"
-                className="mt-8 flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="mt-auto flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Apliko
               </Link>
             </div>
 
-            <div className="relative rounded-[26px] border border-blue-300 bg-white p-7 shadow-[0_20px_60px_rgba(37,99,235,0.12)]">
+            <div className="relative flex h-full flex-col rounded-[26px] border border-blue-300 bg-white p-7 shadow-[0_20px_60px_rgba(37,99,235,0.12)]">
               <span className="absolute right-5 top-5 rounded-full bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white">
                 Më i plotë
               </span>
@@ -495,17 +504,17 @@ export default function HomePage() {
 
               <Link
                 href="/apliko?plan=PRO"
-                className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 Apliko
                 <ArrowRight size={15} />
               </Link>
             </div>
 
-            <div className="relative overflow-hidden rounded-[26px] border border-slate-800 bg-slate-950 p-7 text-white shadow-[0_22px_65px_rgba(15,23,42,0.18)]">
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-800 bg-slate-950 p-7 text-white shadow-[0_22px_65px_rgba(15,23,42,0.18)]">
               <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-blue-500/20 blur-3xl" />
 
-              <div className="relative">
+              <div className="relative flex h-full flex-col">
                 <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-300">
                   Pro + Athlete Portal
                 </p>
@@ -539,7 +548,53 @@ export default function HomePage() {
 
                 <Link
                   href="/apliko?plan=PRO_PORTAL"
-                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+                  className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+                >
+                  Apliko
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[26px] border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-7 shadow-sm">
+              <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-blue-200/50 blur-3xl" />
+
+              <div className="relative flex h-full flex-col">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-700">
+                  Unlimited
+                </p>
+
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  Për akademi që duan të gjitha funksionet pa kufizime
+                  kapaciteti.
+                </p>
+
+                <div className="mt-6 flex items-end gap-2">
+                  <span className="text-3xl font-bold text-slate-950">
+                    30,000
+                  </span>
+                  <span className="pb-1 text-xs text-slate-500">
+                    ALL / muaj
+                  </span>
+                </div>
+
+                <div className="mt-7 space-y-3">
+                  {unlimitedFeatures.map((feature) => (
+                    <div key={feature} className="flex items-start gap-3">
+                      <Check
+                        size={15}
+                        className="mt-0.5 shrink-0 text-blue-600"
+                      />
+                      <span className="text-sm leading-5 text-slate-600">
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  href="/apliko?plan=UNLIMITED"
+                  className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
                 >
                   Apliko
                   <ArrowRight size={15} />
