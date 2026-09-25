@@ -20,6 +20,7 @@ test("pricing links preserve selected plan in the application URL", () => {
   assert.match(home, /\/apliko\?plan=STARTER/);
   assert.match(home, /\/apliko\?plan=PRO/);
   assert.match(home, /\/apliko\?plan=PRO_PORTAL/);
+  assert.match(home, /\/apliko\?plan=UNLIMITED/);
 });
 
 test("application page sends the validated selected plan", () => {

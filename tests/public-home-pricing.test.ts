@@ -5,12 +5,15 @@ import test from "node:test";
 
 const source = readFileSync(join(process.cwd(), "app/page.tsx"), "utf8");
 
-test("public homepage exposes the current three pricing cards", () => {
+test("public homepage exposes the four fixed pricing plans", () => {
   assert.match(source, /Starter/);
   assert.match(source, /Pro \+ Athlete Portal/);
+  assert.match(source, /Unlimited/);
   assert.match(source, /10,000/);
-  assert.match(source, /20,000/);
   assert.match(source, /15,000/);
+  assert.match(source, /20,000/);
+  assert.match(source, /30,000/);
+  assert.match(source, /\/apliko\?plan=UNLIMITED/);
 });
 
 test("public homepage includes athlete portal value", () => {
