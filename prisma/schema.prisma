@@ -105,8 +105,9 @@ model User {
   athleteAccounts              AthleteAccount[]
   sentAthleteInvitations       AthleteInvitation[]   @relation("AthleteInvitationSender")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt                        DateTime                   @default(now())
+  updatedAt                        DateTime                   @updatedAt
+  createdInterAcademyMatchRequests InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestCreator")
 }
 
 model Session {
@@ -225,31 +226,35 @@ model Academy {
   memberships AcademyMembership[]
   branches    AcademyBranch[]
 
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  players              Player[]
-  teams                Team[]
-  trainingSessions     TrainingSession[]
-  coaches              Coach[]
-  scoutingCandidates   ScoutingCandidate[]
-  calendarEvents       CalendarEvent[]
-  playerFees           PlayerFee[]
-  playerCharges        PlayerCharge[]
-  cashPayments         CashPayment[]
-  expenses             Expense[]
-  guardians            Guardian[]
-  playerGuardians      PlayerGuardian[]
-  notifications        Notification[]
-  academySeasons       AcademySeason[]
-  invitations          AcademyInvitation[]
-  staff                AcademyStaff[]
-  auditLogs            AuditLog[]
-  knowledgeArticles    KnowledgeArticle[]
-  facilities           Facility[]
-  subscription         AcademySubscription?
-  subscriptionPayments SubscriptionPayment[]
-  athleteAccounts      AthleteAccount[]
-  athleteInvitations   AthleteInvitation[]
+  createdAt                         DateTime                   @default(now())
+  updatedAt                         DateTime                   @updatedAt
+  players                           Player[]
+  teams                             Team[]
+  trainingSessions                  TrainingSession[]
+  coaches                           Coach[]
+  scoutingCandidates                ScoutingCandidate[]
+  calendarEvents                    CalendarEvent[]
+  playerFees                        PlayerFee[]
+  playerCharges                     PlayerCharge[]
+  cashPayments                      CashPayment[]
+  expenses                          Expense[]
+  guardians                         Guardian[]
+  playerGuardians                   PlayerGuardian[]
+  notifications                     Notification[]
+  academySeasons                    AcademySeason[]
+  invitations                       AcademyInvitation[]
+  staff                             AcademyStaff[]
+  auditLogs                         AuditLog[]
+  knowledgeArticles                 KnowledgeArticle[]
+  facilities                        Facility[]
+  subscription                      AcademySubscription?
+  subscriptionPayments              SubscriptionPayment[]
+  athleteAccounts                   AthleteAccount[]
+  athleteInvitations                AthleteInvitation[]
+  sentInterAcademyMatchRequests     InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestRequesterAcademy")
+  receivedInterAcademyMatchRequests InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestOpponentAcademy")
+  homeInterAcademyMatches           InterAcademyMatch[]        @relation("InterAcademyMatchHomeAcademy")
+  awayInterAcademyMatches           InterAcademyMatch[]        @relation("InterAcademyMatchAwayAcademy")
 
   @@index([ownerId])
   @@index([status])
@@ -744,11 +749,15 @@ model Team {
   coaches          CoachTeam[]
   trainingSessions TrainingSession[]
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  matches       Match[]
-  notifications Notification[]
-  tactics       Tactic[]
+  createdAt                         DateTime                   @default(now())
+  updatedAt                         DateTime                   @updatedAt
+  matches                           Match[]
+  notifications                     Notification[]
+  tactics                           Tactic[]
+  sentInterAcademyMatchRequests     InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestRequesterTeam")
+  receivedInterAcademyMatchRequests InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestOpponentTeam")
+  homeInterAcademyMatches           InterAcademyMatch[]        @relation("InterAcademyMatchHomeTeam")
+  awayInterAcademyMatches           InterAcademyMatch[]        @relation("InterAcademyMatchAwayTeam")
 
   @@unique([academyId, name])
   @@index([academyId])
@@ -1027,6 +1036,117 @@ model TrainingSessionDrill {
   @@index([drillId])
 }
 
+enum InterAcademyMatchRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum InterAcademyMatchStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
+model InterAcademyMatchRequest {
+  id String @id @default(cuid())
+
+  requesterAcademyId String
+  requesterAcademy   Academy @relation("InterAcademyMatchRequestRequesterAcademy", fields: [requesterAcademyId], references: [id], onDelete: Cascade)
+
+  requesterTeamId String
+  requesterTeam   Team   @relation("InterAcademyMatchRequestRequesterTeam", fields: [requesterTeamId], references: [id], onDelete: Cascade)
+
+  opponentAcademyId String
+  opponentAcademy   Academy @relation("InterAcademyMatchRequestOpponentAcademy", fields: [opponentAcademyId], references: [id], onDelete: Cascade)
+
+  opponentTeamId String
+  opponentTeam   Team   @relation("InterAcademyMatchRequestOpponentTeam", fields: [opponentTeamId], references: [id], onDelete: Cascade)
+
+  status InterAcademyMatchRequestStatus @default(PENDING)
+
+  startsAt DateTime
+  endsAt   DateTime?
+
+  location String?
+
+  requesterIsHome Boolean @default(true)
+
+  matchType MatchType @default(FRIENDLY)
+
+  competitionName String?
+  round           String?
+  message         String?
+
+  acceptedAt  DateTime?
+  rejectedAt  DateTime?
+  cancelledAt DateTime?
+
+  createdByUserId String?
+  createdByUser   User?   @relation("InterAcademyMatchRequestCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  interAcademyMatch InterAcademyMatch?
+
+  @@index([requesterAcademyId])
+  @@index([opponentAcademyId])
+  @@index([requesterTeamId])
+  @@index([opponentTeamId])
+  @@index([status])
+  @@index([startsAt])
+  @@index([opponentAcademyId, status])
+  @@index([requesterAcademyId, status])
+}
+
+model InterAcademyMatch {
+  id String @id @default(cuid())
+
+  requestId String                   @unique
+  request   InterAcademyMatchRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+
+  homeAcademyId String
+  homeAcademy   Academy @relation("InterAcademyMatchHomeAcademy", fields: [homeAcademyId], references: [id], onDelete: Restrict)
+
+  awayAcademyId String
+  awayAcademy   Academy @relation("InterAcademyMatchAwayAcademy", fields: [awayAcademyId], references: [id], onDelete: Restrict)
+
+  homeTeamId String
+  homeTeam   Team   @relation("InterAcademyMatchHomeTeam", fields: [homeTeamId], references: [id], onDelete: Restrict)
+
+  awayTeamId String
+  awayTeam   Team   @relation("InterAcademyMatchAwayTeam", fields: [awayTeamId], references: [id], onDelete: Restrict)
+
+  homeMatchId String @unique
+  homeMatch   Match  @relation("InterAcademyMatchHomeMatch", fields: [homeMatchId], references: [id], onDelete: Restrict)
+
+  awayMatchId String @unique
+  awayMatch   Match  @relation("InterAcademyMatchAwayMatch", fields: [awayMatchId], references: [id], onDelete: Restrict)
+
+  status InterAcademyMatchStatus @default(SCHEDULED)
+
+  startsAt DateTime
+  endsAt   DateTime?
+
+  location String?
+
+  homeScore Int?
+  awayScore Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([homeAcademyId])
+  @@index([awayAcademyId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@index([startsAt])
+  @@index([status])
+}
+
 enum MatchStatus {
   SCHEDULED
   COMPLETED
@@ -1077,8 +1197,10 @@ model Match {
   description String?
   notes       String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  homeInterAcademyMatch InterAcademyMatch? @relation("InterAcademyMatchHomeMatch")
+  awayInterAcademyMatch InterAcademyMatch? @relation("InterAcademyMatchAwayMatch")
 
   @@index([academyId])
   @@index([facilityId])
@@ -1570,8 +1692,8 @@ model Plan {
   maxTeams           Int?
   maxStaff           Int?
   maxFacilities      Int?
-  maxAthleteAccounts Int? @default(0)
-  features PlanFeature[] @default([])
+  maxAthleteAccounts Int?          @default(0)
+  features           PlanFeature[] @default([])
 
   isActive  Boolean @default(true)
   sortOrder Int     @default(0)
@@ -1604,9 +1726,9 @@ model AcademySubscription {
   graceEndsAt        DateTime?
   cancelledAt        DateTime?
 
-  payments    SubscriptionPayment[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  payments  SubscriptionPayment[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
 
   @@index([planId])
   @@index([status])
