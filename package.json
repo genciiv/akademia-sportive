@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "tsx --test tests/**/*.test.ts tests/**/*.test.mjs",
     "env:check": "node --import tsx scripts/validate-env.mjs",
-    "db:migrate:deploy": "node scripts/migrate-deploy.mjs"
+    "db:migrate:deploy": "node scripts/migrate-deploy.mjs",
+    "db:backup": "node scripts/backup-db.mjs",
+    "db:restore:test": "node scripts/restore-db.mjs"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.7.2",
