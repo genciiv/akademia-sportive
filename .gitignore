@@ -8,3 +8,6 @@ out
 
 /lib/generated/prisma
 *.tsbuildinfo
+
+# Local database backups - never commit production data
+.backups/
