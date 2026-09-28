@@ -1,0 +1,68 @@
+﻿name: Database Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Backup production database
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      ALLOW_REMOTE_DB_BACKUP: "true"
+      PG_DUMP_PATH: /usr/lib/postgresql/18/bin/pg_dump
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install PostgreSQL 18 client
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && sudo apt-get update
+          sudo apt-get install -y postgresql-client-18
+
+      - name: Create database backup
+        run: npm run db:backup
+
+      - name: Verify backup archive
+        shell: bash
+        run: |
+          shopt -s nullglob
+          backups=(.backups/*.dump)
+
+          if [ "${#backups[@]}" -ne 1 ]; then
+            echo "Expected exactly one backup dump, found ${#backups[@]}."
+            exit 1
+          fi
+
+          /usr/lib/postgresql/18/bin/pg_restore --list "${backups[0]}" > /dev/null
+          echo "Backup archive verification passed."
+
+      - name: Upload off-site backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: akademia-sportive-db-backup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .backups/*.dump
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+          include-hidden-files: true
