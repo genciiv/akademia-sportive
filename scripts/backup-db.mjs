@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { assertBackupOperationSafe } from "./backup-safety.mjs";
+import { resolvePgDumpCommand, usesPathLookup } from "./backup-command.mjs";
 
 let target;
 
@@ -19,11 +20,11 @@ try {
 
 const backupUrl = process.env.BACKUP_DATABASE_URL;
 
-const pgDump =
-  process.env.PG_DUMP_PATH ||
-  String.raw`C:\Program Files\PostgreSQL\18\bin\pg_dump.exe`;
+const pgDump = resolvePgDumpCommand(process.env, process.platform);
 
-if (!existsSync(pgDump)) {
+const pgDumpUsesPathLookup = usesPathLookup(pgDump);
+
+if (!pgDumpUsesPathLookup && !existsSync(pgDump)) {
   console.error("Backup failed: pg_dump executable was not found.");
   process.exit(1);
 }
