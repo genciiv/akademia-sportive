@@ -101,6 +101,16 @@ export default async function AthleteMatchesPage() {
         competitionName: true,
         round: true,
 
+        matchPlayers: {
+          where: {
+            playerId: access.playerId,
+          },
+          select: {
+            role: true,
+          },
+          take: 1,
+        },
+
         team: {
           select: {
             id: true,
@@ -228,6 +238,20 @@ export default async function AthleteMatchesPage() {
                   <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                     E planifikuar
                   </span>
+
+                  {match.matchPlayers[0]?.role === "STARTER" ? (
+                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                      Titullar
+                    </span>
+                  ) : match.matchPlayers[0]?.role === "SUBSTITUTE" ? (
+                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      Zëvendësues
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                      Nuk je grumbulluar
+                    </span>
+                  )}
                 </div>
 
                 <dl className="mt-4 space-y-2 text-sm">
