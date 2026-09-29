@@ -7,6 +7,7 @@ import {
 } from "@/lib/academy-resource-scope";
 import { PERMISSIONS } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { createInterAcademyNotification } from "@/lib/inter-academy-notifications";
 import {
   AUDIT_ACTIONS,
   writeAuditLog,
@@ -525,6 +526,19 @@ export async function POST(request: Request) {
         },
         tx,
       });
+
+      await createInterAcademyNotification(
+        tx,
+        {
+          academyId: opponentAcademy.id,
+          teamId: opponentTeam.id,
+          href: "/ndeshjet/inter-akademi",
+          title:
+            "K\u00ebrkes\u00eb e re inter-akademi",
+          message:
+            `${created.requesterAcademy.name} ju ka d\u00ebrguar nj\u00eb k\u00ebrkes\u00eb p\u00ebr ndeshje: ${created.requesterTeam.name} vs ${created.opponentTeam.name}.`,
+        }
+      );
 
       return created;
     }

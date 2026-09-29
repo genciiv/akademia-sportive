@@ -14,6 +14,7 @@ import {
   PERMISSIONS,
 } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { createInterAcademyNotification } from "@/lib/inter-academy-notifications";
 
 export async function POST(
   request: Request,
@@ -160,6 +161,21 @@ export async function POST(
             },
             tx,
           });
+
+          await createInterAcademyNotification(
+            tx,
+            {
+              academyId:
+                matchRequest.opponentAcademyId,
+              teamId:
+                matchRequest.opponentTeamId,
+              href: "/ndeshjet/inter-akademi",
+              title:
+                "K\u00ebrkesa inter-akademi u anulua",
+              message:
+                `Akademia d\u00ebrguese anuloi k\u00ebrkes\u00ebn p\u00ebr ndeshje: ${matchRequest.requesterTeam.name} vs ${matchRequest.opponentTeam.name}.`,
+            }
+          );
 
           return updated;
         }

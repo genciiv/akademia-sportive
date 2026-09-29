@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   FormEvent,
   useEffect,
@@ -1432,14 +1434,24 @@ export default function NdeshjetClient() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={hapShtimin}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            <Plus size={17} />
-            Shto ndeshje
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/ndeshjet/inter-akademi"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            >
+              <Swords size={17} />
+              Inter-Akademi
+            </Link>
+
+            <button
+              type="button"
+              onClick={hapShtimin}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              <Plus size={17} />
+              Shto ndeshje
+            </button>
+          </div>
         </div>
 
         {gabimi && (
