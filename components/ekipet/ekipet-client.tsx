@@ -27,7 +27,6 @@ type Team = {
   name: string;
   sport: string;
   ageGroup: string | null;
-  season: string | null;
   description: string | null;
   status: string;
 
@@ -556,12 +555,6 @@ export default function EkipetClient() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span>Sezoni</span>
-                    <span className="font-semibold text-slate-800">
-                      {team.season || "—"}
-                    </span>
-                  </div>
 
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5">

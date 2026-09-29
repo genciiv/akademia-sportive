@@ -144,7 +144,6 @@ export async function PATCH(
       sport: sport as (typeof SPORTET)[number],
       branchId: body.branchId || null,
       ageGroup: String(body.ageGroup || "").trim() || null,
-      season: String(body.season || "").trim() || null,
       description: String(body.description || "").trim() || null,
       status: status as (typeof STATUSET)[number],
     },

@@ -52,12 +52,6 @@ export async function GET(request: Request) {
 
   const { academyId } = access;
 
-  const activeSeason = await prisma.academySeason.findFirst({
-    where: {
-      academyId,
-      isActive: true,
-    },
-  });
 
   const teamScope =
     await getActiveTeamScope(access);
@@ -112,40 +106,15 @@ export async function GET(request: Request) {
     );
   }
 
-  const seasonFrom = activeSeason?.startsAt ?? null;
-  const seasonTo = activeSeason?.endsAt ?? null;
-
-  const effectiveFrom =
-    seasonFrom && from
-      ? new Date(
-          Math.max(
-            seasonFrom.getTime(),
-            from.getTime()
-          )
-        )
-      : seasonFrom || from;
-
-  const effectiveTo =
-    seasonTo && to
-      ? new Date(
-          Math.min(
-            seasonTo.getTime(),
-            to.getTime()
-          )
-        )
-      : seasonTo || to;
+  const effectiveFrom = from;
+  const effectiveTo = to;
 
   if (teamId) {
     const team = await prisma.team.findFirst({
       where: {
         id: teamId,
         academyId,
-        ...(activeSeason
-          ? {
-              season: activeSeason.name,
-              status: "ACTIVE",
-            }
-          : {}),
+        status: "ACTIVE",
       },
       select: {
         id: true,
@@ -184,20 +153,6 @@ export async function GET(request: Request) {
       where: {
         id: playerId,
         academyId,
-        ...(activeSeason
-          ? {
-              teams: {
-                some: {
-                  isActive: true,
-                  team: {
-                    academyId,
-                    season: activeSeason.name,
-                    status: "ACTIVE",
-                  },
-                },
-              },
-            }
-          : {}),
       },
       select: {
         id: true,
@@ -301,11 +256,6 @@ export async function GET(request: Request) {
             }
           : {}),
         status: "ACTIVE",
-        ...(activeSeason
-          ? {
-              season: activeSeason.name,
-            }
-          : {}),
       },
       select: {
         id: true,
@@ -329,20 +279,6 @@ export async function GET(request: Request) {
             }
           : {}),
 
-        ...(activeSeason
-          ? {
-              teams: {
-                some: {
-                  isActive: true,
-                  team: {
-                    academyId,
-                    season: activeSeason.name,
-                    status: "ACTIVE",
-                  },
-                },
-              },
-            }
-          : {}),
 
         ...(playerId
           ? {

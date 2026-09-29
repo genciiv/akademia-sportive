@@ -41,13 +41,6 @@ export async function GET(
       PERMISSIONS.TEAMS_VIEW
     );
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId,
-        isActive: true,
-      },
-    });
 
   const { searchParams } =
     new URL(request.url);
@@ -73,8 +66,7 @@ export async function GET(
           where: {
             academyId,
 
-            ...(teamScope.isScoped ||
-            Boolean(activeSeason)
+            ...(teamScope.isScoped
               ? {
                   teams: {
                     some: {
@@ -88,16 +80,6 @@ export async function GET(
                           }
                         : {}),
 
-                      ...(activeSeason
-                        ? {
-                            team: {
-                              academyId,
-                              season:
-                                activeSeason.name,
-                              status: "ACTIVE",
-                            },
-                          }
-                        : {}),
                     },
                   },
                 }
@@ -152,8 +134,7 @@ export async function GET(
           where: {
             academyId,
 
-            ...(teamScope.isScoped ||
-            Boolean(activeSeason)
+            ...(teamScope.isScoped
               ? {
                   teams: {
                     some: {
@@ -167,16 +148,6 @@ export async function GET(
                           }
                         : {}),
 
-                      ...(activeSeason
-                        ? {
-                            team: {
-                              academyId,
-                              season:
-                                activeSeason.name,
-                              status: "ACTIVE",
-                            },
-                          }
-                        : {}),
                     },
                   },
                 }
@@ -240,12 +211,6 @@ export async function GET(
                 }
               : {}),
 
-            ...(activeSeason
-              ? {
-                  season:
-                    activeSeason.name,
-                }
-              : {}),
 
             name: {
               contains: query,

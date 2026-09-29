@@ -36,14 +36,6 @@ export async function GET() {
 
   const { academyId } = access;
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId,
-        isActive: true,
-      },
-    });
-
   const teamScope =
     await getActiveTeamScope(access);
 
@@ -61,12 +53,6 @@ export async function GET() {
               }
             : {}),
 
-          ...(activeSeason
-            ? {
-                season:
-                  activeSeason.name,
-              }
-            : {}),
         },
 
         include: {
@@ -103,7 +89,6 @@ export async function GET() {
   return NextResponse.json({
     teams,
     branches,
-    activeSeason,
   });
 }
 
@@ -121,25 +106,6 @@ export async function POST(
 
   const { academyId } = access;
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId,
-        isActive: true,
-      },
-    });
-
-  if (!activeSeason) {
-    return NextResponse.json(
-      {
-        error:
-          "Duhet të ketë një sezon aktiv para krijimit të ekipit.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
 
   const body =
     await request.json();
@@ -272,8 +238,6 @@ export async function POST(
             body.ageGroup || ""
           ).trim() || null,
 
-        season:
-          activeSeason.name,
 
         description:
           String(

@@ -83,7 +83,6 @@ export default async function AthleteDashboardPage() {
               name: true,
               sport: true,
               ageGroup: true,
-              season: true,
               status: true,
             },
           },
@@ -325,7 +324,7 @@ export default async function AthleteDashboardPage() {
                   <p className="font-medium">{team.name}</p>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    {[team.sport, team.ageGroup, team.season]
+                    {[team.sport, team.ageGroup]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
