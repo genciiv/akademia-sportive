@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   LayoutDashboard,
   LogOut,
+  Trophy,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -28,6 +29,11 @@ const navigation = [
     href: "/sportist/orari",
     label: "Orari",
     icon: CalendarDays,
+  },
+  {
+    href: "/sportist/ndeshjet",
+    label: "Ndeshjet",
+    icon: Trophy,
   },
   {
     href: "/sportist/prezenca",
