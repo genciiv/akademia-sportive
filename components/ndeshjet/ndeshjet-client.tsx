@@ -858,6 +858,7 @@ export default function NdeshjetClient() {
               sportistiNeEditim.id,
             role: roliNeEditim,
             jerseyNumber,
+            minutesPlayed,
             position:
               pozicioniNeEditim,
             notes:
