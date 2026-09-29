@@ -30,13 +30,6 @@ export async function GET() {
 
   const { academyId } = access;
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: academyId,
-        isActive: true,
-      },
-    });
 
   const teamScope =
     await getActiveTeamScope(access);
@@ -48,14 +41,6 @@ export async function GET() {
         ? {
             teamId: {
               in: teamScope.teamIds,
-            },
-          }
-        : {}),
-      ...(activeSeason
-        ? {
-            startsAt: {
-              gte: activeSeason.startsAt,
-              lte: activeSeason.endsAt,
             },
           }
         : {}),
@@ -239,29 +224,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: academyId,
-        isActive: true,
-      },
-    });
 
-  if (
-    activeSeason &&
-    (
-      startsAt < activeSeason.startsAt ||
-      startsAt > activeSeason.endsAt
-    )
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Data e seancÃ«s duhet tÃ« jetÃ« brenda sezonit aktiv.",
-      },
-      { status: 400 }
-    );
-  }
 
   let endsAt: Date | null = null;
 
@@ -288,18 +251,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (
-      activeSeason &&
-      endsAt > activeSeason.endsAt
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Data e pÃ«rfundimit duhet tÃ« jetÃ« brenda sezonit aktiv.",
-        },
-        { status: 400 }
-      );
-    }
   }
 
   if (facilityId && !endsAt) {

@@ -65,3 +65,15 @@ test("athlete portal navigation exposes matches", () => {
   assert.match(navigation, /href:\s*"\/sportist\/ndeshjet"/);
   assert.match(navigation, /label:\s*"Ndeshjet"/);
 });
+test("athlete upcoming matches expose personal call-up status", () => {
+  const page = fs.readFileSync(
+    "app/sportist/(portal)/ndeshjet/page.tsx",
+    "utf8"
+  );
+
+  assert.match(page, /matchPlayers/);
+  assert.match(page, /playerId:\s*access\.playerId/);
+  assert.match(page, /Titullar/);
+  assert.match(page, /Zëvendësues/);
+  assert.match(page, /Nuk je grumbulluar/);
+});

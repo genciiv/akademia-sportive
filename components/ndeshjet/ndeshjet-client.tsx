@@ -49,7 +49,6 @@ type TeamOption = {
   name: string;
   sport: string;
   ageGroup: string | null;
-  season: string | null;
 };
 
 type FacilityOption = {

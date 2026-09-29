@@ -53,13 +53,6 @@ export async function GET() {
 
   const { academyId } = access;
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: academyId,
-        isActive: true,
-      },
-    });
 
   const teamScope =
     await getActiveTeamScope(access);
@@ -74,14 +67,6 @@ export async function GET() {
             },
           }
         : {}),
-      ...(activeSeason
-        ? {
-            startsAt: {
-              gte: activeSeason.startsAt,
-              lte: activeSeason.endsAt,
-            },
-          }
-        : {}),
     },
     include: {
       team: {
@@ -90,7 +75,6 @@ export async function GET() {
           name: true,
           sport: true,
           ageGroup: true,
-          season: true,
         },
       },
       facility: {
@@ -265,29 +249,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: academyId,
-        isActive: true,
-      },
-    });
 
-  if (
-    activeSeason &&
-    (
-      startsAtDate < activeSeason.startsAt ||
-      startsAtDate > activeSeason.endsAt
-    )
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Data e ndeshjes duhet të jetë brenda sezonit aktiv.",
-      },
-      { status: 400 }
-    );
-  }
 
   if (
     !MATCH_TYPES.includes(
@@ -434,7 +396,6 @@ export async function POST(request: Request) {
           name: true,
           sport: true,
           ageGroup: true,
-          season: true,
         },
       },
       facility: {

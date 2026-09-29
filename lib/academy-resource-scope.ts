@@ -45,16 +45,6 @@ export async function getActiveTeamScope(
     };
   }
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: access.academyId,
-        isActive: true,
-      },
-      select: {
-        name: true,
-      },
-    });
 
   const coach =
     await prisma.coach.findFirst({
@@ -70,11 +60,6 @@ export async function getActiveTeamScope(
             team: {
               academyId: access.academyId,
               status: "ACTIVE",
-              ...(activeSeason
-                ? {
-                    season: activeSeason.name,
-                  }
-                : {}),
             },
           },
           select: {

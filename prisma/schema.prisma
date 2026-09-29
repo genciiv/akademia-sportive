@@ -242,7 +242,6 @@ model Academy {
   guardians                         Guardian[]
   playerGuardians                   PlayerGuardian[]
   notifications                     Notification[]
-  academySeasons                    AcademySeason[]
   invitations                       AcademyInvitation[]
   staff                             AcademyStaff[]
   auditLogs                         AuditLog[]
@@ -259,28 +258,6 @@ model Academy {
 
   @@index([ownerId])
   @@index([status])
-}
-
-model AcademySeason {
-  id String @id @default(cuid())
-
-  academyId String
-  academy   Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
-
-  name String
-
-  startsAt DateTime
-  endsAt   DateTime
-
-  isActive Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([academyId, name])
-  @@index([academyId])
-  @@index([academyId, isActive])
-  @@index([academyId, startsAt, endsAt])
 }
 
 model AcademyMembership {
@@ -740,7 +717,6 @@ model Team {
   sport SportType
 
   ageGroup String?
-  season   String?
 
   description String?
 

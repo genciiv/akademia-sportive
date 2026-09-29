@@ -30,35 +30,11 @@ export default async function Page() {
 
   const tani = new Date();
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: academy.id,
-        isActive: true,
-      },
-    });
 
-  const seasonRange = activeSeason
-    ? {
-        gte: activeSeason.startsAt,
-        lte: activeSeason.endsAt,
-      }
-    : undefined;
 
-  const upcomingStart =
-    activeSeason &&
-    activeSeason.startsAt > tani
-      ? activeSeason.startsAt
-      : tani;
-
-  const upcomingRange = activeSeason
-    ? {
-        gte: upcomingStart,
-        lte: activeSeason.endsAt,
-      }
-    : {
-        gte: tani,
-      };
+  const upcomingRange = {
+    gte: tani,
+  };
 
   const [
     drillsCount,
@@ -79,7 +55,6 @@ export default async function Page() {
     prisma.trainingSession.count({
       where: {
         academyId: academy.id,
-        startsAt: seasonRange,
         ...(scopedTeamIds
           ? {
               teamId: {
@@ -94,8 +69,7 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         status: "ACTIVE",
-        ...(scopedTeamIds !== null ||
-        activeSeason
+        ...(scopedTeamIds !== null
           ? {
               teams: {
                 some: {
@@ -107,15 +81,6 @@ export default async function Page() {
                       }
                     : {}),
                   isActive: true,
-                  ...(activeSeason
-                    ? {
-                        team: {
-                          academyId: academy.id,
-                          season: activeSeason.name,
-                          status: "ACTIVE",
-                        },
-                      }
-                    : {}),
                 },
               },
             }
@@ -127,8 +92,7 @@ export default async function Page() {
       where: {
         academyId: academy.id,
         status: "ACTIVE",
-        ...(scopedTeamIds !== null ||
-        activeSeason
+        ...(scopedTeamIds !== null
           ? {
               teams: {
                 some: {
@@ -140,15 +104,6 @@ export default async function Page() {
                       }
                     : {}),
                   isActive: true,
-                  ...(activeSeason
-                    ? {
-                        team: {
-                          academyId: academy.id,
-                          season: activeSeason.name,
-                          status: "ACTIVE",
-                        },
-                      }
-                    : {}),
                 },
               },
             }
@@ -159,7 +114,6 @@ export default async function Page() {
     prisma.trainingSession.findMany({
       where: {
         academyId: academy.id,
-        startsAt: seasonRange,
         ...(scopedTeamIds
           ? {
               teamId: {
@@ -189,7 +143,6 @@ export default async function Page() {
     prisma.match.findMany({
       where: {
         academyId: academy.id,
-        startsAt: seasonRange,
         ...(scopedTeamIds
           ? {
               teamId: {

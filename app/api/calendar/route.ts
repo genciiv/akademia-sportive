@@ -51,12 +51,6 @@ export async function GET(request: Request) {
 
   const { academyId } = access;
 
-  const activeSeason = await prisma.academySeason.findFirst({
-    where: {
-      academyId,
-      isActive: true,
-    },
-  });
 
   const teamScope =
     await getActiveTeamScope(access);
@@ -138,28 +132,8 @@ export async function GET(request: Request) {
     }
   }
 
-  const seasonFrom = activeSeason?.startsAt ?? null;
-  const seasonTo = activeSeason?.endsAt ?? null;
-
-  const effectiveFrom =
-    seasonFrom && from
-      ? new Date(
-          Math.max(
-            seasonFrom.getTime(),
-            from.getTime()
-          )
-        )
-      : seasonFrom || from;
-
-  const effectiveTo =
-    seasonTo && to
-      ? new Date(
-          Math.min(
-            seasonTo.getTime(),
-            to.getTime()
-          )
-        )
-      : seasonTo || to;
+  const effectiveFrom = from;
+  const effectiveTo = to;
 
   const dateFilter =
     effectiveFrom || effectiveTo
@@ -194,11 +168,6 @@ export async function GET(request: Request) {
             }
           : {}),
         status: "ACTIVE",
-        ...(activeSeason
-          ? {
-              season: activeSeason.name,
-            }
-          : {}),
       },
       orderBy: {
         name: "asc",

@@ -526,21 +526,6 @@ const CONTRACTS:
       method: "PATCH",
       permission: "SETTINGS_MANAGE",
     },
-    {
-      path: "app/api/seasons/[seasonId]/route.ts",
-      method: "PATCH",
-      permission: "SEASONS_MANAGE",
-    },
-    {
-      path: "app/api/seasons/route.ts",
-      method: "GET",
-      permission: "SEASONS_VIEW",
-    },
-    {
-      path: "app/api/seasons/route.ts",
-      method: "POST",
-      permission: "SEASONS_MANAGE",
-    },
 
     {
       path: "app/api/staff/[membershipId]/route.ts",

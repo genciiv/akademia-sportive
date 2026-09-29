@@ -104,16 +104,6 @@ export async function GET() {
   const teamScope =
     await getActiveTeamScope(access);
 
-  const activeSeason =
-    await prisma.academySeason.findFirst({
-      where: {
-        academyId: access.academyId,
-        isActive: true,
-      },
-      select: {
-        name: true,
-      },
-    });
 
   const [tactics, teams] =
     await Promise.all([
@@ -172,11 +162,6 @@ export async function GET() {
               }
             : {}),
 
-          ...(activeSeason
-            ? {
-                season: activeSeason.name,
-              }
-            : {}),
         },
 
         select: {

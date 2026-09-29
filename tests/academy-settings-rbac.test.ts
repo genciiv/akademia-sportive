@@ -116,10 +116,6 @@ test("academy settings page keeps its settings view guard", () => {
     /<AcademySettings\s*\/>/
   );
 
-  assert.match(
-    page,
-    /<SeasonsSettings\s*\/>/
-  );
 });
 
 test("academy settings UI keeps mutations permission aware", () => {

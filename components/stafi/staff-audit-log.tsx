@@ -56,6 +56,54 @@ const ACTION_LABELS: Record<
 
   STAFF_ACCOUNT_LINKED:
     "Llogaria u lidh",
+
+  ATHLETE_INVITATION_CREATED:
+    "Ftesa për sportistin u krijua",
+
+  ATHLETE_INVITATION_RESENT:
+    "Ftesa për sportistin u ridërgua",
+
+  ATHLETE_INVITATION_REVOKED:
+    "Ftesa për sportistin u revokua",
+
+  ATHLETE_ACCOUNT_LINKED:
+    "Llogaria e sportistit u lidh",
+
+
+
+
+
+  INTER_ACADEMY_MATCH_REQUEST_CREATED:
+    "Kërkesa për ndeshje ndërmjet akademive u krijua",
+
+  INTER_ACADEMY_MATCH_REQUEST_ACCEPTED:
+    "Kërkesa për ndeshje ndërmjet akademive u pranua",
+
+  INTER_ACADEMY_MATCH_REQUEST_REJECTED:
+    "Kërkesa për ndeshje ndërmjet akademive u refuzua",
+
+  INTER_ACADEMY_MATCH_REQUEST_CANCELLED:
+    "Kërkesa për ndeshje ndërmjet akademive u anulua",
+};
+
+const ENTITY_LABELS: Record<
+  string,
+  string
+> = {
+  AcademyMembership:
+    "Anëtar stafi",
+
+  StaffInvitation:
+    "Ftesë stafi",
+
+  AthleteInvitation:
+    "Ftesë sportisti",
+
+  AthleteAccount:
+    "Llogari sportisti",
+
+  InterAcademyMatchRequest:
+    "Kërkesë ndeshjeje ndërmjet akademive",
 };
 
 const ROLE_LABELS: Record<
@@ -262,7 +310,10 @@ function auditDetails(
     return "Profili u lidh me një llogari ekzistuese.";
   }
 
-  return entry.entityType;
+  return (
+    ENTITY_LABELS[entry.entityType] ||
+    entry.entityType
+  );
 }
 
 export function StaffAuditLog() {

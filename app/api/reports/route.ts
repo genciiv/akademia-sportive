@@ -56,15 +56,6 @@ export async function GET() {
       PERMISSIONS.REPORTS_FINANCE_VIEW
     );
 
-  const activeSeason =
-    canViewSports
-      ? await prisma.academySeason.findFirst({
-          where: {
-            academyId,
-            isActive: true,
-          },
-        })
-      : null;
 
   const teamScope =
     canViewSports
@@ -85,12 +76,6 @@ export async function GET() {
     1
   );
 
-  const seasonDateRange = activeSeason
-    ? {
-        gte: activeSeason.startsAt,
-        lte: activeSeason.endsAt,
-      }
-    : undefined;
 
   let sports = {
     ...EMPTY_SPORTS,
@@ -108,8 +93,7 @@ export async function GET() {
         where: {
           academyId,
 
-          ...(teamScope?.isScoped ||
-          activeSeason
+          ...(teamScope?.isScoped
             ? {
                 teams: {
                   some: {
@@ -123,16 +107,6 @@ export async function GET() {
                         }
                       : {}),
 
-                    ...(activeSeason
-                      ? {
-                          team: {
-                            academyId,
-                            season:
-                              activeSeason.name,
-                            status: "ACTIVE",
-                          },
-                        }
-                      : {}),
                   },
                 },
               }
@@ -153,12 +127,6 @@ export async function GET() {
               }
             : {}),
 
-          ...(activeSeason
-            ? {
-                season:
-                  activeSeason.name,
-              }
-            : {}),
         },
       }),
 
@@ -166,8 +134,7 @@ export async function GET() {
         where: {
           academyId,
 
-          ...(teamScope?.isScoped ||
-          activeSeason
+          ...(teamScope?.isScoped
             ? {
                 teams: {
                   some: {
@@ -181,16 +148,6 @@ export async function GET() {
                         }
                       : {}),
 
-                    ...(activeSeason
-                      ? {
-                          team: {
-                            academyId,
-                            season:
-                              activeSeason.name,
-                            status: "ACTIVE",
-                          },
-                        }
-                      : {}),
                   },
                 },
               }
@@ -210,12 +167,6 @@ export async function GET() {
               }
             : {}),
 
-          ...(seasonDateRange
-            ? {
-                startsAt:
-                  seasonDateRange,
-              }
-            : {}),
         },
       }),
 
@@ -231,12 +182,6 @@ export async function GET() {
               }
             : {}),
 
-          ...(seasonDateRange
-            ? {
-                startsAt:
-                  seasonDateRange,
-              }
-            : {}),
         },
       }),
     ]);
@@ -443,19 +388,6 @@ export async function GET() {
       finance: canViewFinance,
     },
 
-    activeSeason:
-      canViewSports &&
-      activeSeason
-        ? {
-            id: activeSeason.id,
-            name:
-              activeSeason.name,
-            startsAt:
-              activeSeason.startsAt.toISOString(),
-            endsAt:
-              activeSeason.endsAt.toISOString(),
-          }
-        : null,
 
     sports,
     finance,
