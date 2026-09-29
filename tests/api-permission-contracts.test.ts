@@ -324,6 +324,32 @@ const CONTRACTS:
     },
 
     {
+      path: "app/api/inter-academy-match-requests/route.ts",
+      method: "GET",
+      permission: "MATCHES_VIEW",
+    },
+    {
+      path: "app/api/inter-academy-match-requests/route.ts",
+      method: "POST",
+      permission: "MATCHES_CREATE",
+    },
+    {
+      path: "app/api/inter-academy-match-requests/[requestId]/accept/route.ts",
+      method: "POST",
+      permission: "MATCHES_CREATE",
+    },
+    {
+      path: "app/api/inter-academy-match-requests/[requestId]/reject/route.ts",
+      method: "POST",
+      permission: "MATCHES_UPDATE",
+    },
+    {
+      path: "app/api/inter-academy-match-requests/[requestId]/cancel/route.ts",
+      method: "POST",
+      permission: "MATCHES_UPDATE",
+    },
+
+    {
       path: "app/api/notifications/[notificationId]/route.ts",
       method: "PATCH",
       permission: "NOTIFICATIONS_MANAGE",
