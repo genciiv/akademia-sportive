@@ -40,6 +40,15 @@ type Season = {
   isActive: boolean;
 };
 
+type TopbarNotification = {
+  id: string;
+  title: string;
+  message: string;
+  href: string | null;
+  publishedAt: string;
+  isRead: boolean;
+};
+
 function inicialet(name?: string | null) {
   if (!name) {
     return "P";
@@ -119,6 +128,20 @@ export function Topbar({
   const [changingSeasonId, setChangingSeasonId] =
     useState<string | null>(null);
 
+  const [notificationCount, setNotificationCount] =
+    useState(0);
+
+  const [notificationOpen, setNotificationOpen] =
+    useState(false);
+
+  const [notifications, setNotifications] =
+    useState<TopbarNotification[]>([]);
+
+  const notificationRef =
+    useRef<HTMLDivElement | null>(null);
+
+
+
   const menuRef =
     useRef<HTMLDivElement | null>(null);
 
@@ -163,11 +186,54 @@ export function Topbar({
   }, []);
 
   useEffect(() => {
+    async function merrNjoftimet() {
+      try {
+        const response = await fetch(
+          "/api/notifications",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setNotificationCount(0);
+          return;
+        }
+
+        setNotificationCount(
+          Number(data?.summary?.unread ?? 0)
+        );
+
+        setNotifications(
+          Array.isArray(data?.notifications)
+            ? data.notifications.slice(0, 5)
+            : []
+        );
+      } catch {
+        setNotificationCount(0);
+      }
+    }
+
+    void merrNjoftimet();
+  }, []);
+
+  useEffect(() => {
     function handleClickOutside(
       event: MouseEvent
     ) {
       const target =
         event.target as Node;
+
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(target)
+      ) {
+        setNotificationOpen(false);
+      }
+
+
 
       if (
         menuRef.current &&
@@ -530,13 +596,130 @@ export function Topbar({
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
-        <Link
-          href="/njoftimet"
-          className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100"
-          aria-label="Njoftimet"
+        <div
+          ref={notificationRef}
+          className="relative"
         >
-          <Bell size={19} />
-        </Link>
+          <button
+            type="button"
+            onClick={() =>
+              setNotificationOpen(
+                (value) => !value
+              )
+            }
+            className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100"
+            aria-label="Njoftimet"
+            aria-expanded={notificationOpen}
+          >
+            <Bell size={19} />
+
+            {notificationCount > 0 ? (
+              <span className="absolute -right-0.5 -top-0.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white">
+                {notificationCount > 99
+                  ? "99+"
+                  : notificationCount}
+              </span>
+            ) : null}
+          </button>
+
+          {notificationOpen ? (
+            <div className="absolute right-0 top-[46px] z-50 w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                <div>
+                  <p className="text-sm font-bold text-slate-950">
+                    Njoftimet
+                  </p>
+
+                  <p className="text-xs text-slate-500">
+                    {"Njoftimet m\u00eb t\u00eb fundit"}
+                  </p>
+                </div>
+
+                {notificationCount > 0 ? (
+                  <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-600">
+                    {notificationCount > 99
+                      ? "99+"
+                      : notificationCount}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="max-h-[360px] overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-sm text-slate-500">
+                    Nuk ka njoftime.
+                  </div>
+                ) : (
+                  notifications.map(
+                    (notification) => (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        onClick={async () => {
+                          setNotificationOpen(false);
+
+                          if (!notification.isRead) {
+                            try {
+                              const response = await fetch(
+                                `/api/notifications/${notification.id}/read`,
+                                {
+                                  method: "POST",
+                                }
+                              );
+
+                              if (response.ok) {
+                                setNotifications((current) =>
+                                  current.map((item) =>
+                                    item.id === notification.id
+                                      ? {
+                                          ...item,
+                                          isRead: true,
+                                        }
+                                      : item
+                                  )
+                                );
+
+                                setNotificationCount((count) =>
+                                  Math.max(0, count - 1)
+                                );
+                              }
+                            } catch {
+                              // Navigimi vazhdon edhe nëse mark-as-read dështon.
+                            }
+                          }
+
+                          router.push(
+                            notification.href ||
+                              "/njoftimet"
+                          );
+                        }}
+                        className="w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50"
+                      >
+                        <p className="text-sm font-semibold text-slate-900">
+                          {notification.title}
+                        </p>
+
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                          {notification.message}
+                        </p>
+                      </button>
+                    )
+                  )
+                )}
+              </div>
+
+              <Link
+                href="/njoftimet"
+                onClick={() =>
+                  setNotificationOpen(false)
+                }
+                className="block border-t border-slate-100 px-4 py-3 text-center text-sm font-semibold text-blue-600 hover:bg-slate-50"
+              >
+                {"Shiko t\u00eb gjitha njoftimet"}
+              </Link>
+            </div>
+          ) : null}
+        </div>
 
         <div
           ref={menuRef}

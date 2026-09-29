@@ -322,6 +322,13 @@ const CONTRACTS:
       method: "POST",
       permission: "MATCHES_CREATE",
     },
+    {
+      path: "app/api/inter-academy-match-options/route.ts",
+      method: "GET",
+      permission: "MATCHES_CREATE",
+    },
+
+
 
     {
       path: "app/api/inter-academy-match-requests/route.ts",
@@ -349,6 +356,11 @@ const CONTRACTS:
       permission: "MATCHES_UPDATE",
     },
 
+    {
+      path: "app/api/notifications/[notificationId]/read/route.ts",
+      method: "POST",
+      permission: "NOTIFICATIONS_VIEW",
+    },
     {
       path: "app/api/notifications/[notificationId]/route.ts",
       method: "PATCH",
@@ -686,7 +698,8 @@ const CONTRACTS:
       path: "app/api/knowledge/route.ts",
       method: "POST",
       permission: "KNOWLEDGE_MANAGE",
-    },    {
+    },
+    {
       path: "app/api/tactics/[tacticId]/route.ts",
       method: "GET",
       permission: "TACTICS_VIEW",

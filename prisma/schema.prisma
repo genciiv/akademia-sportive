@@ -108,6 +108,7 @@ model User {
   createdAt                        DateTime                   @default(now())
   updatedAt                        DateTime                   @updatedAt
   createdInterAcademyMatchRequests InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestCreator")
+  notificationReads                NotificationRead[]
 }
 
 model Session {
@@ -790,6 +791,7 @@ model Notification {
   title   String
   message String
 
+  href     String?
   audience NotificationAudience @default(ALL)
 
   teamId String?
@@ -801,13 +803,30 @@ model Notification {
   publishedAt DateTime  @default(now())
   expiresAt   DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  notificationReads NotificationRead[]
 
   @@index([academyId])
   @@index([academyId, status])
   @@index([academyId, publishedAt])
   @@index([teamId])
+}
+
+model NotificationRead {
+  id String @id @default(cuid())
+
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  readAt DateTime @default(now())
+
+  @@unique([notificationId, userId])
+  @@index([userId])
+  @@index([notificationId])
 }
 
 model TeamPlayer {

@@ -23,7 +23,6 @@ export async function GET() {
 
   const { academyId } = access;
 
-
   const activeSeason =
     await prisma.academySeason.findFirst({
       where: {
@@ -35,69 +34,94 @@ export async function GET() {
   const teamScope =
     await getActiveTeamScope(access);
 
-  const [notifications, teams] = await Promise.all([
-    prisma.notification.findMany({
-      where: {
-        academyId,
-        ...(teamScope.isScoped
-          ? {
-              OR: [
-                {
-                  audience: "ALL",
-                },
-                {
-                  teamId: {
-                    in: teamScope.teamIds,
+  const [notifications, teams] =
+    await Promise.all([
+      prisma.notification.findMany({
+        where: {
+          academyId,
+          ...(teamScope.isScoped
+            ? {
+                OR: [
+                  {
+                    audience: "ALL",
                   },
-                },
-              ],
-            }
-          : {}),
-      },
-      orderBy: {
-        publishedAt: "desc",
-      },
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
+                  {
+                    teamId: {
+                      in: teamScope.teamIds,
+                    },
+                  },
+                ],
+              }
+            : {}),
+        },
+        orderBy: {
+          publishedAt: "desc",
+        },
+        include: {
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          notificationReads: {
+            where: {
+              userId:
+                access.session.user.id,
+            },
+            select: {
+              id: true,
+            },
           },
         },
-      },
-    }),
+      }),
 
-    prisma.team.findMany({
-      where: {
-        academyId,
-        ...(teamScope.isScoped
-          ? {
-              id: {
-                in: teamScope.teamIds,
-              },
-            }
-          : {}),
-        status: "ACTIVE",
-        ...(activeSeason
-          ? {
-              season: activeSeason.name,
-            }
-          : {}),
-      },
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-  ]);
+      prisma.team.findMany({
+        where: {
+          academyId,
+          ...(teamScope.isScoped
+            ? {
+                id: {
+                  in: teamScope.teamIds,
+                },
+              }
+            : {}),
+          status: "ACTIVE",
+          ...(activeSeason
+            ? {
+                season:
+                  activeSeason.name,
+              }
+            : {}),
+        },
+        orderBy: {
+          name: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      }),
+    ]);
 
   const now = new Date();
 
+  const notificationsWithRead =
+    notifications.map((notification) => {
+      const {
+        notificationReads,
+        ...notificationData
+      } = notification;
+
+      return {
+        ...notificationData,
+        isRead: notificationReads.length > 0,
+      };
+    });
+
   return NextResponse.json({
-    notifications,
+    notifications:
+      notificationsWithRead,
     teams,
     summary: {
       total: notifications.length,
@@ -109,14 +133,24 @@ export async function GET() {
             notification.expiresAt >= now)
       ).length,
 
+      unread: notifications.filter(
+        (notification) =>
+          notification.status === "ACTIVE" &&
+          (!notification.expiresAt ||
+            notification.expiresAt >= now) &&
+          notification.notificationReads.length === 0
+      ).length,
+
       important: notifications.filter(
         (notification) =>
-          notification.priority === "IMPORTANT"
+          notification.priority ===
+          "IMPORTANT"
       ).length,
 
       urgent: notifications.filter(
         (notification) =>
-          notification.priority === "URGENT"
+          notification.priority ===
+          "URGENT"
       ).length,
     },
   });
