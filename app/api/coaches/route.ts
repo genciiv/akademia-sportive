@@ -389,6 +389,9 @@ export async function POST(
               staffId:
                 staff.id,
 
+              membershipId:
+                staff.membershipId,
+
               firstName,
               lastName,
               email,
