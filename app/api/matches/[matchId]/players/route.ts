@@ -379,6 +379,17 @@ export async function POST(
       },
     });
 
+  if (role === "STARTER") {
+    await prisma.match.update({
+      where: {
+        id: match.id,
+      },
+      data: {
+        lineupPublishedAt: null,
+      },
+    });
+  }
+
   return NextResponse.json(
     { matchPlayer },
     { status: 201 }
@@ -535,6 +546,10 @@ export async function PATCH(
         role: role as
           | "STARTER"
           | "SUBSTITUTE",
+        lineupSlot:
+          role === "SUBSTITUTE"
+            ? null
+            : existing.lineupSlot,
         jerseyNumber,
         minutesPlayed,
         position:
@@ -562,6 +577,23 @@ export async function PATCH(
         },
       },
     });
+
+  if (
+    role !== existing.role ||
+    (
+      role === "SUBSTITUTE" &&
+      existing.lineupSlot !== null
+    )
+  ) {
+    await prisma.match.update({
+      where: {
+        id: match.id,
+      },
+      data: {
+        lineupPublishedAt: null,
+      },
+    });
+  }
 
   return NextResponse.json({
     matchPlayer,
@@ -634,6 +666,8 @@ export async function DELETE(
       },
       select: {
         id: true,
+        role: true,
+        lineupSlot: true,
       },
     });
 
@@ -652,6 +686,20 @@ export async function DELETE(
       id: existing.id,
     },
   });
+
+  if (
+    existing.role === "STARTER" ||
+    existing.lineupSlot
+  ) {
+    await prisma.match.update({
+      where: {
+        id: match.id,
+      },
+      data: {
+        lineupPublishedAt: null,
+      },
+    });
+  }
 
   return NextResponse.json({
     success: true,
