@@ -123,6 +123,22 @@ export async function PATCH(
       id: (await params).matchId,
       academyId: academyId,
     },
+    include: {
+      homeInterAcademyMatch: {
+        select: {
+          id: true,
+          homeMatchId: true,
+          awayMatchId: true,
+        },
+      },
+      awayInterAcademyMatch: {
+        select: {
+          id: true,
+          homeMatchId: true,
+          awayMatchId: true,
+        },
+      },
+    },
   });
 
   if (!existing) {
@@ -378,7 +394,39 @@ export async function PATCH(
         ? null
         : Number(body.opponentScore);
 
-  const match = await prisma.match.update({
+  const kaVetemNjeRezultat =
+    (ourScore === null) !==
+    (opponentScore === null);
+
+  if (kaVetemNjeRezultat) {
+    return NextResponse.json(
+      {
+        error:
+          "Rezultati duhet të plotësohet për të dy ekipet.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (
+    status === "COMPLETED" &&
+    (
+      ourScore === null ||
+      opponentScore === null
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Një ndeshje e përfunduar duhet të ketë rezultat.",
+      },
+      { status: 400 }
+    );
+  }
+
+
+  const match = await prisma.$transaction(async (tx) => {
+    const updatedMatch = await tx.match.update({
     where: {
       id: existing.id,
     },
@@ -445,6 +493,74 @@ export async function PATCH(
       },
     },
   });
+
+    const interAcademyMatch =
+      existing.homeInterAcademyMatch ??
+      existing.awayInterAcademyMatch;
+
+    const sharedResultChanged =
+      Boolean(interAcademyMatch) &&
+      (
+        body.status !== undefined ||
+        body.ourScore !== undefined ||
+        body.opponentScore !== undefined
+      );
+
+    if (
+      interAcademyMatch &&
+      sharedResultChanged
+    ) {
+      const currentIsHome =
+        existing.homeInterAcademyMatch !== null;
+
+      const homeScore =
+        currentIsHome
+          ? ourScore
+          : opponentScore;
+
+      const awayScore =
+        currentIsHome
+          ? opponentScore
+          : ourScore;
+
+      const sharedStatus =
+        status as
+          | "SCHEDULED"
+          | "COMPLETED"
+          | "CANCELLED"
+          | "POSTPONED";
+
+      await tx.interAcademyMatch.update({
+        where: {
+          id: interAcademyMatch.id,
+        },
+        data: {
+          status: sharedStatus,
+          homeScore,
+          awayScore,
+        },
+      });
+
+      const siblingMatchId =
+        currentIsHome
+          ? interAcademyMatch.awayMatchId
+          : interAcademyMatch.homeMatchId;
+
+      await tx.match.update({
+        where: {
+          id: siblingMatchId,
+        },
+        data: {
+          status: sharedStatus,
+          ourScore: opponentScore,
+          opponentScore: ourScore,
+        },
+      });
+    }
+
+    return updatedMatch;
+  });
+
 
   return NextResponse.json({
     match,
