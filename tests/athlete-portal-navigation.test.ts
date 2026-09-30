@@ -44,3 +44,28 @@ test("athlete portal navigation receives only athlete display context", () => {
     /privateNotes|guardianPhone|guardianEmail|tokenHash/,
   );
 });
+
+test("athlete portal navigation provides a responsive mobile menu", () => {
+  assert.match(navigation, /const \[mobileOpen,\s*setMobileOpen\]/);
+  assert.match(navigation, /lg:hidden/);
+  assert.match(navigation, /hidden[\s\S]*lg:block/);
+  assert.match(navigation, /aria-expanded=\{mobileOpen\}/);
+  assert.match(navigation, /athlete-mobile-navigation/);
+  assert.match(navigation, /<Menu/);
+  assert.match(navigation, /<X/);
+});
+
+test("athlete mobile navigation exposes all athlete routes and display context", () => {
+  assert.match(navigation, /label:\s*"Përmbledhje"/);
+  assert.match(navigation, /label:\s*"Orari"/);
+  assert.match(navigation, /label:\s*"Ndeshjet"/);
+  assert.match(navigation, /label:\s*"Prezenca"/);
+  assert.match(navigation, /\{athleteName\}/);
+  assert.match(navigation, /\{academyName\}/);
+  assert.match(navigation, /Dil nga llogaria/);
+});
+
+test("athlete mobile navigation closes after route selection", () => {
+  assert.match(navigation, /navigationLinks\(true\)/);
+  assert.match(navigation, /setMobileOpen\(false\)/);
+});
