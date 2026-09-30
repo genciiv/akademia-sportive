@@ -115,3 +115,39 @@ test("login preserves explicit next paths", () => {
     /safeNextPath/,
   );
 });
+const academyContext = fs.readFileSync(
+  "lib/academy-context.ts",
+  "utf8",
+);
+
+test("academy context routes athlete-only users back to the athlete portal", () => {
+  assert.match(
+    academyContext,
+    /if\s*\(\s*!membership\s*\)/
+  );
+
+  assert.match(
+    academyContext,
+    /prisma\.athleteAccount\.findFirst/
+  );
+
+  assert.match(
+    academyContext,
+    /userId:\s*session\.user\.id/
+  );
+
+  assert.match(
+    academyContext,
+    /if\s*\(\s*athleteAccount\s*\)/
+  );
+
+  assert.match(
+    academyContext,
+    /redirect\("\/sportist\/dashboard"\)/
+  );
+
+  assert.match(
+    academyContext,
+    /redirect\("\/krijo-akademine"\)/
+  );
+});
