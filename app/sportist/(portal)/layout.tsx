@@ -57,7 +57,7 @@ export default async function AthletePortalLayout({
           academyName={access.academy.name}
         />
 
-        <main>{children}</main>
+        <main className="min-w-0">{children}</main>
       </div>
     </div>
   );

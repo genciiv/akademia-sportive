@@ -99,7 +99,7 @@ export default async function AthleteDashboardPage() {
           measuredAt: "desc",
         },
 
-        take: 1,
+        take: 8,
 
         select: {
           measuredAt: true,
@@ -119,6 +119,9 @@ export default async function AthleteDashboardPage() {
   const athleteName = `${player.firstName} ${player.lastName}`.trim();
 
   const latestMeasurement = player.physicalMeasurements[0] ?? null;
+
+  const physicalProgress =
+    [...player.physicalMeasurements].reverse();
 
   const activeTeams = player.teams.filter(
     ({ team }) => team.status === "ACTIVE",
@@ -269,6 +272,76 @@ export default async function AthleteDashboardPage() {
       }),
     ]);
 
+  const academyUpdates =
+    await prisma.notification.findMany({
+      where: {
+        academyId: access.academyId,
+        status: "ACTIVE",
+
+        AND: [
+          {
+            OR: [
+              {
+                expiresAt: null,
+              },
+              {
+                expiresAt: {
+                  gte: now,
+                },
+              },
+            ],
+          },
+          {
+            OR: [
+              {
+                audience: "ALL",
+              },
+              {
+                audience: "TEAM",
+                teamId: {
+                  in: activeTeamIds,
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      orderBy: {
+        publishedAt: "desc",
+      },
+
+      take: 5,
+
+      select: {
+        id: true,
+        title: true,
+        message: true,
+        href: true,
+        audience: true,
+        priority: true,
+        publishedAt: true,
+        expiresAt: true,
+
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+
+        notificationReads: {
+          where: {
+            userId: access.userId,
+          },
+
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
   const [
     completedMatchPlayers,
     athleteEvents,
@@ -334,7 +407,25 @@ export default async function AthleteDashboardPage() {
 
       select: {
         matchId: true,
+        shots: true,
+        shotsOnTarget: true,
+        passesAttempted: true,
+        passesCompleted: true,
+        dribblesAttempted: true,
+        dribblesCompleted: true,
+        duelsWon: true,
+        tackles: true,
+        interceptions: true,
+        foulsCommitted: true,
+        foulsWon: true,
         coachRating: true,
+
+        match: {
+          select: {
+            startsAt: true,
+            opponentName: true,
+          },
+        },
       },
     }),
   ]);
@@ -413,7 +504,40 @@ export default async function AthleteDashboardPage() {
     goals,
     assists,
     averageRating,
+    minutesPerAppearance:
+      appearanceMatchIds.size === 0
+        ? null
+        : totalMinutes / appearanceMatchIds.size,
+    goalContributions: goals + assists,
   };
+
+  const performanceTrend = athletePerformances
+    .flatMap((performance) => {
+      if (performance.coachRating === null) {
+        return [];
+      }
+
+      const rating = Number(performance.coachRating);
+
+      if (!Number.isFinite(rating)) {
+        return [];
+      }
+
+      return [
+        {
+          matchId: performance.matchId,
+          startsAt: performance.match.startsAt,
+          opponentName: performance.match.opponentName,
+          rating,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.startsAt.getTime() - left.startsAt.getTime(),
+    )
+    .slice(0, 5)
+    .reverse();
 
   const [
     attendanceHistory,
@@ -450,6 +574,10 @@ export default async function AthleteDashboardPage() {
 
         match: {
           academyId: access.academyId,
+
+          teamId: {
+            in: activeTeamIds,
+          },
           status: "COMPLETED",
         },
       },
@@ -508,6 +636,44 @@ export default async function AthleteDashboardPage() {
   const nextMatch =
     upcomingMatches[0] ?? null;
 
+  const nextSession = upcomingSessions[0] ?? null;
+
+  const nextActivity =
+    nextSession &&
+    (!nextMatch ||
+      nextSession.startsAt.getTime() <=
+        nextMatch.startsAt.getTime())
+      ? {
+          type: "TRAINING" as const,
+          id: nextSession.id,
+          title: nextSession.title,
+          subtitle: nextSession.team.name,
+          startsAt: nextSession.startsAt,
+          location:
+            nextSession.facility?.name ||
+            nextSession.location ||
+            nextSession.branch?.name ||
+            null,
+          href: "/sportist/orari",
+        }
+      : nextMatch
+        ? {
+            type: "MATCH" as const,
+            id: nextMatch.id,
+            title: nextMatch.isHome
+              ? `${nextMatch.team.name} - ${nextMatch.opponentName}`
+              : `${nextMatch.opponentName} - ${nextMatch.team.name}`,
+            subtitle:
+              nextMatch.competitionName || nextMatch.team.name,
+            startsAt: nextMatch.startsAt,
+            location:
+              nextMatch.facility?.name ||
+              nextMatch.location ||
+              null,
+            href: `/sportist/ndeshjet/${nextMatch.id}`,
+          }
+        : null;
+
   const recentForm =
     recentAppearances.map(
       (appearance) => {
@@ -545,6 +711,56 @@ export default async function AthleteDashboardPage() {
         };
       },
     );
+
+  const lastAppearance = recentAppearances[0] ?? null;
+
+  const lastMatchPerformance = lastAppearance
+    ? athletePerformances.find(
+        (performance) =>
+          performance.matchId === lastAppearance.match.id,
+      ) ?? null
+    : null;
+
+  const lastPassAccuracy =
+    lastMatchPerformance &&
+    lastMatchPerformance.passesAttempted > 0
+      ? Math.round(
+          (lastMatchPerformance.passesCompleted /
+            lastMatchPerformance.passesAttempted) *
+            100,
+        )
+      : null;
+
+  const lastDribbleAccuracy =
+    lastMatchPerformance &&
+    lastMatchPerformance.dribblesAttempted > 0
+      ? Math.round(
+          (lastMatchPerformance.dribblesCompleted /
+            lastMatchPerformance.dribblesAttempted) *
+            100,
+        )
+      : null;
+
+  const maxPhysicalWeight = Math.max(
+    1,
+    ...physicalProgress.map(
+      (measurement) => measurement.weightKg ?? 0,
+    ),
+  );
+
+  const maxPhysicalBodyFat = Math.max(
+    1,
+    ...physicalProgress.map(
+      (measurement) => measurement.bodyFatPercent ?? 0,
+    ),
+  );
+
+  const maxPhysicalMuscleMass = Math.max(
+    1,
+    ...physicalProgress.map(
+      (measurement) => measurement.muscleMassKg ?? 0,
+    ),
+  );
 
   return (
     <div className="space-y-6">
@@ -644,7 +860,7 @@ export default async function AthleteDashboardPage() {
       <section className="rounded-2xl bg-slate-950 p-5 text-white sm:p-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
-            Performance
+            Performanca
           </p>
 
           <h2 className="mt-1 text-xl font-bold">
@@ -656,7 +872,7 @@ export default async function AthleteDashboardPage() {
           </p>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
           <div className="rounded-xl bg-white/10 p-4">
             <p className="text-xs text-slate-400">
               Ndeshje
@@ -707,6 +923,28 @@ export default async function AthleteDashboardPage() {
             </p>
           </div>
 
+          <div className="rounded-xl bg-white/10 p-4">
+            <p className="text-xs text-slate-400">
+              Min / ndeshje
+            </p>
+
+            <p className="mt-1 text-2xl font-black">
+              {professionalStats.minutesPerAppearance === null
+                ? "—"
+                : professionalStats.minutesPerAppearance.toFixed(1)}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white/10 p-4">
+            <p className="text-xs text-slate-400">
+              G+A
+            </p>
+
+            <p className="mt-1 text-2xl font-black">
+              {professionalStats.goalContributions}
+            </p>
+          </div>
+
           <div className="rounded-xl bg-emerald-400 p-4 text-slate-950">
             <p className="text-xs font-semibold text-emerald-950/70">
               Vlerësimi
@@ -721,71 +959,352 @@ export default async function AthleteDashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.4fr_.6fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                Ndeshja e radhës
-              </p>
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+              Qendra e Performancës
+            </p>
 
-              <h2 className="mt-1 text-xl font-bold text-slate-950">
-                Përgatitja e ardhshme
-              </h2>
-            </div>
+            <h2 className="mt-1 text-xl font-bold text-slate-950">
+              Ecuria e Performancës
+            </h2>
 
-            {nextMatch ? (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                E planifikuar
-              </span>
-            ) : null}
+            <p className="mt-1 text-sm text-slate-500">
+              Vlerësimet e trajnerit në pesë paraqitjet më të fundit.
+            </p>
           </div>
 
-          {!nextMatch ? (
-            <p className="mt-5 text-sm text-slate-500">
-              Nuk ka ndeshje të ardhshme për momentin.
+          <div className="self-start rounded-xl bg-slate-950 px-3 py-2 sm:self-auto">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Mesatarja
             </p>
-          ) : (
-            <div className="mt-5">
-              <p className="text-2xl font-black tracking-tight text-slate-950">
-                {nextMatch.isHome
-                  ? `${nextMatch.team.name} - ${nextMatch.opponentName}`
-                  : `${nextMatch.opponentName} - ${nextMatch.team.name}`}
-              </p>
 
-              <p className="mt-2 text-sm font-medium text-slate-600">
-                {formatDateTime(nextMatch.startsAt)}
-              </p>
+            <p className="mt-0.5 text-lg font-black text-white">
+              {professionalStats.averageRating === null
+                ? "—"
+                : professionalStats.averageRating.toFixed(1)}
+            </p>
+          </div>
+        </div>
 
-              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                <span className="rounded-lg bg-slate-100 px-2.5 py-1.5">
-                  {nextMatch.isHome
-                    ? "Në shtëpi"
-                    : "Në transfertë"}
+        {performanceTrend.length === 0 ? (
+          <p className="mt-6 text-sm text-slate-500">
+            Ende nuk ka vlerësime të regjistruara të performancës.
+          </p>
+        ) : (
+          <div className="mt-6 overflow-x-auto pb-2">
+            <div className="grid min-w-[520px] grid-cols-5 gap-3">
+              {performanceTrend.map((performance) => {
+                const barHeight = Math.max(
+                  8,
+                  Math.min(
+                    100,
+                    (performance.rating / 10) * 100,
+                  ),
+                );
+
+                return (
+                  <Link
+                    key={performance.matchId}
+                    href={`/sportist/ndeshjet/${performance.matchId}`}
+                    className="group min-w-0"
+                  >
+                    <div className="flex h-40 items-end overflow-hidden rounded-xl bg-slate-50 px-3 pt-4">
+                      <div
+                        className="w-full rounded-t-lg bg-emerald-500 transition group-hover:bg-emerald-600"
+                        style={{
+                          height: `${barHeight}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-2 text-center">
+                      <p className="text-lg font-black text-slate-950">
+                        {performance.rating.toFixed(1)}
+                      </p>
+
+                      <p className="mt-1 truncate text-xs font-semibold text-slate-600">
+                        {performance.opponentName}
+                      </p>
+
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        {formatDate(performance.startsAt)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+              Qendra e Performancës
+            </p>
+
+            <h2 className="mt-1 text-xl font-bold text-slate-950">
+              Performanca në Ndeshjen e Fundit
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Statistikat individuale nga paraqitja jote më e fundit.
+            </p>
+          </div>
+
+          {lastAppearance ? (
+            <Link
+              href={`/sportist/ndeshjet/${lastAppearance.match.id}`}
+              className="text-sm font-bold text-slate-950 hover:underline"
+            >
+              Detajet e ndeshjes →
+            </Link>
+          ) : null}
+        </div>
+
+        {!lastAppearance ? (
+          <p className="mt-6 text-sm text-slate-500">
+            Ende nuk ka paraqitje të përfunduara.
+          </p>
+        ) : (
+          <div className="mt-6">
+            <div className="flex flex-col gap-3 rounded-xl bg-slate-950 p-4 text-white sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Ndeshja e fundit
+                </p>
+
+                <p className="mt-1 truncate text-lg font-black">
+                  {lastAppearance.match.opponentName}
+                </p>
+
+                <p className="mt-1 text-sm text-slate-400">
+                  {formatDateTime(lastAppearance.match.startsAt)}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-lg bg-white/10 px-3 py-2 text-sm font-bold">
+                  {lastAppearance.minutesPlayed} min
                 </span>
 
-                <span className="rounded-lg bg-slate-100 px-2.5 py-1.5">
-                  {nextMatch.competitionName ||
-                    nextMatch.team.name}
-                </span>
-
-                {(nextMatch.facility?.name ||
-                  nextMatch.location) ? (
-                  <span className="rounded-lg bg-slate-100 px-2.5 py-1.5">
-                    {nextMatch.facility?.name ||
-                      nextMatch.location}
+                {lastMatchPerformance?.coachRating !== null &&
+                lastMatchPerformance?.coachRating !== undefined ? (
+                  <span className="rounded-lg bg-emerald-400 px-3 py-2 text-sm font-black text-slate-950">
+                    {Number(lastMatchPerformance.coachRating).toFixed(1)} vlerësim
                   </span>
                 ) : null}
               </div>
-
-              <Link
-                href={`/sportist/ndeshjet/${nextMatch.id}`}
-                className="mt-5 inline-flex rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800"
-              >
-                Detajet e ndeshjes
-              </Link>
             </div>
-          )}
+
+            {!lastMatchPerformance ? (
+              <div className="mt-4 rounded-xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">
+                  Ende nuk janë regjistruar statistikat individuale për këtë paraqitje.
+                </p>
+
+                <p className="mt-2 text-sm font-semibold text-slate-700">
+                  Minuta të luajtura: {lastAppearance.minutesPlayed}
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Minuta</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastAppearance.minutesPlayed}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Goditje</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.shots}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Në portë</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.shotsOnTarget}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Pasime</p>
+                  <p className="mt-1 text-lg font-black text-slate-950">
+                    {lastMatchPerformance.passesCompleted}/
+                    {lastMatchPerformance.passesAttempted}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {lastPassAccuracy === null
+                      ? "Pa tentativa"
+                      : `${lastPassAccuracy}% saktësi`}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Driblime</p>
+                  <p className="mt-1 text-lg font-black text-slate-950">
+                    {lastMatchPerformance.dribblesCompleted}/
+                    {lastMatchPerformance.dribblesAttempted}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {lastDribbleAccuracy === null
+                      ? "Pa tentativa"
+                      : `${lastDribbleAccuracy}% sukses`}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Duele të fituara</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.duelsWon}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Ndërhyrje</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.tackles}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Interceptime</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.interceptions}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Faulle të kryera</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.foulsCommitted}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Faulle të fituara</p>
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {lastMatchPerformance.foulsWon}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-emerald-50 p-4">
+                  <p className="text-xs font-semibold text-emerald-700">
+                    Vlerësimi
+                  </p>
+
+                  <p className="mt-1 text-xl font-black text-emerald-900">
+                    {lastMatchPerformance.coachRating === null
+                      ? "—"
+                      : Number(lastMatchPerformance.coachRating).toFixed(1)}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1.4fr_.6fr]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="bg-slate-950 p-5 text-white sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                  Aktiviteti i ardhshëm
+                </p>
+
+                <h2 className="mt-1 text-xl font-bold">
+                  Çfarë ke më pas
+                </h2>
+              </div>
+
+              {nextActivity ? (
+                <span
+                  className={[
+                    "rounded-full px-3 py-1 text-xs font-bold",
+                    nextActivity.type === "MATCH"
+                      ? "bg-emerald-400/15 text-emerald-300"
+                      : "bg-sky-400/15 text-sky-300",
+                  ].join(" ")}
+                >
+                  {nextActivity.type === "MATCH"
+                    ? "Ndeshje"
+                    : "Stërvitje"}
+                </span>
+              ) : null}
+            </div>
+
+            {!nextActivity ? (
+              <p className="mt-5 text-sm text-slate-400">
+                Nuk ka aktivitete të ardhshme të planifikuara për momentin.
+              </p>
+            ) : (
+              <div className="mt-6">
+                <p className="text-2xl font-black tracking-tight">
+                  {nextActivity.title}
+                </p>
+
+                <p className="mt-2 text-sm font-semibold text-slate-300">
+                  {nextActivity.subtitle}
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                  <span className="rounded-lg bg-white/10 px-3 py-2 text-slate-200">
+                    {formatDateTime(nextActivity.startsAt)}
+                  </span>
+
+                  {nextActivity.location ? (
+                    <span className="rounded-lg bg-white/10 px-3 py-2 text-slate-200">
+                      {nextActivity.location}
+                    </span>
+                  ) : null}
+                </div>
+
+                <Link
+                  href={nextActivity.href}
+                  className="mt-5 inline-flex rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100"
+                >
+                  {nextActivity.type === "MATCH"
+                    ? "Shiko ndeshjen"
+                    : "Shiko orarin"}
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {nextActivity ? (
+            <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
+              <div className="p-4 sm:p-5">
+                <p className="text-xs font-semibold text-slate-400">
+                  Lloji
+                </p>
+
+                <p className="mt-1 font-black text-slate-950">
+                  {nextActivity.type === "MATCH"
+                    ? "Ndeshje"
+                    : "Stërvitje"}
+                </p>
+              </div>
+
+              <div className="p-4 sm:p-5">
+                <p className="text-xs font-semibold text-slate-400">
+                  Ekipi / aktiviteti
+                </p>
+
+                <p className="mt-1 truncate font-black text-slate-950">
+                  {nextActivity.subtitle}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
@@ -986,55 +1505,338 @@ export default async function AthleteDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Matja e fundit fizike</h2>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                Qendra Fizike
+              </p>
+
+              <h2 className="mt-1 text-xl font-bold text-slate-950">
+                Progresi Fizik
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Evolucioni i matjeve fizike në tetë regjistrimet më të fundit.
+              </p>
+            </div>
+
+            {latestMeasurement ? (
+              <div className="self-start rounded-xl bg-slate-950 px-3 py-2 text-white sm:self-auto">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Matja e fundit
+                </p>
+
+                <p className="mt-0.5 text-sm font-black">
+                  {formatDate(latestMeasurement.measuredAt)}
+                </p>
+              </div>
+            ) : null}
+          </div>
 
           {!latestMeasurement ? (
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-6 text-sm text-slate-500">
               Ende nuk ka matje fizike të regjistruara.
             </p>
           ) : (
-            <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-slate-500">Data</dt>
+            <>
+              <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Pesha</p>
+                  <p className="mt-1 text-2xl font-black text-slate-950">
+                    {latestMeasurement.weightKg != null
+                      ? `${latestMeasurement.weightKg} kg`
+                      : "—"}
+                  </p>
+                </div>
 
-                <dd className="mt-1 font-medium">
-                  {formatDate(latestMeasurement.measuredAt)}
-                </dd>
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Yndyra trupore</p>
+                  <p className="mt-1 text-2xl font-black text-slate-950">
+                    {latestMeasurement.bodyFatPercent != null
+                      ? `${latestMeasurement.bodyFatPercent}%`
+                      : "—"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Masë muskulore</p>
+                  <p className="mt-1 text-2xl font-black text-slate-950">
+                    {latestMeasurement.muscleMassKg != null
+                      ? `${latestMeasurement.muscleMassKg} kg`
+                      : "—"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-xs text-slate-500">Gjatësia</p>
+                  <p className="mt-1 text-2xl font-black text-slate-950">
+                    {latestMeasurement.heightCm != null
+                      ? `${latestMeasurement.heightCm} cm`
+                      : "—"}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <dt className="text-slate-500">Gjatësia</dt>
+              <div className="mt-6 grid gap-4 xl:grid-cols-3">
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-sm font-bold text-slate-950">Pesha</p>
+                  <p className="mt-1 text-xs text-slate-500">Historiku në kg</p>
 
-                <dd className="mt-1 font-medium">
-                  {latestMeasurement.heightCm != null
-                    ? `${latestMeasurement.heightCm} cm`
-                    : "—"}
-                </dd>
+                  <div className="mt-5 flex h-28 items-end gap-2">
+                    {physicalProgress.map((measurement) => (
+                      <div
+                        key={`weight-${measurement.measuredAt.toISOString()}`}
+                        className="flex min-w-0 flex-1 items-end"
+                      >
+                        <div
+                          className="w-full rounded-t-md bg-slate-900"
+                          style={{
+                            height: `${Math.max(
+                              6,
+                              ((measurement.weightKg ?? 0) /
+                                maxPhysicalWeight) *
+                                100,
+                            )}%`,
+                          }}
+                          title={
+                            measurement.weightKg != null
+                              ? `${measurement.weightKg} kg`
+                              : "Pa të dhëna"
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-sm font-bold text-slate-950">Yndyra trupore</p>
+                  <p className="mt-1 text-xs text-slate-500">Historiku në përqindje</p>
+
+                  <div className="mt-5 flex h-28 items-end gap-2">
+                    {physicalProgress.map((measurement) => (
+                      <div
+                        key={`fat-${measurement.measuredAt.toISOString()}`}
+                        className="flex min-w-0 flex-1 items-end"
+                      >
+                        <div
+                          className="w-full rounded-t-md bg-slate-700"
+                          style={{
+                            height: `${Math.max(
+                              6,
+                              ((measurement.bodyFatPercent ?? 0) /
+                                maxPhysicalBodyFat) *
+                                100,
+                            )}%`,
+                          }}
+                          title={
+                            measurement.bodyFatPercent != null
+                              ? `${measurement.bodyFatPercent}%`
+                              : "Pa të dhëna"
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-sm font-bold text-slate-950">Masë muskulore</p>
+                  <p className="mt-1 text-xs text-slate-500">Historiku në kg</p>
+
+                  <div className="mt-5 flex h-28 items-end gap-2">
+                    {physicalProgress.map((measurement) => (
+                      <div
+                        key={`muscle-${measurement.measuredAt.toISOString()}`}
+                        className="flex min-w-0 flex-1 items-end"
+                      >
+                        <div
+                          className="w-full rounded-t-md bg-emerald-500"
+                          style={{
+                            height: `${Math.max(
+                              6,
+                              ((measurement.muscleMassKg ?? 0) /
+                                maxPhysicalMuscleMass) *
+                                100,
+                            )}%`,
+                          }}
+                          title={
+                            measurement.muscleMassKg != null
+                              ? `${measurement.muscleMassKg} kg`
+                              : "Pa të dhëna"
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <dt className="text-slate-500">Pesha</dt>
+              <div className="mt-6 overflow-x-auto">
+                <div className="min-w-[620px]">
+                  <div className="grid grid-cols-5 gap-3 border-b border-slate-200 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <span>Data</span>
+                    <span>Pesha</span>
+                    <span>Yndyra</span>
+                    <span>Muskuj</span>
+                    <span>Gjatësia</span>
+                  </div>
 
-                <dd className="mt-1 font-medium">
-                  {latestMeasurement.weightKg != null
-                    ? `${latestMeasurement.weightKg} kg`
-                    : "—"}
-                </dd>
+                  <div className="divide-y divide-slate-100">
+                    {[...physicalProgress].reverse().map((measurement) => (
+                      <div
+                        key={measurement.measuredAt.toISOString()}
+                        className="grid grid-cols-5 gap-3 py-3 text-sm"
+                      >
+                        <span className="font-semibold text-slate-700">
+                          {formatDate(measurement.measuredAt)}
+                        </span>
+
+                        <span>
+                          {measurement.weightKg != null
+                            ? `${measurement.weightKg} kg`
+                            : "—"}
+                        </span>
+
+                        <span>
+                          {measurement.bodyFatPercent != null
+                            ? `${measurement.bodyFatPercent}%`
+                            : "—"}
+                        </span>
+
+                        <span>
+                          {measurement.muscleMassKg != null
+                            ? `${measurement.muscleMassKg} kg`
+                            : "—"}
+                        </span>
+
+                        <span>
+                          {measurement.heightCm != null
+                            ? `${measurement.heightCm} cm`
+                            : "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-
-              <div>
-                <dt className="text-slate-500">Yndyra trupore</dt>
-
-                <dd className="mt-1 font-medium">
-                  {latestMeasurement.bodyFatPercent != null
-                    ? `${latestMeasurement.bodyFatPercent}%`
-                    : "—"}
-                </dd>
-              </div>
-            </dl>
+            </>
           )}
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+              Akademia
+            </p>
+
+            <h2 className="mt-1 text-xl font-bold text-slate-950">
+              Përditësimet e Akademisë
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Njoftimet më të fundit për ty dhe ekipet ku je aktiv.
+            </p>
+          </div>
+
+          {academyUpdates.length > 0 ? (
+            <span className="self-start rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 sm:self-auto">
+              {academyUpdates.length} njoftime
+            </span>
+          ) : null}
+        </div>
+
+        {academyUpdates.length === 0 ? (
+          <div className="mt-6 rounded-xl bg-slate-50 p-5">
+            <p className="text-sm text-slate-500">
+              Nuk ka njoftime aktive për momentin.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 divide-y divide-slate-100">
+            {academyUpdates.map((notification) => {
+              const isRead =
+                notification.notificationReads.length > 0;
+
+              const priorityLabel =
+                notification.priority === "URGENT"
+                  ? "Urgjent"
+                  : notification.priority === "IMPORTANT"
+                    ? "I rëndësishëm"
+                    : "Normal";
+
+              return (
+                <article
+                  key={notification.id}
+                  className="py-5 first:pt-0 last:pb-0"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-black text-slate-950">
+                          {notification.title}
+                        </h3>
+
+                        {!isRead ? (
+                          <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold text-sky-700">
+                            I palexuar
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-500">
+                            I lexuar
+                          </span>
+                        )}
+
+                        {notification.priority !== "NORMAL" ? (
+                          <span
+                            className={[
+                              "rounded-full px-2.5 py-1 text-[11px] font-bold",
+                              notification.priority === "URGENT"
+                                ? "bg-rose-50 text-rose-700"
+                                : "bg-amber-50 text-amber-700",
+                            ].join(" ")}
+                          >
+                            {priorityLabel}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {notification.message}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+                        <span>
+                          {formatDateTime(notification.publishedAt)}
+                        </span>
+
+                        <span>·</span>
+
+                        <span>
+                          {notification.audience === "ALL"
+                            ? "Gjithë akademia"
+                            : notification.team?.name || "Ekipi"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {notification.href ? (
+                      <Link
+                        href={notification.href}
+                        className="shrink-0 text-sm font-bold text-slate-950 hover:underline"
+                      >
+                        Hap njoftimin →
+                      </Link>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">

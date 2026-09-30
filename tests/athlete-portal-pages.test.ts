@@ -42,12 +42,12 @@ test("athlete dashboard exposes active team context only", () => {
   assert.match(dashboard, /team\.status\s*===\s*"ACTIVE"/);
 });
 
-test("athlete dashboard exposes only the latest physical measurement", () => {
+test("athlete dashboard exposes recent physical measurement history", () => {
   assert.match(dashboard, /physicalMeasurements:/);
 
   assert.match(dashboard, /measuredAt:\s*"desc"/);
 
-  assert.match(dashboard, /take:\s*1/);
+  assert.match(dashboard, /take:\s*8/);
 });
 
 test("athlete dashboard does not use academy staff permissions", () => {
