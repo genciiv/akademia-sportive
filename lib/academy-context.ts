@@ -32,6 +32,20 @@ export async function merrAkademineAktive() {
   });
 
   if (!membership) {
+    const athleteAccount =
+      await prisma.athleteAccount.findFirst({
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (athleteAccount) {
+      redirect("/sportist/dashboard");
+    }
+
     redirect("/krijo-akademine");
   }
 
