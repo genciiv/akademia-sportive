@@ -336,6 +336,18 @@ export default function NdeshjetClient() {
   const [ndeshjaEDetajuar, setNdeshjaEDetajuar] =
     useState<MatchItem | null>(null);
 
+  const [modalPerfundimiHapur, setModalPerfundimiHapur] =
+    useState(false);
+
+  const [rezultatiYneFinal, setRezultatiYneFinal] =
+    useState("");
+
+  const [rezultatiKundershtaritFinal, setRezultatiKundershtaritFinal] =
+    useState("");
+
+  const [dukePerfunduarNdeshjen, setDukePerfunduarNdeshjen] =
+    useState(false);
+
   const [sportistetEGrumbullimit, setSportistetEGrumbullimit] =
     useState<SquadPlayer[]>([]);
 
@@ -1259,6 +1271,145 @@ export default function NdeshjetClient() {
       );
     } finally {
       setNgjarjaNeProces(null);
+    }
+  }
+
+  function hapPerfundiminENdeshjes() {
+    if (!ndeshjaEDetajuar) {
+      return;
+    }
+
+    setRezultatiYneFinal(
+      ndeshjaEDetajuar.ourScore === null
+        ? ""
+        : String(
+            ndeshjaEDetajuar.ourScore
+          )
+    );
+
+    setRezultatiKundershtaritFinal(
+      ndeshjaEDetajuar.opponentScore === null
+        ? ""
+        : String(
+            ndeshjaEDetajuar.opponentScore
+          )
+    );
+
+    setGabimi("");
+    setModalPerfundimiHapur(true);
+  }
+
+  function mbyllPerfundiminENdeshjes() {
+    if (dukePerfunduarNdeshjen) {
+      return;
+    }
+
+    setModalPerfundimiHapur(false);
+    setRezultatiYneFinal("");
+    setRezultatiKundershtaritFinal("");
+    setGabimi("");
+  }
+
+  async function perfundoNdeshjen() {
+    if (!ndeshjaEDetajuar) {
+      return;
+    }
+
+    if (
+      !rezultatiYneFinal.trim() ||
+      !rezultatiKundershtaritFinal.trim()
+    ) {
+      setGabimi(
+        "Plotëso rezultatin për të dy ekipet."
+      );
+      return;
+    }
+
+    const rezultatiYne =
+      Number(rezultatiYneFinal);
+
+    const rezultatiKundershtarit =
+      Number(
+        rezultatiKundershtaritFinal
+      );
+
+    if (
+      !Number.isInteger(rezultatiYne) ||
+      rezultatiYne < 0 ||
+      !Number.isInteger(
+        rezultatiKundershtarit
+      ) ||
+      rezultatiKundershtarit < 0
+    ) {
+      setGabimi(
+        "Rezultati duhet të jetë numër i plotë zero ose pozitiv."
+      );
+      return;
+    }
+
+    const matchId =
+      ndeshjaEDetajuar.id;
+
+    setDukePerfunduarNdeshjen(true);
+    setGabimi("");
+
+    try {
+      const response =
+        await fetch(
+          `/api/matches/${matchId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              status: "COMPLETED",
+              ourScore: rezultatiYne,
+              opponentScore:
+                rezultatiKundershtarit,
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        setGabimi(
+          data.error ||
+            "Ndeshja nuk mund të përfundohej."
+        );
+        return;
+      }
+
+      setNdeshjaEDetajuar(
+        (current) =>
+          current &&
+          current.id === matchId
+            ? {
+                ...current,
+                status:
+                  "COMPLETED",
+                ourScore:
+                  rezultatiYne,
+                opponentScore:
+                  rezultatiKundershtarit,
+              }
+            : current
+      );
+
+      setModalPerfundimiHapur(false);
+      setRezultatiYneFinal("");
+      setRezultatiKundershtaritFinal("");
+
+      await merrTeDhenat();
+    } catch {
+      setGabimi(
+        "Ndodhi një problem gjatë përfundimit të ndeshjes."
+      );
+    } finally {
+      setDukePerfunduarNdeshjen(false);
     }
   }
 
@@ -2827,6 +2978,17 @@ export default function NdeshjetClient() {
               />
             )}
 <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+              {ndeshjaEDetajuar.status === "SCHEDULED" && (
+                <button
+                  type="button"
+                  onClick={hapPerfundiminENdeshjes}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                >
+                  <CheckCircle2 size={16} />
+                  Përfundo ndeshjen
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => {
@@ -2860,6 +3022,140 @@ export default function NdeshjetClient() {
           </div>
         </div>
       )}
+      {modalPerfundimiHapur &&
+        ndeshjaEDetajuar && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-[2px]">
+            <div className="w-full max-w-xl overflow-hidden rounded-[26px] bg-white shadow-2xl">
+              <div className="flex items-start justify-between border-b border-slate-100 p-6">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-600">
+                    Rezultati final
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-black text-slate-950">
+                    Konfirmo rezultatin final
+                  </h2>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Ndeshja do të kalojë në statusin E përfunduar.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={mbyllPerfundiminENdeshjes}
+                  disabled={dukePerfunduarNdeshjen}
+                  className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                  aria-label="Mbyll"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <div className="rounded-2xl bg-slate-950 p-5 text-white">
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+                    <p className="text-right text-sm font-bold">
+                      {ndeshjaEDetajuar.isHome
+                        ? ndeshjaEDetajuar.team.name
+                        : ndeshjaEDetajuar.opponentName}
+                    </p>
+
+                    <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-black">
+                      VS
+                    </span>
+
+                    <p className="text-sm font-bold">
+                      {ndeshjaEDetajuar.isHome
+                        ? ndeshjaEDetajuar.opponentName
+                        : ndeshjaEDetajuar.team.name}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <Fusha
+                    label={`Rezultati ynë · ${ndeshjaEDetajuar.team.name}`}
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={rezultatiYneFinal}
+                      onChange={(event) =>
+                        setRezultatiYneFinal(
+                          event.target.value
+                        )
+                      }
+                      placeholder="0"
+                      className={inputClass}
+                      autoFocus
+                    />
+                  </Fusha>
+
+                  <Fusha
+                    label={`Kundërshtari · ${ndeshjaEDetajuar.opponentName}`}
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={
+                        rezultatiKundershtaritFinal
+                      }
+                      onChange={(event) =>
+                        setRezultatiKundershtaritFinal(
+                          event.target.value
+                        )
+                      }
+                      placeholder="0"
+                      className={inputClass}
+                    />
+                  </Fusha>
+                </div>
+
+                {gabimi && (
+                  <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                    {gabimi}
+                  </div>
+                )}
+
+                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-xs leading-5 text-amber-800">
+                    Për ndeshjet inter-akademi, rezultati dhe statusi do të sinkronizohen automatikisht edhe me ndeshjen e akademisë tjetër.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+                <button
+                  type="button"
+                  onClick={mbyllPerfundiminENdeshjes}
+                  disabled={dukePerfunduarNdeshjen}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Anulo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    void perfundoNdeshjen()
+                  }
+                  disabled={dukePerfunduarNdeshjen}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <CheckCircle2 size={17} />
+
+                  {dukePerfunduarNdeshjen
+                    ? "Duke përfunduar..."
+                    : "Ruaj dhe përfundo"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       {modalNgjarjejeHapur && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg rounded-[24px] bg-white shadow-2xl">
@@ -3164,6 +3460,7 @@ export default function NdeshjetClient() {
 
                         
 <div className="flex justify-end gap-2 border-t border-slate-100 p-6">
+
               <button
                 type="button"
                 onClick={mbyllEditiminESportistit}
