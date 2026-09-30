@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { requireAthleteAccess } from "@/lib/athlete-access";
+import { AthleteLineupPitch } from "@/components/sportist/athlete-lineup-pitch";
 import { prisma } from "@/lib/prisma";
 
 function formatDateTime(value: Date) {
@@ -156,6 +157,8 @@ export default async function AthleteMatchDetailPage({
       competitionName: true,
       round: true,
       description: true,
+      lineupFormation: true,
+      lineupPublishedAt: true,
 
       team: {
         select: {
@@ -176,6 +179,7 @@ export default async function AthleteMatchDetailPage({
           id: true,
           playerId: true,
           role: true,
+          lineupSlot: true,
           jerseyNumber: true,
           position: true,
           minutesPlayed: true,
@@ -264,6 +268,12 @@ export default async function AthleteMatchDetailPage({
     match.matchPlayers.find(
       (item) => item.playerId === access.playerId
     ) ?? null;
+
+  const lineupIsPublished =
+    Boolean(
+      match.lineupPublishedAt &&
+        match.lineupFormation
+    );
 
   const starters = match.matchPlayers.filter(
     (item) => item.role === "STARTER"
@@ -479,96 +489,56 @@ export default async function AthleteMatchDetailPage({
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="text-xl font-semibold text-slate-950">
-          Formacioni
-        </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">
+              Formacioni
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Formacioni bëhet i dukshëm pasi stafi ta publikojë.
+            </p>
+          </div>
+
+          {!athleteMatchPlayer ? (
+            <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+              Nuk je grumbulluar
+            </span>
+          ) : !lineupIsPublished ? (
+            <span className="w-fit rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
+              I grumbulluar
+            </span>
+          ) : athleteMatchPlayer.role === "STARTER" ? (
+            <span className="w-fit rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+              Titullar
+            </span>
+          ) : (
+            <span className="w-fit rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+              Zëvendësues
+            </span>
+          )}
+        </div>
 
         {match.matchPlayers.length === 0 ? (
           <p className="mt-4 text-sm text-slate-500">
             Ende nuk është regjistruar grumbullimi i kësaj ndeshjeje.
           </p>
-        ) : (
-          <div className="mt-5 grid gap-6 lg:grid-cols-2">
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Titullarët
-              </h3>
+        ) : !lineupIsPublished ? (
+          <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5">
+            <p className="text-sm font-semibold text-slate-700">
+              Formacioni nuk është publikuar ende.
+            </p>
 
-              <div className="mt-3 space-y-2">
-                {starters.length === 0 ? (
-                  <p className="text-sm text-slate-500">
-                    Nuk ka titullarë të regjistruar.
-                  </p>
-                ) : (
-                  starters.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {item.player.firstName}{" "}
-                          {item.player.lastName}
-                        </p>
-
-                        <p className="text-xs text-slate-500">
-                          {item.position ||
-                            item.player.position ||
-                            "—"}
-                        </p>
-                      </div>
-
-                      <span className="text-sm font-semibold text-slate-600">
-                        #{item.jerseyNumber ??
-                          item.player.jerseyNumber ??
-                          "—"}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Zëvendësuesit
-              </h3>
-
-              <div className="mt-3 space-y-2">
-                {substitutes.length === 0 ? (
-                  <p className="text-sm text-slate-500">
-                    Nuk ka zëvendësues të regjistruar.
-                  </p>
-                ) : (
-                  substitutes.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {item.player.firstName}{" "}
-                          {item.player.lastName}
-                        </p>
-
-                        <p className="text-xs text-slate-500">
-                          {item.position ||
-                            item.player.position ||
-                            "—"}
-                        </p>
-                      </div>
-
-                      <span className="text-sm font-semibold text-slate-600">
-                        #{item.jerseyNumber ??
-                          item.player.jerseyNumber ??
-                          "—"}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Je në grumbullim, por pozicioni titullar ose stoli do të shfaqet vetëm pasi stafi ta publikojë formacionin.
+            </p>
           </div>
+        ) : (
+          <AthleteLineupPitch
+            formation={match.lineupFormation!}
+            players={match.matchPlayers}
+            currentPlayerId={access.playerId}
+          />
         )}
       </section>
 

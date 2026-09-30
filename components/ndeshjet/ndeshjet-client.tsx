@@ -31,6 +31,7 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { PerformanceSection } from "@/components/ndeshjet/performance-section";
+import { FormationBoard } from "@/components/ndeshjet/formation-board";
 
 type MatchStatus =
   | "SCHEDULED"
@@ -93,6 +94,7 @@ type SquadMatchPlayer = {
   id: string;
   playerId: string;
   role: MatchPlayerRole;
+  lineupSlot: string | null;
   jerseyNumber: number | null;
   position: string | null;
   minutesPlayed: number;
@@ -934,6 +936,16 @@ export default function NdeshjetClient() {
     if (!ndeshjaEDetajuar) {
       return;
     }
+
+    const konfirmuar =
+      window.confirm(
+        "Koshi e heq sportistin plotësisht nga grumbullimi. Ai nuk kalon në stol. Vazhdo?"
+      );
+
+    if (!konfirmuar) {
+      return;
+    }
+
 
     setSportistiNeProces(
       matchPlayerId
@@ -2167,7 +2179,7 @@ export default function NdeshjetClient() {
 
       {ndeshjaEDetajuar && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
-          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[24px] bg-white shadow-2xl">
+          <div className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-[24px] bg-white shadow-2xl">
             <div className="flex items-start justify-between border-b border-slate-100 p-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
@@ -2493,6 +2505,7 @@ export default function NdeshjetClient() {
                                     }
                                     className="rounded-xl border border-red-100 p-2 text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                                     aria-label="Hiq nga grumbullimi"
+                                    title="Hiq plotësisht nga grumbullimi"
                                   >
                                     <Trash2
                                       size={15}
@@ -2509,6 +2522,20 @@ export default function NdeshjetClient() {
                 )}
               </div>
             </div>
+            {ndeshjaEDetajuar.team.sport === "FOOTBALL" && (
+              <FormationBoard
+                matchId={ndeshjaEDetajuar.id}
+                teamName={ndeshjaEDetajuar.team.name}
+                opponentName={ndeshjaEDetajuar.opponentName}
+                players={sportistetEGrumbullimit}
+                onChanged={() =>
+                  merrGrumbullimin(
+                    ndeshjaEDetajuar.id
+                  )
+                }
+              />
+            )}
+
             <div className="border-t border-slate-100 p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
