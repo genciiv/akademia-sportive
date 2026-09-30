@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
@@ -252,6 +252,7 @@ function dateTimeLocal(value: string | null) {
 }
 
 export default function SeancatClient() {
+  const deepLinkHandled = useRef(false);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [coaches, setCoaches] = useState<CoachOption[]>([]);
@@ -373,6 +374,42 @@ const [dukeRuajtur, setDukeRuajtur] = useState(false);
   useEffect(() => {
     merrSeancat();
   }, []);
+
+  useEffect(() => {
+    if (
+      deepLinkHandled.current ||
+      teams.length === 0
+    ) {
+      return;
+    }
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    if (params.get("action") !== "create") {
+      return;
+    }
+
+    const requestedTeamId =
+      params.get("teamId") || "";
+
+    if (
+      !teams.some(
+        (team) =>
+          team.id === requestedTeamId
+      )
+    ) {
+      return;
+    }
+
+    deepLinkHandled.current = true;
+    setSeancaNeEditim(null);
+    setTeamId(requestedTeamId);
+    setGabimi("");
+    setShfaqFormularin(true);
+  }, [teams]);
 
   const tani = new Date();
 
