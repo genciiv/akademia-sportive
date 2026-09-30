@@ -6,6 +6,7 @@ import {
   FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -290,6 +291,7 @@ function badgeStatusi(status: MatchStatus) {
 }
 
 export default function NdeshjetClient() {
+  const deepLinkHandled = useRef(false);
   const [ndeshjet, setNdeshjet] =
     useState<MatchItem[]>([]);
 
@@ -514,6 +516,42 @@ export default function NdeshjetClient() {
   useEffect(() => {
     void merrTeDhenat();
   }, []);
+
+  useEffect(() => {
+    if (
+      deepLinkHandled.current ||
+      ekipet.length === 0
+    ) {
+      return;
+    }
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    if (params.get("action") !== "create") {
+      return;
+    }
+
+    const requestedTeamId =
+      params.get("teamId") || "";
+
+    if (
+      !ekipet.some(
+        (team) =>
+          team.id === requestedTeamId
+      )
+    ) {
+      return;
+    }
+
+    deepLinkHandled.current = true;
+    setNdeshjaNeEditim(null);
+    setTeamId(requestedTeamId);
+    setGabimi("");
+    setModalHapur(true);
+  }, [ekipet]);
 
   const ndeshjetEFiltruara = useMemo(() => {
     const term = kerkimi

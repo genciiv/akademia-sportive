@@ -28,6 +28,264 @@ const STATUSET = [
   "ARCHIVED",
 ] as const;
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ teamId: string }> }
+) {
+  const access =
+    await requireAcademyPermission(
+      PERMISSIONS.TEAMS_VIEW
+    );
+
+  if (!access.ok) {
+    return access.response;
+  }
+
+  const teamId =
+    (await params).teamId;
+
+  const existingTeam =
+    await prisma.team.findFirst({
+      where: {
+        id: teamId,
+        academyId:
+          access.academyId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  if (!existingTeam) {
+    return NextResponse.json(
+      {
+        error:
+          "Ekipi nuk u gjet.",
+      },
+      {
+        status: 404,
+      }
+    );
+  }
+
+  const hasTeamAccess =
+    await canAccessTeam(
+      access,
+      existingTeam.id
+    );
+
+  if (!hasTeamAccess) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke leje për të aksesuar këtë ekip.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
+
+  const team =
+    await prisma.team.findUnique({
+      where: {
+        id: existingTeam.id,
+      },
+
+      select: {
+        id: true,
+        name: true,
+        sport: true,
+        ageGroup: true,
+        description: true,
+        status: true,
+
+        branch: {
+          select: {
+            id: true,
+            name: true,
+            city: true,
+          },
+        },
+
+        players: {
+          where: {
+            isActive: true,
+          },
+
+          select: {
+            player: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                position: true,
+                jerseyNumber: true,
+                status: true,
+              },
+            },
+          },
+        },
+
+        coaches: {
+          where: {
+            isActive: true,
+          },
+
+          select: {
+            isHeadCoach: true,
+
+            coach: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                specialization: true,
+                status: true,
+              },
+            },
+          },
+        },
+
+        _count: {
+          select: {
+            matches: true,
+            trainingSessions: true,
+          },
+        },
+      },
+    });
+
+  if (!team) {
+    return NextResponse.json(
+      {
+        error:
+          "Ekipi nuk u gjet.",
+      },
+      {
+        status: 404,
+      }
+    );
+  }
+
+  const [nextMatch, nextTrainingSession] =
+    await Promise.all([
+      prisma.match.findFirst({
+        where: {
+          academyId:
+            access.academyId,
+          teamId: team.id,
+          status: "SCHEDULED",
+          startsAt: {
+            gte: new Date(),
+          },
+        },
+
+        orderBy: {
+          startsAt: "asc",
+        },
+
+        select: {
+          id: true,
+          opponentName: true,
+          startsAt: true,
+          isHome: true,
+          matchType: true,
+          competitionName: true,
+          location: true,
+
+          facility: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
+
+      prisma.trainingSession.findFirst({
+        where: {
+          academyId:
+            access.academyId,
+          teamId: team.id,
+          status: "SCHEDULED",
+          startsAt: {
+            gte: new Date(),
+          },
+        },
+
+        orderBy: {
+          startsAt: "asc",
+        },
+
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          location: true,
+
+          facility: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          coach: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+  return NextResponse.json({
+    team: {
+      id: team.id,
+      name: team.name,
+      sport: team.sport,
+      ageGroup: team.ageGroup,
+      description:
+        team.description,
+      status: team.status,
+      branch: team.branch,
+      nextMatch,
+      nextTrainingSession,
+
+      stats: {
+        players:
+          team.players.length,
+        coaches:
+          team.coaches.length,
+        matches:
+          team._count.matches,
+        trainingSessions:
+          team._count.trainingSessions,
+      },
+
+      players:
+        team.players.map(
+          ({ player }) =>
+            player
+        ),
+
+      coaches:
+        team.coaches.map(
+          ({
+            coach,
+            isHeadCoach,
+          }) => ({
+            ...coach,
+            isHeadCoach,
+          })
+        ),
+    },
+  });
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ teamId: string }> }

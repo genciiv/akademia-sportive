@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Plus,
   RefreshCw,
@@ -12,6 +13,7 @@ import {
   UserMinus,
   Pencil,
   Trash2,
+  ArrowRight,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -584,6 +586,14 @@ export default function EkipetClient() {
                     {team.description}
                   </p>
                 )}
+
+                <Link
+                  href={`/ekipet/${team.id}`}
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
+                >
+                  Hap profilin e ekipit
+                  <ArrowRight size={16} />
+                </Link>
 
                 <button
                   onClick={() => hapMenaxhimin(team)}
