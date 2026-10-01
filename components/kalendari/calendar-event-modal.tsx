@@ -245,11 +245,11 @@ export default function CalendarEventModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-5">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-blue-100 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-violet-50 px-6 py-5">
           <div>
-            <h2 className="text-xl font-bold text-slate-950">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-950">
               {eshteEditim
                 ? "Edito aktivitetin"
                 : "Shto aktivitet"}
@@ -265,7 +265,7 @@ export default function CalendarEventModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
@@ -317,7 +317,7 @@ export default function CalendarEventModal({
                     e.target.value
                   )
                 }
-                className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
               />
             </label>
 
@@ -335,7 +335,7 @@ export default function CalendarEventModal({
                     e.target.value
                   )
                 }
-                className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
               />
             </label>
 
@@ -352,7 +352,7 @@ export default function CalendarEventModal({
                     e.target.value
                   )
                 }
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
               >
                 <option value="">
                   Pa ekip të caktuar
@@ -418,7 +418,7 @@ export default function CalendarEventModal({
             type="button"
             onClick={ruaj}
             disabled={saving}
-            className="inline-flex h-11 items-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -456,7 +456,7 @@ function Fusha({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
       />
     </label>
   );
@@ -484,7 +484,7 @@ function Zgjedhje({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
       >
         {options.map(
           ([value, label]) => (
@@ -522,7 +522,7 @@ function TekstIgjate({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="w-full resize-none rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-slate-400"
+        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
       />
     </label>
   );
