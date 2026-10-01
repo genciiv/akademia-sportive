@@ -674,39 +674,34 @@ export default function TaktikatClient() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
-                <Target size={22} />
+        <section className="overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-violet-50 shadow-sm">
+          <div className="flex flex-col gap-6 px-5 py-6 sm:px-7 sm:py-7 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-blue-700 shadow-sm">
+                <Target size={14} />
+                Qendra taktike
               </div>
 
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                  Taktikat
-                </h1>
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+                Taktikat
+              </h1>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Ndërto dhe menaxho
-                  planet taktike të
-                  akademisë dhe ekipeve.
-                </p>
-              </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Ndërto, organizo dhe menaxho planet taktike të akademisë dhe ekipeve.
+              </p>
             </div>
-          </div>
 
-          {canManage ? (
-            <button
-              onClick={
-                openCreate
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
-            >
-              <Plus size={18} />
-              Shto taktikë
-            </button>
-          ) : null}
-        </div>
+            {canManage ? (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md"
+              >
+                <Plus size={18} />
+                Shto taktikë
+              </button>
+            ) : null}
+          </div>
+        </section>
 
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -720,6 +715,7 @@ export default function TaktikatClient() {
             value={activeCount}
             subtitle="Gati për përdorim"
             icon={Activity}
+            tone="blue"
           />
 
           <StatCard
@@ -729,6 +725,7 @@ export default function TaktikatClient() {
             }
             subtitle="Biblioteka taktike"
             icon={Layers3}
+            tone="violet"
           />
 
           <StatCard
@@ -736,6 +733,7 @@ export default function TaktikatClient() {
             value={teamTactics}
             subtitle="Plane specifike"
             icon={UsersRound}
+            tone="emerald"
           />
 
           <StatCard
@@ -745,10 +743,11 @@ export default function TaktikatClient() {
             }
             subtitle="Skema të përdorura"
             icon={Shield}
+            tone="amber"
           />
         </div>
 
-        <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-[24px] border border-blue-100 bg-gradient-to-r from-blue-50/70 via-white to-violet-50/60 p-4 shadow-sm">
           <div className="grid gap-3 xl:grid-cols-[1fr_auto_auto_auto]">
             <div className="relative">
               <Search
@@ -767,7 +766,7 @@ export default function TaktikatClient() {
                   )
                 }
                 placeholder="Kërko sipas emrit, formacionit, ekipit ose objektivit..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-xl border border-blue-100 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
               />
             </div>
 
@@ -791,7 +790,7 @@ export default function TaktikatClient() {
                       | TacticPhase
                   )
                 }
-                className="h-full min-w-[180px] rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-8 text-sm text-slate-700 outline-none"
+                className="h-full min-w-[180px] rounded-xl border border-blue-100 bg-white py-2.5 pl-9 pr-8 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
               >
                 <option value="ALL">
                   Të gjitha fazat
@@ -834,7 +833,7 @@ export default function TaktikatClient() {
                     | "ARCHIVED"
                 )
               }
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none"
+              className="rounded-xl border border-violet-100 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-100/60"
             >
               <option value="ALL">
                 Çdo status
@@ -851,7 +850,7 @@ export default function TaktikatClient() {
               onClick={() =>
                 void loadTactics()
               }
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 text-slate-500 transition hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-xl border border-blue-100 bg-white px-3 text-slate-500 shadow-sm transition hover:bg-blue-50 hover:text-blue-700"
               aria-label="Rifresko"
             >
               <RefreshCw
@@ -885,16 +884,16 @@ export default function TaktikatClient() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map(
               (tactic) => (
                 <article
                   key={
                     tactic.id
                   }
-                  className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
+                  className="group flex h-full flex-col overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
                 >
-                  <div className="p-4 pb-0">
+                  <div className="p-3 pb-0">
                     <TacticalPitch
                       formation={
                         tactic.formation
@@ -902,12 +901,12 @@ export default function TaktikatClient() {
                     />
                   </div>
 
-                  <div className="p-5">
+                  <div className="flex flex-1 flex-col p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5">
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${phaseClass(
+                            className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${phaseClass(
                               tactic.phase
                             )}`}
                           >
@@ -920,7 +919,7 @@ export default function TaktikatClient() {
                           </span>
 
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                            className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                               tactic.isActive
                                 ? "bg-blue-50 text-blue-700"
                                 : "bg-slate-100 text-slate-500"
@@ -932,7 +931,7 @@ export default function TaktikatClient() {
                           </span>
                         </div>
 
-                        <h2 className="mt-3 text-lg font-bold text-slate-950">
+                        <h2 className="mt-2.5 line-clamp-1 text-base font-bold text-slate-950">
                           {
                             tactic.name
                           }
@@ -952,21 +951,21 @@ export default function TaktikatClient() {
                       </div>
                     </div>
 
-                    <p className="mt-4 min-h-[40px] text-sm leading-6 text-slate-600">
+                    <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-600">
                       {tactic.objective ||
                         tactic.description ||
                         "Pa përshkrim të shtuar."}
                     </p>
 
                     {tactic.canManage ? (
-                      <div className="mt-5 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+                      <div className="mt-auto flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3">
                         <button
                           onClick={() =>
                             openEdit(
                               tactic
                             )
                           }
-                          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                         >
                           <Edit3
                             size={
@@ -982,7 +981,7 @@ export default function TaktikatClient() {
                               tactic
                             )
                           }
-                          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-100 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-red-600 transition hover:border-red-200 hover:bg-red-50"
                         >
                           <Trash2
                             size={
@@ -1003,8 +1002,8 @@ export default function TaktikatClient() {
 
       {showForm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] bg-white shadow-2xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-5">
+          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[30px] border border-blue-100 bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-violet-50 px-6 py-5">
               <div>
                 <h2 className="text-xl font-bold text-slate-950">
                   {editing
@@ -1025,7 +1024,7 @@ export default function TaktikatClient() {
                     false
                   )
                 }
-                className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-xl border border-slate-200 bg-white p-2 text-slate-400 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
                 <X size={20} />
               </button>
@@ -1035,9 +1034,9 @@ export default function TaktikatClient() {
               onSubmit={
                 saveTactic
               }
-              className="grid gap-6 p-6 lg:grid-cols-[1fr_340px]"
+              className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_320px]"
             >
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <Field
                   label="Emri i taktikës"
                   required
@@ -1058,7 +1057,7 @@ export default function TaktikatClient() {
                       120
                     }
                     placeholder="p.sh. 4-3-3 Presing i lartë"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                   />
                 </Field>
 
@@ -1077,7 +1076,7 @@ export default function TaktikatClient() {
                             .value
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                     >
                       {FORMATIONS.map(
                         (
@@ -1114,7 +1113,7 @@ export default function TaktikatClient() {
                             .value as TacticPhase
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                     >
                       {Object.entries(
                         PHASE_LABELS
@@ -1177,7 +1176,7 @@ export default function TaktikatClient() {
                           );
                         }
                       }}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                     >
                       {!isTeamScoped ? (
                         <option value="">
@@ -1223,7 +1222,7 @@ export default function TaktikatClient() {
                             .value
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                     >
                       <option value="">
                         Automatik / pa përcaktuar
@@ -1266,7 +1265,7 @@ export default function TaktikatClient() {
                       500
                     }
                     placeholder="Çfarë synon kjo taktikë?"
-                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    className="w-full resize-none rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                   />
                 </Field>
 
@@ -1286,7 +1285,7 @@ export default function TaktikatClient() {
                     }
                     rows={4}
                     placeholder="Parimet, rolet dhe mënyra e ekzekutimit..."
-                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    className="w-full resize-none rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                   />
                 </Field>
 
@@ -1304,11 +1303,11 @@ export default function TaktikatClient() {
                     }
                     rows={3}
                     placeholder="Detaje shtesë për trajnerët..."
-                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    className="w-full resize-none rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
                   />
                 </Field>
 
-                <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <label className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50/80 to-white px-4 py-3 shadow-sm">
                   <input
                     type="checkbox"
                     checked={
@@ -1323,7 +1322,7 @@ export default function TaktikatClient() {
                           .checked
                       )
                     }
-                    className="h-4 w-4 rounded border-slate-300"
+                    className="h-4 w-4 rounded border-emerald-300 accent-emerald-600"
                   />
 
                   <div>
@@ -1340,8 +1339,8 @@ export default function TaktikatClient() {
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <div className="rounded-[22px] border border-blue-100 bg-gradient-to-br from-blue-50/80 via-white to-emerald-50/50 p-4 shadow-sm">
+                  <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-blue-700">
                     Preview i
                     formacionit
                   </p>
@@ -1352,7 +1351,7 @@ export default function TaktikatClient() {
                     }
                   />
 
-                  <div className="mt-4 rounded-xl bg-white p-3 text-xs text-slate-500">
+                  <div className="mt-3 rounded-xl border border-blue-100 bg-white/90 p-3 text-xs leading-5 text-slate-500 shadow-sm">
                     Skema ruhet bashkë
                     me taktikën dhe
                     shfaqet në kartë.
@@ -1360,7 +1359,7 @@ export default function TaktikatClient() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 border-t border-slate-100 pt-5 lg:col-span-2">
+              <div className="flex justify-end gap-3 border-t border-blue-100 pt-4 lg:col-span-2">
                 <button
                   type="button"
                   onClick={() =>
@@ -1368,7 +1367,7 @@ export default function TaktikatClient() {
                       false
                     )
                   }
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                 >
                   Anulo
                 </button>
@@ -1378,7 +1377,7 @@ export default function TaktikatClient() {
                   disabled={
                     saving
                   }
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving
                     ? "Duke ruajtur..."
@@ -1447,21 +1446,52 @@ function StatCard({
   value,
   subtitle,
   icon: Icon,
+  tone,
 }: {
   title: string;
   value: string | number;
   subtitle: string;
   icon: React.ElementType;
+  tone: "blue" | "violet" | "emerald" | "amber";
 }) {
+  const tones = {
+    blue: {
+      card: "border-blue-100 bg-gradient-to-br from-blue-50 to-white",
+      label: "text-blue-700",
+      icon: "bg-blue-100 text-blue-700",
+    },
+    violet: {
+      card: "border-violet-100 bg-gradient-to-br from-violet-50 to-white",
+      label: "text-violet-700",
+      icon: "bg-violet-100 text-violet-700",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-gradient-to-br from-emerald-50 to-white",
+      label: "text-emerald-700",
+      icon: "bg-emerald-100 text-emerald-700",
+    },
+    amber: {
+      card: "border-amber-100 bg-gradient-to-br from-amber-50 to-white",
+      label: "text-amber-700",
+      icon: "bg-amber-100 text-amber-700",
+    },
+  } as const;
+
+  const style = tones[tone];
+
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
+    <div
+      className={`rounded-[20px] border p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${style.card}`}
+    >
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p
+            className={`text-[11px] font-semibold uppercase tracking-wide ${style.label}`}
+          >
             {title}
           </p>
 
-          <p className="mt-2 text-2xl font-bold text-slate-950">
+          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
             {value}
           </p>
 
@@ -1470,14 +1500,15 @@ function StatCard({
           </p>
         </div>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${style.icon}`}
+        >
           <Icon size={18} />
         </div>
       </div>
     </div>
   );
 }
-
 function Field({
   label,
   required = false,
