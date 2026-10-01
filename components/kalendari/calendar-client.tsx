@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeader } from "@/components/page-header";
 import CalendarEventModal, { type CalendarEventForEdit } from "@/components/kalendari/calendar-event-modal";
 
 type Team = {
@@ -173,7 +172,7 @@ function klasatEventit(
   event: CalendarEvent
 ) {
   if (event.source === "MATCH") {
-    return "border-lime-200 bg-lime-50 text-lime-900";
+    return "border-amber-200 bg-amber-50 text-amber-900";
   }
 
   if (event.source === "TRAINING") {
@@ -449,54 +448,125 @@ export default function CalendarClient() {
 
   return (
     <AppShell>
-      <PageHeader
-        title="Kalendari"
-        description="Stërvitjet, ndeshjet dhe aktivitetet e akademisë në një vend."
-      />
+      <section className="overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-violet-50 shadow-sm">
+        <div className="flex flex-col gap-6 px-5 py-6 sm:px-7 sm:py-7 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-700 shadow-sm">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Planifikimi
+            </div>
 
-      <div className="space-y-5">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            title="Gjithsej"
-            value={data?.summary.total ?? 0}
-            icon={
-              <CalendarDays className="h-5 w-5" />
-            }
-          />
+            <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+              Kalendari i akademisë
+            </h1>
 
-          <StatCard
-            title="Stërvitje"
-            value={
-              data?.summary.trainings ?? 0
-            }
-            icon={
-              <Dumbbell className="h-5 w-5" />
-            }
-          />
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+              Menaxho stërvitjet, ndeshjet dhe aktivitetet e akademisë nga një pamje e vetme.
+            </p>
+          </div>
 
-          <StatCard
-            title="Ndeshje"
-            value={
-              data?.summary.matches ?? 0
-            }
-            icon={
-              <Trophy className="h-5 w-5" />
-            }
-          />
-
-          <StatCard
-            title="Aktivitete"
-            value={
-              data?.summary.activities ??
-              0
-            }
-            icon={
-              <UsersRound className="h-5 w-5" />
-            }
-          />
+          <button
+            type="button"
+            onClick={() => setModalShtimiHapur(true)}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+          >
+            <Plus className="h-4 w-4" />
+            Shto aktivitet
+          </button>
         </div>
+      </section>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mt-5 space-y-5">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-blue-700">
+                  Gjithsej
+                </p>
+
+                <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                  {data?.summary.total ?? 0}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Evente këtë muaj
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                <CalendarDays className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-violet-700">
+                  Stërvitje
+                </p>
+
+                <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                  {data?.summary.trainings ?? 0}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Seanca të planifikuara
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <Dumbbell className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-amber-700">
+                  Ndeshje
+                </p>
+
+                <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                  {data?.summary.matches ?? 0}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Ndeshje të planifikuara
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <Trophy className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-emerald-700">
+                  Aktivitete
+                </p>
+
+                <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                  {data?.summary.activities ?? 0}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Evente të tjera
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <UsersRound className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+        </div>
+<div className="rounded-[24px] border border-blue-100 bg-gradient-to-r from-blue-50/70 via-white to-violet-50/60 p-4 shadow-sm">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-2">
               <button
@@ -511,7 +581,7 @@ export default function CalendarClient() {
               <button
                 type="button"
                 onClick={shkoSot}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="h-10 rounded-xl border border-blue-100 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
               >
                 Sot
               </button>
@@ -525,7 +595,7 @@ export default function CalendarClient() {
                 <ChevronRight className="h-5 w-5" />
               </button>
 
-              <h2 className="ml-2 text-lg font-bold text-slate-950">
+              <h2 className="ml-2 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
                 {
                   MUAJT[
                     muajiAktiv.getMonth()
@@ -572,7 +642,7 @@ export default function CalendarClient() {
                     event.target.value
                   )
                 }
-                className="h-11 min-w-[170px] rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none"
+                className="h-11 min-w-[170px] rounded-xl border border-violet-100 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-100/60"
               >
                 {LLOJET.map(
                   ([value, label]) => (
@@ -585,19 +655,6 @@ export default function CalendarClient() {
                   )
                 )}
               </select>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setModalShtimiHapur(
-                    true
-                  )
-                }
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-              >
-                <Plus className="h-4 w-4" />
-                Shto aktivitet
-              </button>
             </div>
           </div>
         </div>
@@ -608,12 +665,12 @@ export default function CalendarClient() {
           </div>
         )}
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+        <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+          <div className="grid grid-cols-7 border-b border-slate-200/80 bg-gradient-to-r from-slate-50 via-blue-50/40 to-violet-50/40">
             {DITET.map((dita) => (
               <div
                 key={dita}
-                className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500"
+                className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500"
               >
                 {dita}
               </div>
@@ -632,7 +689,7 @@ export default function CalendarClient() {
                     return (
                       <div
                         key={`empty-${index}`}
-                        className="min-h-[145px] border-b border-r border-slate-100 bg-slate-50/40"
+                        className="min-h-[145px] border-b border-r border-slate-100 bg-slate-50/50"
                       />
                     );
                   }
@@ -649,13 +706,13 @@ export default function CalendarClient() {
                   return (
                     <div
                       key={dataApi(date)}
-                      className="min-h-[145px] border-b border-r border-slate-100 p-2"
+                      className="min-h-[145px] border-b border-r border-slate-100 bg-white p-2.5 transition-colors hover:bg-blue-50/20"
                     >
                       <div
                         className={
                           eshteSot(date)
-                            ? "mb-2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-bold text-white"
-                            : "mb-2 flex h-7 w-7 items-center justify-center text-xs font-bold text-slate-700"
+                            ? "mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-xs font-bold text-white shadow-sm shadow-blue-200"
+                            : "mb-2 flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold text-slate-700"
                         }
                       >
                         {date.getDate()}
@@ -675,7 +732,7 @@ export default function CalendarClient() {
                                   event
                                 )
                               }
-                              className={`w-full rounded-lg border px-2 py-1.5 text-left transition hover:shadow-sm ${klasatEventit(
+                              className={`w-full rounded-xl border px-2.5 py-2 text-left transition duration-150 hover:-translate-y-px hover:shadow-sm ${klasatEventit(
                                 event
                               )}`}
                             >
@@ -834,15 +891,15 @@ function EventDetails({
   onDelete: (event: CalendarEvent) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end bg-slate-950/30 backdrop-blur-sm">
-      <div className="h-full w-full max-w-lg overflow-y-auto bg-white shadow-2xl">
-        <div className="flex items-start justify-between border-b border-slate-200 p-6">
+    <div className="fixed inset-0 z-[100] flex justify-end bg-slate-950/25 backdrop-blur-sm">
+      <div className="h-full w-full max-w-lg overflow-y-auto border-l border-blue-100 bg-white shadow-2xl">
+        <div className="flex items-start justify-between border-b border-blue-100 bg-gradient-to-br from-blue-50 via-white to-violet-50 px-6 py-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <p className="inline-flex rounded-full border border-blue-100 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-blue-700 shadow-sm">
               {etiketaLlojit(event)}
             </p>
 
-            <h2 className="mt-2 text-xl font-bold text-slate-950">
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
               {event.title}
             </h2>
           </div>
@@ -850,7 +907,7 @@ function EventDetails({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"
+            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
@@ -858,7 +915,7 @@ function EventDetails({
         </div>
 
         <div className="space-y-5 p-6">
-          <div className="rounded-2xl bg-slate-50 p-4">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
             <p className="text-xs font-semibold text-slate-500">
               Data
             </p>
@@ -942,7 +999,7 @@ function EventDetails({
               <button
                 type="button"
                 onClick={() => onEdit(event)}
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
               >
                 <Pencil className="h-4 w-4" />
                 Edito aktivitetin
