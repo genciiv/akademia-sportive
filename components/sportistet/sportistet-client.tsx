@@ -309,13 +309,13 @@ export default function SportistetClient({
 
   return (
     <AppShell>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-5 rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-violet-50 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
             Sportistët
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">
             Menaxho sportistët e regjistruar në akademinë aktive.
           </p>
         </div>
@@ -323,7 +323,7 @@ export default function SportistetClient({
         {canCreatePlayers && (
           <button
             onClick={hapShtimin}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
           >
             <Plus size={18} />
             Shto sportist
@@ -338,9 +338,9 @@ export default function SportistetClient({
       )}
 
       {shfaqFormularin && (
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-950">
+        <div className="mb-6 overflow-hidden rounded-[26px] border border-blue-100 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-violet-50 px-5 py-4">
+            <h2 className="text-lg font-bold tracking-tight text-slate-950">
               {playerNeEditim
                 ? "Edito sportistin"
                 : "Sportist i ri"}
@@ -360,7 +360,7 @@ export default function SportistetClient({
 
           <form
             onSubmit={ruajSportistin}
-            className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+            className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3"
           >
             <label className="text-xs font-semibold text-slate-600">
               Emri
@@ -370,7 +370,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setFirstName(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -382,7 +382,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setLastName(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -394,7 +394,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setDateOfBirth(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -405,7 +405,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setGender(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               >
                 <option value="NOT_SPECIFIED">
                   E papërcaktuar
@@ -429,7 +429,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setPhone(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -441,7 +441,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setEmail(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -453,7 +453,7 @@ export default function SportistetClient({
                   setPosition(e.target.value)
                 }
                 placeholder="Mesfushor"
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -467,7 +467,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setJerseyNumber(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </label>
 
@@ -478,7 +478,7 @@ export default function SportistetClient({
                 onChange={(e) =>
                   setStatus(e.target.value)
                 }
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-blue-400"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               >
                 <option value="ACTIVE">
                   Aktiv
@@ -502,7 +502,7 @@ export default function SportistetClient({
               <button
                 type="submit"
                 disabled={dukeRuajtur}
-                className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {dukeRuajtur
                   ? "Duke ruajtur..."
@@ -515,8 +515,8 @@ export default function SportistetClient({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+      <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-violet-50 px-5 py-4">
           <div>
             <h2 className="font-bold text-slate-950">
               Lista e sportistëve
@@ -558,7 +558,7 @@ export default function SportistetClient({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left">
-              <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
+              <thead className="border-b border-slate-100 bg-slate-50/80 text-xs font-semibold text-slate-500">
                 <tr>
                   <th className="px-5 py-3">
                     Sportisti
@@ -588,7 +588,7 @@ export default function SportistetClient({
                 {players.map((player) => (
                   <tr
                     key={player.id}
-                    className="text-sm"
+                    className="text-sm transition hover:bg-blue-50/40"
                   >
                     <td className="px-5 py-4 font-semibold text-slate-900">
                       {player.firstName}{" "}
@@ -636,7 +636,7 @@ export default function SportistetClient({
                               player
                             )
                           }
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:border-emerald-200 hover:bg-emerald-100"
                         >
                           <Activity size={14} />
                           Profili fizik
@@ -648,7 +648,7 @@ export default function SportistetClient({
                             onClick={() =>
                               setPlayerPortal(player)
                             }
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:border-violet-200 hover:bg-violet-100"
                           >
                             Portali
                           </button>
@@ -658,7 +658,7 @@ export default function SportistetClient({
                             onClick={() =>
                               hapEditimin(player)
                             }
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
                           >
                             <Pencil size={14} />
                             Edito
@@ -672,7 +672,7 @@ export default function SportistetClient({
                                 player
                               )
                             }
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-100 bg-white px-3 py-2 text-xs font-semibold text-rose-700 transition hover:border-rose-200 hover:bg-rose-50"
                           >
                             <Trash2 size={14} />
                             Fshi
@@ -709,13 +709,13 @@ export default function SportistetClient({
       )}
 
       {playerPerFshirje && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-950">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-rose-100 bg-white p-6 shadow-2xl">
+            <h2 className="text-xl font-bold tracking-tight text-slate-950">
               Fshi sportistin?
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <p className="mt-3 rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-sm leading-6 text-slate-600">
               Je i sigurt që dëshiron të fshish{" "}
               <strong className="text-slate-800">
                 {playerPerFshirje.firstName}{" "}
@@ -731,7 +731,7 @@ export default function SportistetClient({
                   setPlayerPerFshirje(null)
                 }
                 disabled={dukeFshire}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
               >
                 Anulo
               </button>
@@ -739,7 +739,7 @@ export default function SportistetClient({
               <button
                 onClick={fshiSportistin}
                 disabled={dukeFshire}
-                className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {dukeFshire
                   ? "Duke fshirë..."

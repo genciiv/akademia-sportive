@@ -468,6 +468,7 @@ export default function PlayerPhysicalProfile({
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <SummaryCard
                   label="Gjatësia"
+            tone="blue"
                   value={
                     latest
                       ? formatNumber(
@@ -480,6 +481,7 @@ export default function PlayerPhysicalProfile({
 
                 <SummaryCard
                   label="Pesha"
+            tone="emerald"
                   value={
                     latest
                       ? formatNumber(
@@ -492,6 +494,7 @@ export default function PlayerPhysicalProfile({
 
                 <SummaryCard
                   label="BMI"
+            tone="violet"
                   value={
                     latestBmi !== null
                       ? formatNumber(
@@ -503,6 +506,7 @@ export default function PlayerPhysicalProfile({
 
                 <SummaryCard
                   label="Yndyra trupore"
+            tone="amber"
                   value={
                     latest
                       ? formatNumber(
@@ -515,6 +519,7 @@ export default function PlayerPhysicalProfile({
 
                 <SummaryCard
                   label="Masa muskulore"
+            tone="cyan"
                   value={
                     latest
                       ? formatNumber(
@@ -527,6 +532,7 @@ export default function PlayerPhysicalProfile({
 
                 <SummaryCard
                   label="Matja e fundit"
+            tone="rose"
                   value={
                     latest
                       ? formatDate(
@@ -865,12 +871,37 @@ export default function PlayerPhysicalProfile({
 function SummaryCard({
   label,
   value,
+  tone,
 }: {
   label: string;
   value: string;
+  tone:
+    | "blue"
+    | "emerald"
+    | "violet"
+    | "amber"
+    | "cyan"
+    | "rose";
 }) {
+  const toneClasses = {
+    blue:
+      "border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-50/60",
+    emerald:
+      "border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/60",
+    violet:
+      "border-violet-100 bg-gradient-to-br from-violet-50 via-white to-violet-50/60",
+    amber:
+      "border-amber-100 bg-gradient-to-br from-amber-50 via-white to-amber-50/60",
+    cyan:
+      "border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-cyan-50/60",
+    rose:
+      "border-rose-100 bg-gradient-to-br from-rose-50 via-white to-rose-50/60",
+  } as const;
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      className={`rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneClasses[tone]}`}
+    >
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
