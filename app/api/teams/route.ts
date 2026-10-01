@@ -69,9 +69,14 @@ export async function GET() {
           },
         },
 
-        orderBy: {
-          name: "asc",
-        },
+        orderBy: [
+          {
+            sortOrder: "asc",
+          },
+          {
+            name: "asc",
+          },
+        ],
       }),
 
       prisma.academyBranch.findMany({
@@ -221,6 +226,29 @@ export async function POST(
       }
     );
   }
+  const lastTeam =
+    await prisma.team.findFirst({
+      where: {
+        academyId,
+      },
+
+      orderBy: [
+        {
+          sortOrder: "desc",
+        },
+        {
+          createdAt: "desc",
+        },
+      ],
+
+      select: {
+        sortOrder: true,
+      },
+    });
+
+  const nextSortOrder =
+    (lastTeam?.sortOrder ?? -1) + 1;
+
   const team =
     await prisma.team.create({
       data: {
@@ -245,6 +273,7 @@ export async function POST(
           ).trim() || null,
 
         status: "ACTIVE",
+        sortOrder: nextSortOrder,
       },
     });
 

@@ -720,7 +720,8 @@ model Team {
 
   description String?
 
-  status TeamStatus @default(ACTIVE)
+  status    TeamStatus @default(ACTIVE)
+  sortOrder Int        @default(0)
 
   players          TeamPlayer[]
   coaches          CoachTeam[]
@@ -739,6 +740,7 @@ model Team {
   @@unique([academyId, name])
   @@index([academyId])
   @@index([academyId, status])
+  @@index([academyId, sortOrder])
   @@index([branchId])
 }
 

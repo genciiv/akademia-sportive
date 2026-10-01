@@ -603,6 +603,11 @@ const CONTRACTS:
       method: "POST",
       permission: "TEAMS_CREATE",
     },
+    {
+      path: "app/api/teams/reorder/route.ts",
+      method: "POST",
+      permission: "TEAMS_UPDATE",
+    },
 
     {
       path: "app/api/training-sessions/[sessionId]/attendance/route.ts",
