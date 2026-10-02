@@ -50,6 +50,48 @@ function hasOwn(
   );
 }
 
+function parseCoordinate(
+  value: unknown,
+  min: number,
+  max: number
+):
+  | {
+      ok: true;
+      value: number | null;
+    }
+  | {
+      ok: false;
+    } {
+  if (
+    value === undefined ||
+    value === null ||
+    value === ""
+  ) {
+    return {
+      ok: true,
+      value: null,
+    };
+  }
+
+  const coordinate =
+    Number(value);
+
+  if (
+    !Number.isFinite(coordinate) ||
+    coordinate < min ||
+    coordinate > max
+  ) {
+    return {
+      ok: false,
+    };
+  }
+
+  return {
+    ok: true,
+    value: coordinate,
+  };
+}
+
 function parseCapacity(
   value: unknown
 ):
@@ -296,6 +338,38 @@ export async function PATCH(
         )
       : existing.address;
 
+  const latitudeResult =
+    hasOwn(
+      body,
+      "latitude"
+    )
+      ? parseCoordinate(
+          body.latitude,
+          -90,
+          90
+        )
+      : {
+          ok: true as const,
+          value:
+            existing.latitude,
+        };
+
+  const longitudeResult =
+    hasOwn(
+      body,
+      "longitude"
+    )
+      ? parseCoordinate(
+          body.longitude,
+          -180,
+          180
+        )
+      : {
+          ok: true as const,
+          value:
+            existing.longitude,
+        };
+
   const description =
     hasOwn(
       body,
@@ -386,6 +460,36 @@ export async function PATCH(
       {
         error:
           "Kapaciteti duhet të jetë një numër i plotë pozitiv.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (
+    !latitudeResult.ok ||
+    !longitudeResult.ok
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Koordinatat e vendndodhjes nuk janë të vlefshme.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (
+    (latitudeResult.value === null) !==
+    (longitudeResult.value === null)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Latitude dhe longitude duhet të vendosen së bashku.",
       },
       {
         status: 400,
@@ -523,6 +627,10 @@ export async function PATCH(
         surface,
         dimensions,
         address,
+        latitude:
+          latitudeResult.value,
+        longitude:
+          longitudeResult.value,
         description,
         notes,
       },

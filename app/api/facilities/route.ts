@@ -41,6 +41,48 @@ function optionalText(
   return text || null;
 }
 
+function parseCoordinate(
+  value: unknown,
+  min: number,
+  max: number
+):
+  | {
+      ok: true;
+      value: number | null;
+    }
+  | {
+      ok: false;
+    } {
+  if (
+    value === undefined ||
+    value === null ||
+    value === ""
+  ) {
+    return {
+      ok: true,
+      value: null,
+    };
+  }
+
+  const coordinate =
+    Number(value);
+
+  if (
+    !Number.isFinite(coordinate) ||
+    coordinate < min ||
+    coordinate > max
+  ) {
+    return {
+      ok: false,
+    };
+  }
+
+  return {
+    ok: true,
+    value: coordinate,
+  };
+}
+
 function parseCapacity(
   value: unknown
 ):
@@ -195,6 +237,20 @@ export async function POST(
       body.address
     );
 
+  const latitudeResult =
+    parseCoordinate(
+      body.latitude,
+      -90,
+      90
+    );
+
+  const longitudeResult =
+    parseCoordinate(
+      body.longitude,
+      -180,
+      180
+    );
+
   const description =
     optionalText(
       body.description
@@ -275,6 +331,36 @@ export async function POST(
       {
         error:
           "Kapaciteti duhet të jetë një numër i plotë pozitiv.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (
+    !latitudeResult.ok ||
+    !longitudeResult.ok
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Koordinatat e vendndodhjes nuk janë të vlefshme.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (
+    (latitudeResult.value === null) !==
+    (longitudeResult.value === null)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Latitude dhe longitude duhet të vendosen së bashku.",
       },
       {
         status: 400,
@@ -429,6 +515,10 @@ export async function POST(
         surface,
         dimensions,
         address,
+        latitude:
+          latitudeResult.value,
+        longitude:
+          longitudeResult.value,
         description,
         notes,
       },
