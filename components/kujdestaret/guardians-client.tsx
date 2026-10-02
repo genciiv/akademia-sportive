@@ -8,17 +8,23 @@ import {
 
 import {
   ContactRound,
+  HeartHandshake,
+  Link2,
   Loader2,
+  Mail,
+  MapPin,
   Pencil,
+  Phone,
   Plus,
   Search,
+  Star,
   Trash2,
   UserRound,
+  UsersRound,
   X,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeader } from "@/components/page-header";
 
 type Player = {
   id: string;
@@ -182,33 +188,99 @@ export default function GuardiansClient() {
     );
   }, [data, search]);
 
+  const totalLinks =
+    data?.guardians.reduce(
+      (total, guardian) =>
+        total + guardian.players.length,
+      0
+    ) ?? 0;
+
+  const primaryLinks =
+    data?.guardians.reduce(
+      (total, guardian) =>
+        total +
+        guardian.players.filter(
+          (link) => link.isPrimary
+        ).length,
+      0
+    ) ?? 0;
+
   return (
     <AppShell>
-      <PageHeader
-        title="Kujdestarët"
-        description="Menaxhimi i prindërve dhe kujdestarëve të lidhur me sportistët."
-      />
+      <section className="relative mb-5 overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-fuchsia-50/60 to-blue-50 p-5 shadow-sm sm:p-6">
+        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-violet-200/30 blur-3xl" />
+
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100">
+              <HeartHandshake className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                Kujdestarët
+              </h1>
+
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                Menaxho prindërit, kujdestarët dhe lidhjet e tyre me sportistët e akademisë.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setModalGuardian("NEW")
+            }
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700"
+          >
+            <Plus className="h-4 w-4" />
+            Shto kujdestar
+          </button>
+        </div>
+      </section>
 
       <div className="space-y-5">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             title="Kujdestarë"
             value={String(
               data?.summary.guardians ?? 0
             )}
+            description="Profile të regjistruara"
+            icon={ContactRound}
+            tone="violet"
           />
 
           <SummaryCard
             title="Sportistë të lidhur"
             value={String(
-              data?.summary.linkedPlayers ??
-                0
+              data?.summary.linkedPlayers ?? 0
             )}
+            description="Sportistë me kujdestar"
+            icon={UsersRound}
+            tone="blue"
+          />
+
+          <SummaryCard
+            title="Lidhje totale"
+            value={String(totalLinks)}
+            description="Lidhje kujdestar–sportist"
+            icon={Link2}
+            tone="emerald"
+          />
+
+          <SummaryCard
+            title="Kujdestarë kryesorë"
+            value={String(primaryLinks)}
+            description="Lidhje të shënuara kryesore"
+            icon={Star}
+            tone="amber"
           />
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative min-w-[280px]">
+        <div className="flex flex-col gap-3 rounded-[22px] border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-xl">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
             <input
@@ -219,20 +291,14 @@ export default function GuardiansClient() {
                 )
               }
               placeholder="Kërko kujdestarin ose sportistin..."
-              className="h-11 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-4 text-sm text-slate-800 outline-none transition focus:border-violet-300 focus:bg-white focus:ring-4 focus:ring-violet-50"
             />
           </div>
 
-          <button
-            type="button"
-            onClick={() =>
-              setModalGuardian("NEW")
-            }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white"
-          >
-            <Plus className="h-4 w-4" />
-            Shto kujdestar
-          </button>
+          <div className="shrink-0 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500">
+            {guardians.length} nga{" "}
+            {data?.guardians.length ?? 0} kujdestarë
+          </div>
         </div>
 
         {error && (
@@ -356,10 +422,10 @@ function GuardianCard({
   onDelete: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <article className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-lg">
+      <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-gradient-to-r from-violet-50/70 via-white to-blue-50/50 p-5">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-slate-100 p-2 text-slate-700">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100">
             <ContactRound className="h-5 w-5" />
           </div>
 
@@ -382,7 +448,7 @@ function GuardianCard({
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
             aria-label="Ndrysho kujdestarin"
             title="Ndrysho kujdestarin"
           >
@@ -401,7 +467,7 @@ function GuardianCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 p-5 sm:grid-cols-2">
         <InfoBox
           label="Telefoni"
           value={
@@ -418,7 +484,8 @@ function GuardianCard({
       </div>
 
       {guardian.address && (
-        <p className="mt-4 text-sm text-slate-600">
+        <p className="mx-5 mb-1 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
+          <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
           <span className="font-semibold">
             Adresa:
           </span>{" "}
@@ -428,7 +495,7 @@ function GuardianCard({
 
       {guardian.players.length >
         0 && (
-        <div className="mt-5 border-t border-slate-100 pt-4">
+        <div className="mx-5 mb-5 mt-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
             Sportistët
           </p>
@@ -438,7 +505,7 @@ function GuardianCard({
               (link) => (
                 <div
                   key={link.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-100"
                 >
                   <div className="flex items-center gap-2">
                     <UserRound className="h-4 w-4 text-slate-500" />
@@ -478,11 +545,11 @@ function GuardianCard({
       )}
 
       {guardian.notes && (
-        <p className="mt-4 text-xs leading-5 text-slate-500">
+        <p className="mx-5 mb-5 rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2.5 text-xs leading-5 text-slate-600">
           Shënim: {guardian.notes}
         </p>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -720,7 +787,7 @@ function GuardianModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -737,7 +804,7 @@ function GuardianModal({
               event.target.value
             )
           }
-          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none"
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -768,7 +835,7 @@ function GuardianModal({
                 return (
                   <div
                     key={player.id}
-                    className="rounded-xl border border-slate-200 p-4"
+                    className={`rounded-2xl border p-4 transition ${selected ? "border-violet-200 bg-violet-50/50 ring-2 ring-violet-100" : "border-slate-200 bg-white hover:border-violet-200"}`}
                   >
                     <label className="flex cursor-pointer items-center gap-3">
                       <input
@@ -895,7 +962,7 @@ function GuardianModal({
           type="button"
           onClick={ruaj}
           disabled={saving}
-          className="inline-flex h-11 items-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:opacity-60"
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-violet-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:opacity-60"
         >
           {saving && (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -966,8 +1033,8 @@ function Modal({
 }) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-white to-blue-50 px-6 py-5">
           <h2 className="text-xl font-bold text-slate-950">
             {title}
           </h2>
@@ -993,19 +1060,67 @@ function Modal({
 function SummaryCard({
   title,
   value,
+  description,
+  icon: Icon,
+  tone,
 }: {
   title: string;
   value: string;
+  description: string;
+  icon: React.ElementType;
+  tone:
+    | "violet"
+    | "blue"
+    | "emerald"
+    | "amber";
 }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-semibold text-slate-500">
-        {title}
-      </p>
+  const styles = {
+    violet: {
+      card: "border-violet-100 bg-violet-50/70",
+      icon: "text-violet-600 ring-violet-100",
+    },
+    blue: {
+      card: "border-blue-100 bg-blue-50/70",
+      icon: "text-blue-600 ring-blue-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "text-emerald-600 ring-emerald-100",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "text-amber-600 ring-amber-100",
+    },
+  } as const;
 
-      <p className="mt-3 text-2xl font-bold text-slate-950">
-        {value}
-      </p>
+  const style =
+    styles[tone];
+
+  return (
+    <div
+      className={`rounded-[22px] border p-4 shadow-sm sm:p-5 ${style.card}`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+            {title}
+          </p>
+
+          <p className="mt-2 text-2xl font-black text-slate-950">
+            {value}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            {description}
+          </p>
+        </div>
+
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ${style.icon}`}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1017,13 +1132,22 @@ function InfoBox({
   label: string;
   value: string;
 }) {
-  return (
-    <div className="rounded-xl bg-slate-50 p-3">
-      <p className="text-xs font-semibold text-slate-500">
-        {label}
-      </p>
+  const Icon =
+    label === "Telefoni"
+      ? Phone
+      : Mail;
 
-      <p className="mt-1 break-words text-sm font-semibold text-slate-800">
+  return (
+    <div className="rounded-2xl bg-slate-50 p-3.5">
+      <div className="flex items-center gap-2 text-slate-400">
+        <Icon className="h-3.5 w-3.5" />
+
+        <p className="text-[11px] font-bold uppercase tracking-wide">
+          {label}
+        </p>
+      </div>
+
+      <p className="mt-2 break-words text-sm font-semibold text-slate-800">
         {value}
       </p>
     </div>
@@ -1055,7 +1179,7 @@ function Field({
             event.target.value
           )
         }
-        className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
       />
     </label>
   );
