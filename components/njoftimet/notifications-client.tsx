@@ -7,18 +7,22 @@ import {
 } from "react";
 
 import {
+  AlertTriangle,
   Archive,
   BellRing,
+  CalendarDays,
+  CheckCircle2,
   Loader2,
+  Megaphone,
   Pencil,
   Plus,
   Search,
   Trash2,
+  UsersRound,
   X,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeader } from "@/components/page-header";
 
 type Audience =
   | "ALL"
@@ -323,44 +327,75 @@ export default function NotificationsClient() {
 
   return (
     <AppShell>
-      <PageHeader
-        title="Njoftimet"
-        description="Krijo dhe menaxho njoftimet e akademisë dhe të ekipeve."
-      />
+      <section className="relative mb-5 overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-indigo-50/60 to-violet-50 p-5 shadow-sm sm:p-6">
+        <div className="absolute -right-14 -top-16 h-44 w-44 rounded-full bg-blue-200/30 blur-3xl" />
+
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm ring-1 ring-blue-100">
+              <Megaphone className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                Njoftimet
+              </h1>
+
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                Krijo dhe menaxho komunikimet për akademinë dhe ekipet nga një vend i vetëm.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setModalNotification("NEW")
+            }
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4" />
+            Shto njoftim
+          </button>
+        </div>
+      </section>
 
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Njoftime gjithsej"
-            value={
-              data?.summary.total ?? 0
-            }
+            value={data?.summary.total ?? 0}
+            description="Të gjitha njoftimet"
+            icon={BellRing}
+            tone="blue"
           />
 
           <StatCard
             label="Aktive"
-            value={
-              data?.summary.active ?? 0
-            }
+            value={data?.summary.active ?? 0}
+            description="Aktive dhe të vlefshme"
+            icon={CheckCircle2}
+            tone="emerald"
           />
 
           <StatCard
             label="Të rëndësishme"
-            value={
-              data?.summary.important ??
-              0
-            }
+            value={data?.summary.important ?? 0}
+            description="Prioritet i lartë"
+            icon={AlertTriangle}
+            tone="amber"
           />
 
           <StatCard
             label="Urgjente"
-            value={
-              data?.summary.urgent ?? 0
-            }
+            value={data?.summary.urgent ?? 0}
+            description="Kërkojnë vëmendje"
+            icon={Megaphone}
+            tone="rose"
           />
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-[22px] border border-slate-200 bg-white p-3 shadow-sm md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -373,7 +408,7 @@ export default function NotificationsClient() {
                   )
                 }
                 placeholder="Kërko njoftimin..."
-                className="w-full rounded-xl border border-slate-200 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </div>
 
@@ -410,7 +445,7 @@ export default function NotificationsClient() {
                 "NEW"
               )
             }
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+            className="hidden"
           >
             <Plus className="h-4 w-4" />
 
@@ -425,12 +460,12 @@ export default function NotificationsClient() {
         ) : null}
 
         {loading ? (
-          <div className="flex min-h-52 items-center justify-center rounded-2xl border border-slate-200 bg-white">
+          <div className="flex min-h-56 items-center justify-center rounded-[24px] border border-slate-200 bg-white shadow-sm">
             <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
           </div>
         ) : notifications.length ===
           0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+          <div className="rounded-[24px] border border-dashed border-blue-200 bg-blue-50/30 p-12 text-center">
             <BellRing className="mx-auto h-9 w-9 text-slate-400" />
 
             <h2 className="mt-4 text-base font-bold text-slate-950">
@@ -451,9 +486,9 @@ export default function NotificationsClient() {
                   key={
                     notification.id
                   }
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                  className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50/70 via-white to-violet-50/50 p-5">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="font-bold text-slate-950">
@@ -462,20 +497,20 @@ export default function NotificationsClient() {
                           }
                         </h2>
 
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${notification.priority === "URGENT" ? "bg-rose-100 text-rose-700" : notification.priority === "IMPORTANT" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
                           {prioritetiShqip(
                             notification.priority
                           )}
                         </span>
 
-                        <span className="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                        <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${notification.status === "ACTIVE" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-500"}`}>
                           {statusiShqip(
                             notification.status
                           )}
                         </span>
                       </div>
 
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
                         {
                           notification.message
                         }
@@ -483,8 +518,8 @@ export default function NotificationsClient() {
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-1 text-sm text-slate-500">
-                    <p>
+                  <div className="grid gap-3 p-5 text-sm sm:grid-cols-2">
+                    <div className="rounded-2xl bg-slate-50 p-3.5">
                       Audienca:{" "}
                       <span className="font-semibold text-slate-700">
                         {notification.audience ===
@@ -494,7 +529,7 @@ export default function NotificationsClient() {
                               ?.name ??
                             "Ekip"}
                       </span>
-                    </p>
+                    </div>
 
                     <p>
                       Publikuar më:{" "}
@@ -525,7 +560,7 @@ export default function NotificationsClient() {
                           notification
                         )
                       }
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                     >
                       <Pencil className="h-4 w-4" />
 
@@ -539,7 +574,7 @@ export default function NotificationsClient() {
                           notification
                         )
                       }
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                     >
                       <Archive className="h-4 w-4" />
 
@@ -556,7 +591,7 @@ export default function NotificationsClient() {
                           notification
                         )
                       }
-                      className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                      className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
 
@@ -608,19 +643,66 @@ export default function NotificationsClient() {
 function StatCard({
   label,
   value,
+  description,
+  icon: Icon,
+  tone,
 }: {
   label: string;
   value: number;
+  description: string;
+  icon: React.ElementType;
+  tone:
+    | "blue"
+    | "emerald"
+    | "amber"
+    | "rose";
 }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-semibold text-slate-500">
-        {label}
-      </p>
+  const styles = {
+    blue: {
+      card: "border-blue-100 bg-blue-50/70",
+      icon: "text-blue-600 ring-blue-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "text-emerald-600 ring-emerald-100",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "text-amber-600 ring-amber-100",
+    },
+    rose: {
+      card: "border-rose-100 bg-rose-50/70",
+      icon: "text-rose-600 ring-rose-100",
+    },
+  } as const;
 
-      <p className="mt-3 text-2xl font-bold text-slate-950">
-        {value}
-      </p>
+  const style = styles[tone];
+
+  return (
+    <div
+      className={`rounded-[22px] border p-4 shadow-sm sm:p-5 ${style.card}`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+            {label}
+          </p>
+
+          <p className="mt-2 text-2xl font-black text-slate-950">
+            {value}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            {description}
+          </p>
+        </div>
+
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ${style.icon}`}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -757,8 +839,8 @@ function NotificationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-violet-50 px-6 py-5">
           <div>
             <h2 className="text-lg font-bold text-slate-950">
               {editing
@@ -776,7 +858,7 @@ function NotificationModal({
             type="button"
             onClick={onClose}
             aria-label="Mbyll"
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+            className="rounded-xl bg-white p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
           >
             <X className="h-5 w-5" />
           </button>
@@ -791,7 +873,7 @@ function NotificationModal({
                   event.target.value
                 )
               }
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
             />
           </Field>
 
@@ -817,7 +899,7 @@ function NotificationModal({
                     .value as Audience
                 )
               }
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
             >
               <option value="ALL">
                 E gjithë akademia
@@ -838,7 +920,7 @@ function NotificationModal({
                     event.target.value
                   )
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
               >
                 <option value="">
                   Zgjidh ekipin
@@ -865,7 +947,7 @@ function NotificationModal({
                     .value as Priority
                 )
               }
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
             >
               <option value="NORMAL">
                 Normal
@@ -891,7 +973,7 @@ function NotificationModal({
                       .value as Status
                   )
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
               >
                 <option value="ACTIVE">
                   Aktiv
@@ -913,7 +995,7 @@ function NotificationModal({
                   event.target.value
                 )
               }
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
             />
 
             <p className="mt-1 text-xs text-slate-500">
@@ -942,7 +1024,7 @@ function NotificationModal({
             type="button"
             onClick={ruaj}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
