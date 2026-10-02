@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import {
   type ElementType,
   type FormEvent,
@@ -25,6 +27,16 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+
+const FacilityMap = dynamic(
+  () =>
+    import(
+      "@/components/ambientet/facility-map"
+    ),
+  {
+    ssr: false,
+  }
+);
 
 type FacilityType =
   | "FOOTBALL_FIELD"
@@ -54,6 +66,8 @@ type Facility = {
   surface: string | null;
   dimensions: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   description: string | null;
   notes: string | null;
   createdAt: string;
@@ -69,6 +83,8 @@ type FormState = {
   surface: string;
   dimensions: string;
   address: string;
+  latitude: number | null;
+  longitude: number | null;
   description: string;
   notes: string;
 };
@@ -147,6 +163,8 @@ function initialForm(): FormState {
     surface: "",
     dimensions: "",
     address: "",
+    latitude: null,
+    longitude: null,
     description: "",
     notes: "",
   };
@@ -251,6 +269,13 @@ export default function FacilitiesClient({
     setForm,
   ] = useState<FormState>(
     initialForm()
+  );
+
+  const [
+    selectedFacilityId,
+    setSelectedFacilityId,
+  ] = useState<string | null>(
+    null
   );
 
   async function loadFacilities() {
@@ -412,6 +437,10 @@ export default function FacilitiesClient({
         facility.dimensions ?? "",
       address:
         facility.address ?? "",
+      latitude:
+        facility.latitude,
+      longitude:
+        facility.longitude,
       description:
         facility.description ??
         "",
@@ -491,6 +520,12 @@ export default function FacilitiesClient({
 
               address:
                 form.address,
+
+              latitude:
+                form.latitude,
+
+              longitude:
+                form.longitude,
 
               description:
                 form.description,
@@ -579,7 +614,7 @@ export default function FacilitiesClient({
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-indigo-50/70 to-violet-50 p-5 shadow-sm sm:p-6 lg:flex lg:items-center lg:justify-between lg:gap-6">
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
@@ -630,6 +665,7 @@ export default function FacilitiesClient({
             value={activeCount}
             subtitle="Gati për përdorim"
             icon={Activity}
+            tone="emerald"
           />
 
           <StatCard
@@ -639,6 +675,7 @@ export default function FacilitiesClient({
             }
             subtitle="Ambiente të regjistruara"
             icon={Building2}
+            tone="blue"
           />
 
           <StatCard
@@ -648,6 +685,7 @@ export default function FacilitiesClient({
             }
             subtitle="Përkohësisht të kufizuara"
             icon={Wrench}
+            tone="amber"
           />
 
           <StatCard
@@ -655,6 +693,7 @@ export default function FacilitiesClient({
             value={indoorCount}
             subtitle="Ambiente të mbyllura"
             icon={UsersRound}
+            tone="violet"
           />
         </div>
 
@@ -773,7 +812,9 @@ export default function FacilitiesClient({
           </div>
         </div>
 
-        {loading ? (
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(440px,1.1fr)] xl:items-start">
+          <div className="min-w-0">
+            {loading ? (
           <div className="rounded-[24px] border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
             Duke ngarkuar
             ambientet...
@@ -799,14 +840,15 @@ export default function FacilitiesClient({
             </p>
           </div>
         ) : (
-          <div className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-3">
+          <div className="space-y-4">
             {filteredFacilities.map(
               (facility) => (
                 <article
                   key={
                     facility.id
                   }
-                  className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
+                  onClick={() => setSelectedFacilityId(facility.id)}
+                  className={`group cursor-pointer overflow-hidden rounded-[24px] border bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg ${selectedFacilityId === facility.id ? "border-blue-400 ring-4 ring-blue-50" : "border-slate-200 hover:border-blue-200"}`}
                 >
                   <div className="border-b border-slate-100 bg-gradient-to-br from-blue-50 to-slate-50 p-5">
                     <div className="flex items-start justify-between gap-4">
@@ -944,7 +986,35 @@ export default function FacilitiesClient({
               )
             )}
           </div>
-        )}
+            )}
+          </div>
+
+          <div className="xl:sticky xl:top-6">
+            <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-3 px-2 pb-3 pt-1">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">
+                    Harta e ambienteve
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Zgjidh një ambient për të parë vendndodhjen e saktë.
+                  </p>
+                </div>
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <MapPin size={18} />
+                </div>
+              </div>
+
+              <FacilityMap
+                facilities={filteredFacilities}
+                selectedFacilityId={selectedFacilityId}
+                onSelectFacility={setSelectedFacilityId}
+                heightClassName="h-[520px] xl:h-[620px]"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {formOpen &&
@@ -1193,6 +1263,56 @@ export default function FacilitiesClient({
                 />
               </Field>
 
+              <div className="rounded-[24px] border border-blue-100 bg-blue-50/50 p-3 sm:p-4">
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">
+                      Vendndodhja e saktë
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Kliko në hartë ose zvarrit pin-in deri te hyrja / fusha e saktë.
+                    </p>
+                  </div>
+
+                  {form.latitude !== null && form.longitude !== null ? (
+                    <div className="rounded-xl bg-white px-3 py-2 text-[11px] font-medium text-slate-500 shadow-sm ring-1 ring-slate-200">
+                      {form.latitude.toFixed(6)}, {form.longitude.toFixed(6)}
+                    </div>
+                  ) : null}
+                </div>
+
+                <FacilityMap
+                  editable
+                  selectedLatitude={form.latitude}
+                  selectedLongitude={form.longitude}
+                  onLocationChange={(latitude, longitude) =>
+                    setForm((current) => ({
+                      ...current,
+                      latitude,
+                      longitude,
+                    }))
+                  }
+                  heightClassName="h-[300px] sm:h-[340px]"
+                />
+
+                {form.latitude !== null && form.longitude !== null ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((current) => ({
+                        ...current,
+                        latitude: null,
+                        longitude: null,
+                      }))
+                    }
+                    className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  >
+                    <X size={14} />
+                    Hiq vendndodhjen
+                  </button>
+                ) : null}
+              </div>
+
               <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <input
                   type="checkbox"
@@ -1329,14 +1449,38 @@ function StatCard({
   value,
   subtitle,
   icon: Icon,
+  tone = "blue",
 }: {
   title: string;
   value: number;
   subtitle: string;
   icon: ElementType;
+  tone?: "blue" | "emerald" | "amber" | "violet";
 }) {
+  const toneStyles = {
+    blue: {
+      card: "border-blue-100 bg-blue-50/70",
+      icon: "bg-white text-blue-600 ring-blue-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "bg-white text-emerald-600 ring-emerald-100",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "bg-white text-amber-600 ring-amber-100",
+    },
+    violet: {
+      card: "border-violet-100 bg-violet-50/70",
+      icon: "bg-white text-violet-600 ring-violet-100",
+    },
+  } as const;
+
+  const styles =
+    toneStyles[tone];
+
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm">
+    <div className={`rounded-[22px] border p-5 shadow-sm ${styles.card}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -1352,7 +1496,7 @@ function StatCard({
           </p>
         </div>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-sm ring-1 ${styles.icon}`}>
           <Icon size={18} />
         </div>
       </div>
