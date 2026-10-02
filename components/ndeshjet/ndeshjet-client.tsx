@@ -1619,44 +1619,54 @@ export default function NdeshjetClient() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              Menaxhimi sportiv
-            </p>
+      <div className="space-y-5">
+        <section className="relative overflow-hidden rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-indigo-50/70 to-violet-50 p-5 shadow-sm sm:p-6">
+          <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-blue-200/30 blur-3xl" />
 
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
-              Ndeshjet
-            </h1>
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm ring-1 ring-blue-100">
+                <Swords className="h-6 w-6" />
+              </div>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Menaxho kalendarin, kundërshtarët, rezultatet dhe statusin e ndeshjeve.
-            </p>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600">
+                  Menaxhimi sportiv
+                </p>
+
+                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                  Ndeshjet
+                </h1>
+
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                  Menaxho kalendarin, kundërshtarët, rezultatet dhe statusin e ndeshjeve.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/ndeshjet/inter-akademi"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50"
+              >
+                <Swords size={17} />
+                Ndërmjet Akademive
+              </Link>
+
+              <button
+                type="button"
+                onClick={hapShtimin}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+              >
+                <Plus size={17} />
+                Shto ndeshje
+              </button>
+            </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/ndeshjet/inter-akademi"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-            >
-              <Swords size={17} />
-              Inter-Akademi
-            </Link>
-
-            <button
-              type="button"
-              onClick={hapShtimin}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-            >
-              <Plus size={17} />
-              Shto ndeshje
-            </button>
-          </div>
-        </div>
+        </section>
 
         {gabimi && (
-          <div className="flex items-start justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+          <div className="flex items-start justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             <span>{gabimi}</span>
 
             <button
@@ -1674,36 +1684,41 @@ export default function NdeshjetClient() {
           <KarteStatistike
             icon={Swords}
             label="Gjithsej"
+            tone="indigo"
             value={statistikat.total}
           />
 
           <KarteStatistike
             icon={CalendarDays}
             label="Të planifikuara"
+            tone="blue"
             value={statistikat.tePlanifikuara}
           />
 
           <KarteStatistike
             icon={Clock3}
             label="Të ardhshme"
+            tone="violet"
             value={statistikat.teArdhshme}
           />
 
           <KarteStatistike
             icon={CheckCircle2}
             label="Të përfunduara"
+            tone="emerald"
             value={statistikat.tePerfunduara}
           />
 
           <KarteStatistike
             icon={Trophy}
             label="Fitore"
+            tone="amber"
             value={statistikat.fitore}
           />
         </div>
 
-        <div className="rounded-[24px] border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 p-5">
+        <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50/50 p-4 sm:p-5">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="relative w-full xl:max-w-md">
                 <Search
@@ -1719,7 +1734,7 @@ export default function NdeshjetClient() {
                     )
                   }
                   placeholder="Kërko kundërshtar, ekip, vend ose garë..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 />
               </div>
 
@@ -1733,7 +1748,7 @@ export default function NdeshjetClient() {
                         | MatchStatus
                     )
                   }
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none"
+                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="ALL">
                     Të gjitha statuset
@@ -1761,7 +1776,7 @@ export default function NdeshjetClient() {
                         | MatchType
                     )
                   }
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none"
+                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 >
                   <option value="ALL">
                     Të gjitha llojet
@@ -1789,7 +1804,7 @@ export default function NdeshjetClient() {
                     void merrTeDhenat()
                   }
                   disabled={dukeNgarkuar}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50"
                 >
                   <RefreshCw
                     size={16}
@@ -1825,12 +1840,12 @@ export default function NdeshjetClient() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="space-y-3 bg-slate-50/40 p-3 sm:p-4">
               {ndeshjetEFiltruara.map(
                 (match) => (
                   <div
                     key={match.id}
-                    className="p-5 transition hover:bg-slate-50/70"
+                    className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
                   >
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                       <div className="min-w-0 flex-1">
@@ -1858,7 +1873,7 @@ export default function NdeshjetClient() {
                           </span>
                         </div>
 
-                        <div className="mt-3 flex flex-col gap-2 lg:flex-row lg:items-center">
+                        <div className="mt-4 flex flex-col gap-2 lg:flex-row lg:items-center">
                           <h3 className="text-base font-bold text-slate-950">
                             {match.isHome
                               ? `${match.team.name} - ${match.opponentName}`
@@ -1869,7 +1884,7 @@ export default function NdeshjetClient() {
                             null &&
                             match.opponentScore !==
                               null && (
-                              <div className="inline-flex w-fit items-center rounded-xl bg-slate-950 px-3 py-1.5 text-sm font-bold text-white">
+                              <div className="inline-flex w-fit items-center rounded-xl bg-blue-600 px-3 py-1.5 text-sm font-black text-white shadow-sm">
                                 {match.isHome
                                   ? `${match.ourScore} : ${match.opponentScore}`
                                   : `${match.opponentScore} : ${match.ourScore}`}
@@ -1925,7 +1940,7 @@ export default function NdeshjetClient() {
                               match
                             )
                           }
-                          className="rounded-xl border border-slate-200 p-2.5 text-slate-600 transition hover:bg-white"
+                          className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                           aria-label="Shiko detajet"
                         >
                           <ChevronRight
@@ -1938,7 +1953,7 @@ export default function NdeshjetClient() {
                           onClick={() =>
                             hapEditimin(match)
                           }
-                          className="rounded-xl border border-slate-200 p-2.5 text-slate-600 transition hover:bg-white"
+                          className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                           aria-label="Edito ndeshjen"
                         >
                           <Pencil size={17} />
@@ -1951,7 +1966,7 @@ export default function NdeshjetClient() {
                               match
                             )
                           }
-                          className="rounded-xl border border-red-100 p-2.5 text-red-600 transition hover:bg-red-50"
+                          className="rounded-xl border border-red-100 bg-white p-2.5 text-red-600 shadow-sm transition hover:bg-red-50"
                           aria-label="Fshi ndeshjen"
                         >
                           <Trash2 size={17} />
@@ -1968,8 +1983,8 @@ export default function NdeshjetClient() {
 
       {modalHapur && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]">
-          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[26px] bg-white shadow-2xl">
-            <div className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-100 bg-white p-6">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 px-6 py-5">
               <div>
                 <h2 className="text-xl font-bold text-slate-950">
                   {ndeshjaNeEditim
@@ -1985,7 +2000,7 @@ export default function NdeshjetClient() {
               <button
                 type="button"
                 onClick={mbyllFormularin}
-                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+                className="rounded-xl bg-white p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
                 aria-label="Mbyll"
               >
                 <X size={20} />
@@ -2227,7 +2242,7 @@ export default function NdeshjetClient() {
                 </Fusha>
 
                 <div className="md:col-span-2">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
                     <p className="text-sm font-semibold text-slate-800">
                       Rezultati
                     </p>
@@ -2306,7 +2321,7 @@ export default function NdeshjetClient() {
                   type="button"
                   onClick={mbyllFormularin}
                   disabled={dukeRuajtur}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
                 >
                   Anulo
                 </button>
@@ -2314,7 +2329,7 @@ export default function NdeshjetClient() {
                 <button
                   type="submit"
                   disabled={dukeRuajtur}
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {dukeRuajtur
                     ? "Duke ruajtur..."
@@ -3122,7 +3137,7 @@ export default function NdeshjetClient() {
 
                 <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
                   <p className="text-xs leading-5 text-amber-800">
-                    Për ndeshjet inter-akademi, rezultati dhe statusi do të sinkronizohen automatikisht edhe me ndeshjen e akademisë tjetër.
+                    Për ndeshjet ndërmjet akademive, rezultati dhe statusi do të sinkronizohen automatikisht edhe me ndeshjen e akademisë tjetër.
                   </p>
                 </div>
               </div>
@@ -3546,7 +3561,7 @@ export default function NdeshjetClient() {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50";
 
 function Fusha({
   label,
@@ -3570,25 +3585,61 @@ function KarteStatistike({
   icon: Icon,
   label,
   value,
+  tone,
 }: {
   icon: React.ElementType;
   label: string;
   value: number;
+  tone:
+    | "indigo"
+    | "blue"
+    | "violet"
+    | "emerald"
+    | "amber";
 }) {
+  const styles = {
+    indigo: {
+      card: "border-indigo-100 bg-indigo-50/70",
+      icon: "text-indigo-600 ring-indigo-100",
+    },
+    blue: {
+      card: "border-blue-100 bg-blue-50/70",
+      icon: "text-blue-600 ring-blue-100",
+    },
+    violet: {
+      card: "border-violet-100 bg-violet-50/70",
+      icon: "text-violet-600 ring-violet-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "text-emerald-600 ring-emerald-100",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "text-amber-600 ring-amber-100",
+    },
+  } as const;
+
+  const style = styles[tone];
+
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
+    <div
+      className={`rounded-[22px] border p-4 shadow-sm sm:p-5 ${style.card}`}
+    >
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
             {label}
           </p>
 
-          <p className="mt-1 text-2xl font-bold text-slate-950">
+          <p className="mt-2 text-2xl font-black text-slate-950">
             {value}
           </p>
         </div>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ${style.icon}`}
+        >
           <Icon size={19} />
         </div>
       </div>
