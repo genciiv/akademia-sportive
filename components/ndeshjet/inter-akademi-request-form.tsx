@@ -289,7 +289,7 @@ export default function InterAcademyRequestForm({
       resetForm();
 
       setSuccess(
-        "Kerkesa inter-akademi u dergua me sukses."
+        "Kërkesa për ndeshje ndërmjet akademive u dërgua me sukses."
       );
 
       await onCreated();
@@ -303,10 +303,10 @@ export default function InterAcademyRequestForm({
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <div className="mb-6 overflow-hidden rounded-[26px] border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/20 to-blue-50/30 p-5 shadow-sm sm:p-6">
       <div>
-        <h2 className="text-lg font-bold text-slate-950">
-          {"K\u00ebrkes\u00eb e re inter-akademi"}
+        <h2 className="text-xl font-black tracking-tight text-slate-950">
+          Kërkesë e re për ndeshje ndërmjet akademive
         </h2>
 
         <p className="mt-1 text-sm text-slate-500">
@@ -315,13 +315,13 @@ export default function InterAcademyRequestForm({
       </div>
 
       {error ? (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
           {success}
         </div>
       ) : null}
@@ -349,7 +349,7 @@ export default function InterAcademyRequestForm({
                 setOpponentTeamId("");
               }}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="">
                 Zgjidh ekipin
@@ -385,7 +385,7 @@ export default function InterAcademyRequestForm({
                 setOpponentTeamId("");
               }}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="">
                 Zgjidh akademine
@@ -423,7 +423,7 @@ export default function InterAcademyRequestForm({
               disabled={
                 !opponentAcademyId
               }
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50 disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option value="">
                 Zgjidh ekipin
@@ -459,7 +459,7 @@ export default function InterAcademyRequestForm({
                 )
               }
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             />
           </label>
 
@@ -475,7 +475,7 @@ export default function InterAcademyRequestForm({
                   event.target.value
                 )
               }
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="FRIENDLY">
                 Miqesore
@@ -512,7 +512,7 @@ export default function InterAcademyRequestForm({
                     "requester"
                 )
               }
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="requester">
                 Ekipi im
@@ -537,7 +537,7 @@ export default function InterAcademyRequestForm({
                 )
               }
               placeholder="Stadiumi / fusha"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             />
           </label>
 
@@ -555,7 +555,7 @@ export default function InterAcademyRequestForm({
                 )
               }
               placeholder="Opsionale"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             />
           </label>
 
@@ -573,7 +573,7 @@ export default function InterAcademyRequestForm({
                 )
               }
               placeholder="Opsional"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             />
           </label>
 
@@ -591,7 +591,7 @@ export default function InterAcademyRequestForm({
               }
               rows={3}
               placeholder="Mesazh per akademine kundershtare..."
-              className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500"
+              className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             />
           </label>
 
@@ -599,7 +599,7 @@ export default function InterAcademyRequestForm({
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? "Duke derguar..."

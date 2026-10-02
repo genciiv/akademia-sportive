@@ -219,7 +219,7 @@ export default function InterAcademyClient() {
         if (!response.ok) {
           setError(
             data.error ||
-              "Kërkesat inter-akademi nuk mund të ngarkoheshin."
+              "Kërkesat për ndeshje ndërmjet akademive nuk mund të ngarkoheshin."
           );
           return;
         }
@@ -343,51 +343,61 @@ export default function InterAcademyClient() {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <Link
-              href="/ndeshjet"
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-900"
+        <section className="relative mb-6 overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-indigo-50/70 to-blue-50 p-5 shadow-sm sm:p-6">
+          <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-violet-200/30 blur-3xl" />
+
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <Link
+                href="/ndeshjet"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-violet-600 transition hover:text-violet-800"
+              >
+                <ArrowLeft size={16} />
+                Kthehu te ndeshjet
+              </Link>
+
+              <div className="mt-4 flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100">
+                  <Swords size={23} />
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-600">
+                    Bashkëpunimi sportiv
+                  </p>
+
+                  <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    Ndeshje Ndërmjet Akademive
+                  </h1>
+
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                    Krijo dhe menaxho kërkesat për ndeshje me akademi të tjera.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void loadRequests()}
+              disabled={loading}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white px-4 text-sm font-bold text-violet-700 shadow-sm transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <ArrowLeft size={16} />
-              Kthehu te ndeshjet
-            </Link>
-
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
-              Ndeshjet Inter-Akademi
-            </h1>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Menaxho kërkesat për ndeshje me akademi të tjera.
-            </p>
+              <RefreshCw
+                size={16}
+                className={loading ? "animate-spin" : ""}
+              />
+              Rifresko
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() =>
-              void loadRequests()
-            }
-            disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw
-              size={16}
-              className={
-                loading
-                  ? "animate-spin"
-                  : ""
-              }
-            />
-            Rifresko
-          </button>
-        </div>
+        </section>
 
         <InterAcademyRequestForm
           onCreated={handleCreated}
         />
 
         <div className="mb-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="rounded-[22px] border border-blue-100 bg-blue-50/70 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">
@@ -409,7 +419,7 @@ export default function InterAcademyClient() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="rounded-[22px] border border-violet-100 bg-violet-50/70 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">
@@ -432,15 +442,15 @@ export default function InterAcademyClient() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-200 px-4 pt-4 sm:px-6">
+        <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50/60 px-4 pt-4 sm:px-6">
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() =>
                   setActiveTab("received")
                 }
-                className={`rounded-t-xl px-4 py-3 text-sm font-semibold transition ${
+                className={`rounded-t-xl px-4 py-3 text-sm font-bold transition ${
                   activeTab === "received"
                     ? "border-b-2 border-blue-600 text-blue-700"
                     : "text-slate-500 hover:text-slate-900"
@@ -457,7 +467,7 @@ export default function InterAcademyClient() {
                 onClick={() =>
                   setActiveTab("sent")
                 }
-                className={`rounded-t-xl px-4 py-3 text-sm font-semibold transition ${
+                className={`rounded-t-xl px-4 py-3 text-sm font-bold transition ${
                   activeTab === "sent"
                     ? "border-b-2 border-blue-600 text-blue-700"
                     : "text-slate-500 hover:text-slate-900"
@@ -499,7 +509,7 @@ export default function InterAcademyClient() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="space-y-3 bg-slate-50/40 p-3 sm:p-4">
               {requests.map(
                 (request) => {
                   const otherAcademy =
@@ -529,7 +539,7 @@ export default function InterAcademyClient() {
                   return (
                     <article
                       key={request.id}
-                      className="p-5 sm:p-6"
+                      className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:shadow-md sm:p-6"
                     >
                       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0">
@@ -644,7 +654,7 @@ export default function InterAcademyClient() {
                                   activeAction !==
                                   null
                                 }
-                                className="rounded-xl bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 {activeAction
                                   ?.requestId ===
@@ -668,7 +678,7 @@ export default function InterAcademyClient() {
                                   activeAction !==
                                   null
                                 }
-                                className="rounded-xl border border-red-200 bg-white px-3.5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 {activeAction
                                   ?.requestId ===
@@ -697,7 +707,7 @@ export default function InterAcademyClient() {
                                 activeAction !==
                                 null
                               }
-                              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               {activeAction
                                 ?.requestId ===
