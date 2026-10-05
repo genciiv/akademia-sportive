@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeader } from "@/components/page-header";
 
 type ExpenseCategory =
   | "SALARY"
@@ -136,6 +135,24 @@ function kategoriShqip(
   );
 }
 
+function kategoriTone(
+  category: ExpenseCategory
+) {
+  const tones: Record<ExpenseCategory, string> = {
+    SALARY: "bg-violet-100 text-violet-700",
+    RENT: "bg-amber-100 text-amber-700",
+    EQUIPMENT: "bg-sky-100 text-sky-700",
+    TRANSPORT: "bg-cyan-100 text-cyan-700",
+    MEDICAL: "bg-rose-100 text-rose-700",
+    TOURNAMENT: "bg-indigo-100 text-indigo-700",
+    UTILITIES: "bg-teal-100 text-teal-700",
+    MARKETING: "bg-fuchsia-100 text-fuchsia-700",
+    OTHER: "bg-slate-100 text-slate-700",
+  };
+
+  return tones[category];
+}
+
 export default function ExpensesClient() {
   const [data, setData] =
     useState<ApiResponse | null>(null);
@@ -239,14 +256,34 @@ export default function ExpensesClient() {
 
   return (
     <AppShell>
-      <PageHeader
-        title="Shpenzimet"
-        description="Menaxhimi real i shpenzimeve të akademisë në Lek."
-      />
+      <section className="relative mb-5 overflow-hidden rounded-[28px] border border-rose-100 bg-gradient-to-br from-rose-50 via-orange-50/60 to-amber-50/50 p-5 shadow-sm sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-rose-200/30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-amber-200/30 blur-3xl" />
+
+        <div className="relative flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-rose-700 shadow-sm ring-1 ring-rose-100">
+            <WalletCards className="h-6 w-6" />
+          </div>
+
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-rose-600">
+              Menaxhimi financiar
+            </p>
+
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+              Shpenzimet
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Regjistro dhe menaxho të gjitha shpenzimet reale të akademisë në Lek.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-[22px] border border-rose-100 bg-gradient-to-br from-rose-50/80 to-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-500">
               Shpenzime gjithsej
             </p>
@@ -258,7 +295,7 @@ export default function ExpensesClient() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-[22px] border border-amber-100 bg-gradient-to-br from-amber-50/80 to-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-500">
               Regjistrime
             </p>
@@ -269,7 +306,7 @@ export default function ExpensesClient() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 rounded-[22px] border border-slate-200/80 bg-white/90 p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative min-w-[260px]">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -282,7 +319,7 @@ export default function ExpensesClient() {
                   )
                 }
                 placeholder="Kërko shpenzimin..."
-                className="h-11 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
               />
             </div>
 
@@ -295,7 +332,7 @@ export default function ExpensesClient() {
                     | "ALL"
                 )
               }
-              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             >
               <option value="ALL">
                 Të gjitha kategoritë
@@ -319,7 +356,7 @@ export default function ExpensesClient() {
             onClick={() =>
               setModalExpense("NEW")
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-4 focus:ring-rose-100"
           >
             <Plus className="h-4 w-4" />
             Shto shpenzim
@@ -333,11 +370,11 @@ export default function ExpensesClient() {
         )}
 
         {loading ? (
-          <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-slate-200 bg-white">
+          <div className="flex min-h-[400px] items-center justify-center rounded-[24px] border border-slate-200 bg-white shadow-sm">
             <Loader2 className="h-7 w-7 animate-spin text-slate-500" />
           </div>
         ) : expenses.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center">
+          <div className="rounded-[24px] border border-dashed border-rose-200 bg-gradient-to-br from-rose-50/50 to-white p-10 text-center">
             <WalletCards className="mx-auto h-8 w-8 text-slate-400" />
 
             <p className="mt-3 font-semibold text-slate-700">
@@ -350,7 +387,7 @@ export default function ExpensesClient() {
               (expense) => (
                 <div
                   key={expense.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                  className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -359,7 +396,7 @@ export default function ExpensesClient() {
                           {expense.title}
                         </h3>
 
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${kategoriTone(expense.category)}`}>
                           {kategoriShqip(
                             expense.category
                           )}
@@ -402,7 +439,7 @@ export default function ExpensesClient() {
                             expense
                           )
                         }
-                        className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+                        className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
                         aria-label="Ndrysho shpenzimin"
                         title="Ndrysho shpenzimin"
                       >
@@ -416,7 +453,7 @@ export default function ExpensesClient() {
                             expense
                           )
                         }
-                        className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
+                        className="rounded-xl border border-rose-200 bg-rose-50/40 p-2 text-rose-600 transition hover:bg-rose-100"
                         aria-label="Fshi shpenzimin"
                         title="Fshi shpenzimin"
                       >
@@ -657,7 +694,7 @@ function ExpenseModal({
       )}
 
       <label className="space-y-2">
-        <span className="text-sm font-semibold text-slate-700">
+        <span className="text-sm font-bold text-slate-700">
           Titulli
         </span>
 
@@ -669,12 +706,12 @@ function ExpenseModal({
             )
           }
           placeholder="P.sh. Pagesa e trajnerit"
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
         />
       </label>
 
-      <label className="mt-4 block space-y-2">
-        <span className="text-sm font-semibold text-slate-700">
+      <label className="mt-5 block space-y-2">
+        <span className="text-sm font-bold text-slate-700">
           Kategoria
         </span>
 
@@ -686,7 +723,7 @@ function ExpenseModal({
                 .value as ExpenseCategory
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm outline-none transition focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
         >
           {KATEGORITE.map(
             (item) => (
@@ -701,8 +738,8 @@ function ExpenseModal({
         </select>
       </label>
 
-      <label className="mt-4 block space-y-2">
-        <span className="text-sm font-semibold text-slate-700">
+      <label className="mt-5 block space-y-2">
+        <span className="text-sm font-bold text-slate-700">
           Shuma në Lek
         </span>
 
@@ -716,12 +753,12 @@ function ExpenseModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm outline-none transition focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
         />
       </label>
 
-      <label className="mt-4 block space-y-2">
-        <span className="text-sm font-semibold text-slate-700">
+      <label className="mt-5 block space-y-2">
+        <span className="text-sm font-bold text-slate-700">
           Data
         </span>
 
@@ -733,12 +770,12 @@ function ExpenseModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm outline-none transition focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
         />
       </label>
 
-      <label className="mt-4 block space-y-2">
-        <span className="text-sm font-semibold text-slate-700">
+      <label className="mt-5 block space-y-2">
+        <span className="text-sm font-bold text-slate-700">
           Përshkrimi
         </span>
 
@@ -749,12 +786,12 @@ function ExpenseModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm outline-none transition focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
         />
       </label>
 
-      <label className="mt-4 block space-y-2">
-        <span className="text-sm font-semibold text-slate-700">
+      <label className="mt-5 block space-y-2">
+        <span className="text-sm font-bold text-slate-700">
           Shënime
         </span>
 
@@ -766,7 +803,7 @@ function ExpenseModal({
               event.target.value
             )
           }
-          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
+          className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm outline-none transition focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
         />
       </label>
 
@@ -775,7 +812,7 @@ function ExpenseModal({
           type="button"
           onClick={onClose}
           disabled={saving}
-          className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700"
+          className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
           Anulo
         </button>
@@ -784,7 +821,7 @@ function ExpenseModal({
           type="button"
           onClick={ruaj}
           disabled={saving}
-          className="inline-flex h-11 items-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:opacity-60"
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-rose-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:opacity-60"
         >
           {saving && (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -813,7 +850,7 @@ function ConfirmModal({
       title="Fshi shpenzimin"
       onClose={onClose}
     >
-      <p className="text-sm leading-6 text-slate-600">
+      <p className="rounded-[18px] border border-rose-100 bg-rose-50/60 p-4 text-sm leading-6 text-slate-700">
         A je i sigurt që dëshiron ta fshish këtë shpenzim?
       </p>
 
@@ -822,7 +859,7 @@ function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700"
+          className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
           Anulo
         </button>
@@ -831,7 +868,7 @@ function ConfirmModal({
           type="button"
           onClick={onConfirm}
           disabled={loading}
-          className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white disabled:opacity-60"
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-rose-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-60"
         >
           {loading && (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -854,17 +891,17 @@ function Modal({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-          <h2 className="text-xl font-bold text-slate-950">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[28px] border border-rose-100 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-rose-100 bg-gradient-to-r from-rose-50 via-orange-50/70 to-amber-50 px-6 py-5">
+          <h2 className="text-xl font-black tracking-tight text-slate-950">
             {title}
           </h2>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"
+            className="rounded-xl border border-white/80 bg-white/70 p-2 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
