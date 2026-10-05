@@ -74,6 +74,45 @@ export async function GET() {
         status: true,
         createdAt: true,
         updatedAt: true,
+
+        subscription: {
+          select: {
+            status: true,
+            trialStartsAt: true,
+            trialEndsAt: true,
+            currentPeriodStart: true,
+            currentPeriodEnd: true,
+            graceEndsAt: true,
+            cancelledAt: true,
+
+            plan: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                description: true,
+                monthlyPrice: true,
+                currency: true,
+                maxPlayers: true,
+                maxTeams: true,
+                maxStaff: true,
+                maxFacilities: true,
+                maxAthleteAccounts: true,
+                features: true,
+              },
+            },
+          },
+        },
+
+        _count: {
+          select: {
+            players: true,
+            teams: true,
+            staff: true,
+            facilities: true,
+            athleteAccounts: true,
+          },
+        },
       },
     });
 
@@ -90,7 +129,23 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    academy,
+    academy: {
+      ...academy,
+
+      subscription:
+        academy.subscription
+          ? {
+              ...academy.subscription,
+
+              plan: {
+                ...academy.subscription.plan,
+
+                monthlyPrice:
+                  academy.subscription.plan.monthlyPrice.toString(),
+              },
+            }
+          : null,
+    },
     canManage:
       access.permissions.includes(
         PERMISSIONS.SETTINGS_MANAGE
@@ -286,10 +341,65 @@ export async function PATCH(
         status: true,
         createdAt: true,
         updatedAt: true,
+
+        subscription: {
+          select: {
+            status: true,
+            trialStartsAt: true,
+            trialEndsAt: true,
+            currentPeriodStart: true,
+            currentPeriodEnd: true,
+            graceEndsAt: true,
+            cancelledAt: true,
+
+            plan: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                description: true,
+                monthlyPrice: true,
+                currency: true,
+                maxPlayers: true,
+                maxTeams: true,
+                maxStaff: true,
+                maxFacilities: true,
+                maxAthleteAccounts: true,
+                features: true,
+              },
+            },
+          },
+        },
+
+        _count: {
+          select: {
+            players: true,
+            teams: true,
+            staff: true,
+            facilities: true,
+            athleteAccounts: true,
+          },
+        },
       },
     });
 
   return NextResponse.json({
-    academy,
+    academy: {
+      ...academy,
+
+      subscription:
+        academy.subscription
+          ? {
+              ...academy.subscription,
+
+              plan: {
+                ...academy.subscription.plan,
+
+                monthlyPrice:
+                  academy.subscription.plan.monthlyPrice.toString(),
+              },
+            }
+          : null,
+    },
   });
 }

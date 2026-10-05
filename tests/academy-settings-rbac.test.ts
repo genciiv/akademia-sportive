@@ -149,3 +149,146 @@ test("academy settings UI keeps mutations permission aware", () => {
     /Ruaj ndryshimet/
   );
 });
+test("academy settings API exposes subscription plan and usage data", () => {
+  const source =
+    readSource(
+      "app/api/settings/academy/route.ts"
+    );
+
+  assert.match(
+    source,
+    /subscription:\s*\{/
+  );
+
+  assert.match(
+    source,
+    /plan:\s*\{/
+  );
+
+  assert.match(
+    source,
+    /monthlyPrice:\s*true/
+  );
+
+  assert.match(
+    source,
+    /maxPlayers:\s*true/
+  );
+
+  assert.match(
+    source,
+    /maxTeams:\s*true/
+  );
+
+  assert.match(
+    source,
+    /maxStaff:\s*true/
+  );
+
+  assert.match(
+    source,
+    /maxFacilities:\s*true/
+  );
+
+  assert.match(
+    source,
+    /maxAthleteAccounts:\s*true/
+  );
+
+  assert.match(
+    source,
+    /_count:\s*\{/
+  );
+
+  assert.match(
+    source,
+    /players:\s*true/
+  );
+
+  assert.match(
+    source,
+    /teams:\s*true/
+  );
+
+  assert.match(
+    source,
+    /staff:\s*true/
+  );
+
+  assert.match(
+    source,
+    /facilities:\s*true/
+  );
+
+  assert.match(
+    source,
+    /athleteAccounts:\s*true/
+  );
+
+  assert.match(
+    source,
+    /monthlyPrice\.toString\(\)/
+  );
+});
+
+test("academy settings UI renders subscription usage and plan features", () => {
+  const client =
+    readSource(
+      "components/cilesimet/academy-settings.tsx"
+    );
+
+  assert.match(
+    client,
+    /Plani & abonimi/
+  );
+
+  assert.match(
+    client,
+    /Përdorimi i planit/
+  );
+
+  assert.match(
+    client,
+    /Funksionalitetet e planit/
+  );
+
+  assert.match(
+    client,
+    /academy\._count\.players/
+  );
+
+  assert.match(
+    client,
+    /academy\._count\.teams/
+  );
+
+  assert.match(
+    client,
+    /academy\._count\.staff/
+  );
+
+  assert.match(
+    client,
+    /academy\._count\.facilities/
+  );
+
+  assert.match(
+    client,
+    /maxAthleteAccounts/
+  );
+
+  assert.match(
+    client,
+    /plan\.features\.map/
+  );
+
+  assert.match(
+    client,
+    /subscription\.currentPeriodEnd/
+  );
+
+  assert.match(
+    client,
+    /subscription\.trialEndsAt/
+  );
+});
