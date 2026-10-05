@@ -327,38 +327,40 @@ export default function PerformanceDashboardClient() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-blue-600">
-            <BarChart3 size={17} />
-            Analiza sportive
+      <div className="space-y-5">
+        <section className="relative overflow-hidden rounded-[28px] border border-indigo-100 bg-gradient-to-br from-indigo-50 via-blue-50/70 to-cyan-50 p-5 shadow-sm sm:p-6">
+          <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-indigo-200/30 blur-3xl" />
+
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100">
+                <BarChart3 size={23} />
+              </div>
+
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-indigo-600">
+                  Analiza sportive
+                </p>
+
+                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                  Performanca
+                </h1>
+
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                  Ndiq performancën individuale të sportistëve, progresin ndeshje pas ndeshjeje dhe statistikat teknike të ekipit.
+                </p>
+              </div>
+            </div>
+
+            <div className="inline-flex w-fit items-center gap-2 rounded-2xl border border-indigo-100 bg-white px-4 py-3 text-sm font-bold text-indigo-700 shadow-sm">
+              <Sparkles size={16} />
+              Të dhëna nga ndeshjet
+            </div>
           </div>
-
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-            Performanca
-          </h1>
-
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Ndiq performancën individuale të sportistëve,
-            progresin ndeshje pas ndeshjeje dhe statistikat
-            teknike të ekipit.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-            <Sparkles
-              size={16}
-              className="text-blue-600"
-            />
-            Të dhëna nga ndeshjet
-          </div>
-        </div>
-      </div>
+        </section>
 
       {gabimi && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-sm">
           {gabimi}
         </div>
       )}
@@ -384,7 +386,7 @@ export default function PerformanceDashboardClient() {
                   )
                 }
                 placeholder="Emri ose pozicioni..."
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50"
               />
             </div>
           </div>
@@ -401,7 +403,7 @@ export default function PerformanceDashboardClient() {
                   event.target.value
                 )
               }
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50"
             >
               <option value="">
                 Të gjitha ekipet
@@ -431,7 +433,7 @@ export default function PerformanceDashboardClient() {
                   event.target.value
                 )
               }
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50"
             />
           </div>
 
@@ -448,14 +450,14 @@ export default function PerformanceDashboardClient() {
                   event.target.value
                 )
               }
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50"
             />
           </div>
 
           <button
             type="button"
             onClick={pastroFiltrat}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
           >
             <Filter size={16} />
             Pastro filtrat
@@ -479,6 +481,7 @@ export default function PerformanceDashboardClient() {
             <KartePermbledhese
               ikona={UsersRound}
               etiketa="Sportistë"
+              tone="indigo"
               vlera={
                 data?.summary.players ?? 0
               }
@@ -488,6 +491,7 @@ export default function PerformanceDashboardClient() {
             <KartePermbledhese
               ikona={Trophy}
               etiketa="Ndeshje"
+              tone="blue"
               vlera={
                 data?.summary.matches ?? 0
               }
@@ -497,6 +501,7 @@ export default function PerformanceDashboardClient() {
             <KartePermbledhese
               ikona={Timer}
               etiketa="Minuta"
+              tone="cyan"
               vlera={
                 data?.summary.minutesPlayed ?? 0
               }
@@ -506,6 +511,7 @@ export default function PerformanceDashboardClient() {
             <KartePermbledhese
               ikona={Goal}
               etiketa="Gola"
+              tone="emerald"
               vlera={
                 data?.summary.goals ?? 0
               }
@@ -515,6 +521,7 @@ export default function PerformanceDashboardClient() {
             <KartePermbledhese
               ikona={Target}
               etiketa="Asistime"
+              tone="violet"
               vlera={
                 data?.summary.assists ?? 0
               }
@@ -524,6 +531,7 @@ export default function PerformanceDashboardClient() {
             <KartePermbledhese
               ikona={Star}
               etiketa="Nota mesatare"
+              tone="amber"
               vlera={
                 data?.summary.averageRating ===
                 null ||
@@ -538,7 +546,7 @@ export default function PerformanceDashboardClient() {
 
           <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
+              <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-4 sm:px-6">
                 <div>
                   <h2 className="font-bold text-slate-950">
                     Performanca e sportistëve
@@ -570,7 +578,7 @@ export default function PerformanceDashboardClient() {
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100">
+                <div className="space-y-3 bg-slate-50/40 p-3 sm:p-4">
                   {sportistetEFiltruar.map(
                     (item) => (
                       <button
@@ -583,7 +591,7 @@ export default function PerformanceDashboardClient() {
                             item
                           )
                         }
-                        className="grid w-full gap-4 px-5 py-5 text-left transition hover:bg-slate-50 sm:px-6 lg:grid-cols-[minmax(240px,1.4fr)_repeat(5,minmax(90px,0.55fr))_40px] lg:items-center"
+                        className="grid w-full gap-4 rounded-[20px] border border-slate-200 bg-white p-4 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md sm:p-5 lg:grid-cols-[minmax(240px,1.4fr)_repeat(5,minmax(90px,0.55fr))_40px] lg:items-center"
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           <AvatarSportisti
@@ -669,7 +677,7 @@ export default function PerformanceDashboardClient() {
 
                         <ChevronRight
                           size={20}
-                          className="hidden text-slate-400 lg:block"
+                          className="hidden text-indigo-400 lg:block"
                         />
                       </button>
                     )
@@ -678,11 +686,11 @@ export default function PerformanceDashboardClient() {
               )}
             </div>
 
-            <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-[24px] border border-amber-100 bg-gradient-to-br from-white to-amber-50/50 p-5 shadow-sm sm:p-6">
               <div className="flex items-center gap-2">
                 <Trophy
                   size={18}
-                  className="text-blue-600"
+                  className="text-amber-600"
                 />
 
                 <h2 className="font-bold text-slate-950">
@@ -709,9 +717,9 @@ export default function PerformanceDashboardClient() {
                             item
                           )
                         }
-                        className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 p-3 text-left transition hover:border-blue-100 hover:bg-blue-50/40"
+                        className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:border-amber-200 hover:bg-amber-50/50"
                       >
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-600">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xs font-black text-amber-700">
                           {index + 1}
                         </div>
 
@@ -785,23 +793,64 @@ function KartePermbledhese({
   etiketa,
   vlera,
   pershkrimi,
+  tone,
 }: {
   ikona: typeof Activity;
   etiketa: string;
   vlera: string | number;
   pershkrimi: string;
+  tone:
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "emerald"
+    | "violet"
+    | "amber";
 }) {
+  const tones = {
+    indigo: {
+      card: "border-indigo-100 bg-indigo-50/70",
+      icon: "text-indigo-600 ring-indigo-100",
+    },
+    blue: {
+      card: "border-blue-100 bg-blue-50/70",
+      icon: "text-blue-600 ring-blue-100",
+    },
+    cyan: {
+      card: "border-cyan-100 bg-cyan-50/70",
+      icon: "text-cyan-600 ring-cyan-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "text-emerald-600 ring-emerald-100",
+    },
+    violet: {
+      card: "border-violet-100 bg-violet-50/70",
+      icon: "text-violet-600 ring-violet-100",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "text-amber-600 ring-amber-100",
+    },
+  } as const;
+
+  const style = tones[tone];
+
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+    <div
+      className={`rounded-[22px] border p-5 shadow-sm ${style.card}`}
+    >
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ${style.icon}`}
+      >
         <Icon size={19} />
       </div>
 
-      <p className="mt-4 text-2xl font-bold text-slate-950">
+      <p className="mt-4 text-2xl font-black text-slate-950">
         {vlera}
       </p>
 
-      <p className="mt-1 text-sm font-semibold text-slate-700">
+      <p className="mt-1 text-sm font-bold text-slate-800">
         {etiketa}
       </p>
 
@@ -905,7 +954,7 @@ function DetajetESportistit({
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950/45 backdrop-blur-[2px]">
       <div className="absolute inset-y-0 right-0 grid h-screen w-full max-w-4xl grid-rows-[auto_minmax(0,1fr)] bg-[#f7f8fb] shadow-2xl">
-        <div className="border-b border-slate-200 bg-white px-5 py-5 sm:px-7">
+        <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-cyan-50 px-5 py-5 sm:px-7">
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
               <AvatarSportisti
@@ -913,7 +962,7 @@ function DetajetESportistit({
               />
 
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
                   Detajet e performancës
                 </p>
 
@@ -945,7 +994,7 @@ function DetajetESportistit({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+              className="rounded-xl bg-white p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
               aria-label="Mbyll"
             >
               <X size={21} />
@@ -958,6 +1007,7 @@ function DetajetESportistit({
             <KutiDetaji
               ikona={Star}
               etiketa="Nota mesatare"
+              tone="amber"
               vlera={
                 item.summary
                   .averageRating ??
@@ -968,6 +1018,7 @@ function DetajetESportistit({
             <KutiDetaji
               ikona={Timer}
               etiketa="Minuta"
+              tone="cyan"
               vlera={
                 item.summary
                   .minutesPlayed
@@ -977,6 +1028,7 @@ function DetajetESportistit({
             <KutiDetaji
               ikona={Goal}
               etiketa="Gola"
+              tone="emerald"
               vlera={
                 item.summary.goals
               }
@@ -985,17 +1037,18 @@ function DetajetESportistit({
             <KutiDetaji
               ikona={Target}
               etiketa="Asistime"
+              tone="violet"
               vlera={
                 item.summary.assists
               }
             />
           </div>
 
-          <div className="mt-6 rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mt-6 rounded-[22px] border border-indigo-100 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center gap-2">
               <BarChart3
                 size={18}
-                className="text-blue-600"
+                className="text-indigo-600"
               />
 
               <h3 className="font-bold text-slate-950">
@@ -1093,11 +1146,11 @@ function DetajetESportistit({
             </div>
           </div>
 
-          <div className="mt-6 rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mt-6 rounded-[22px] border border-violet-100 bg-gradient-to-br from-white to-violet-50/30 p-5 shadow-sm sm:p-6">
             <div className="flex items-center gap-2">
               <Activity
                 size={18}
-                className="text-blue-600"
+                className="text-violet-600"
               />
 
               <h3 className="font-bold text-slate-950">
@@ -1164,11 +1217,11 @@ function DetajetESportistit({
           </div>
 
           <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <div className="border-b border-slate-100 bg-slate-50/50 px-5 py-4 sm:px-6">
               <div className="flex items-center gap-2">
                 <CalendarDays
                   size={18}
-                  className="text-blue-600"
+                  className="text-indigo-600"
                 />
 
                 <h3 className="font-bold text-slate-950">
@@ -1183,7 +1236,7 @@ function DetajetESportistit({
                 .map((match) => (
                   <div
                     key={match.matchId}
-                    className="p-5 sm:p-6"
+                    className="p-5 transition hover:bg-slate-50/60 sm:p-6"
                   >
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                       <div>
@@ -1313,23 +1366,49 @@ function KutiDetaji({
   ikona: Icon,
   etiketa,
   vlera,
+  tone,
 }: {
   ikona: typeof Activity;
   etiketa: string;
   vlera: string | number;
+  tone: "amber" | "cyan" | "emerald" | "violet";
 }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <Icon
-        size={17}
-        className="text-blue-600"
-      />
+  const tones = {
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "text-amber-600 ring-amber-100",
+    },
+    cyan: {
+      card: "border-cyan-100 bg-cyan-50/70",
+      icon: "text-cyan-600 ring-cyan-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "text-emerald-600 ring-emerald-100",
+    },
+    violet: {
+      card: "border-violet-100 bg-violet-50/70",
+      icon: "text-violet-600 ring-violet-100",
+    },
+  } as const;
 
-      <p className="mt-3 text-xl font-bold text-slate-950">
+  const style = tones[tone];
+
+  return (
+    <div
+      className={`rounded-2xl border p-4 shadow-sm ${style.card}`}
+    >
+      <div
+        className={`flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ${style.icon}`}
+      >
+        <Icon size={17} />
+      </div>
+
+      <p className="mt-3 text-xl font-black text-slate-950">
         {vlera}
       </p>
 
-      <p className="mt-1 text-xs font-medium text-slate-500">
+      <p className="mt-1 text-xs font-semibold text-slate-500">
         {etiketa}
       </p>
     </div>
@@ -1344,7 +1423,7 @@ function Metrike({
   vlera: string | number;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
       <p className="text-lg font-bold text-slate-950">
         {vlera}
       </p>
@@ -1364,7 +1443,7 @@ function MetrikeEVogel({
   vlera: string | number;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 px-3 py-2.5">
+    <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5">
       <p className="text-xs text-slate-500">
         {etiketa}
       </p>
@@ -1382,7 +1461,7 @@ function Etikete({
   tekst: string;
 }) {
   return (
-    <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
+    <span className="rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-1.5 text-xs font-semibold text-indigo-700">
       {tekst}
     </span>
   );
