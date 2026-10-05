@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeader } from "@/components/page-header";
 
 type Fee = {
   id: string;
@@ -146,22 +145,22 @@ function statusi(status: Charge["status"]) {
 
 function statusClasses(status: Charge["status"]) {
   if (status === "PAID") {
-    return "bg-emerald-50 text-emerald-700";
+    return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100";
   }
 
   if (status === "PARTIALLY_PAID") {
-    return "bg-amber-50 text-amber-700";
+    return "bg-amber-50 text-amber-700 ring-1 ring-amber-100";
   }
 
   if (status === "OVERDUE") {
-    return "bg-red-50 text-red-700";
+    return "bg-red-50 text-red-700 ring-1 ring-red-100";
   }
 
   if (status === "CANCELLED") {
-    return "bg-slate-100 text-slate-600";
+    return "bg-slate-100 text-slate-600 ring-1 ring-slate-200";
   }
 
-  return "bg-blue-50 text-blue-700";
+  return "bg-blue-50 text-blue-700 ring-1 ring-blue-100";
 }
 
 export default function PaymentsClient() {
@@ -288,12 +287,32 @@ export default function PaymentsClient() {
 
   return (
     <AppShell>
-      <PageHeader
-        title="Pagesat"
-        description="Menaxhimi manual i tarifave dhe pagesave në dorë, në Lek."
-      />
-
       <div className="space-y-5">
+        <section className="relative overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-indigo-50/70 to-sky-50 p-5 shadow-sm sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-violet-200/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-sky-200/30 blur-3xl" />
+
+          <div className="relative flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-violet-700 shadow-sm ring-1 ring-violet-100">
+              <WalletCards className="h-6 w-6" />
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
+                Menaxhimi financiar
+              </p>
+
+              <h1 className="text-3xl font-black tracking-tight text-slate-950">
+                Pagesat
+              </h1>
+
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-600">
+                Menaxho tarifat, detyrimet dhe pagesat e sportistëve në Lek.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title="Sportistë"
@@ -303,6 +322,7 @@ export default function PaymentsClient() {
             icon={
               <UserRound className="h-5 w-5" />
             }
+          tone="violet"
           />
 
           <StatCard
@@ -314,6 +334,7 @@ export default function PaymentsClient() {
             icon={
               <WalletCards className="h-5 w-5" />
             }
+          tone="blue"
           />
 
           <StatCard
@@ -324,6 +345,7 @@ export default function PaymentsClient() {
             icon={
               <Banknote className="h-5 w-5" />
             }
+          tone="emerald"
           />
 
           <StatCard
@@ -335,11 +357,12 @@ export default function PaymentsClient() {
             icon={
               <CircleDollarSign className="h-5 w-5" />
             }
+          tone="amber"
           />
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="relative max-w-md">
+          <div className="relative max-w-lg">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
             <input
@@ -348,7 +371,7 @@ export default function PaymentsClient() {
                 setSearch(event.target.value)
               }
               placeholder="Kërko sportistin..."
-              className="h-11 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-9 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-300 focus:bg-white focus:ring-4 focus:ring-violet-50"
             />
           </div>
         </div>
@@ -360,11 +383,11 @@ export default function PaymentsClient() {
         )}
 
         {loading ? (
-          <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-slate-200 bg-white">
-            <Loader2 className="h-7 w-7 animate-spin text-slate-500" />
+          <div className="flex min-h-[320px] items-center justify-center rounded-[24px] border border-violet-100 bg-white shadow-sm">
+            <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
           </div>
         ) : (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {players.map((item) => (
               <button
                 key={item.player.id}
@@ -372,27 +395,27 @@ export default function PaymentsClient() {
                 onClick={() =>
                   setPlayerAktiv(item)
                 }
-                className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-slate-300 hover:shadow-md"
+                className="rounded-[20px] border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-bold text-slate-950">
+              <h3 className="text-sm font-bold text-slate-950">
                       {item.player.firstName}{" "}
                       {item.player.lastName}
                     </h3>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500">
                       {item.player.position ||
                         "Pa pozicion"}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-xs font-semibold text-slate-500">
+                    <p className="text-xs font-bold uppercase tracking-[0.1em] text-violet-600">
                       Tarifa
                     </p>
 
-                    <p className="mt-1 font-bold text-slate-950">
+                    <p className="mt-1 text-sm font-bold text-slate-950">
                       {item.fee
                         ? lek(
                             item.fee
@@ -403,7 +426,7 @@ export default function PaymentsClient() {
                   </div>
                 </div>
 
-                <div className="mt-5 grid grid-cols-3 gap-3">
+                <div className="mt-4 grid grid-cols-3 gap-2">
                   <MiniStat
                     label="Detyrime"
                     value={lek(
@@ -660,24 +683,45 @@ function StatCard({
   title,
   value,
   icon,
+  tone,
 }: {
   title: string;
   value: string;
   icon: React.ReactNode;
+  tone: "violet" | "blue" | "emerald" | "amber";
 }) {
+  const tones = {
+    violet: {
+      card: "border-violet-100 bg-violet-50/60",
+      icon: "bg-violet-100 text-violet-700",
+    },
+    blue: {
+      card: "border-blue-100 bg-blue-50/60",
+      icon: "bg-blue-100 text-blue-700",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/60",
+      icon: "bg-emerald-100 text-emerald-700",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/60",
+      icon: "bg-amber-100 text-amber-700",
+    },
+  };
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-500">
+    <div className={`rounded-[22px] border p-4 shadow-sm ${tones[tone].card}`}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-slate-600">
           {title}
         </p>
 
-        <div className="rounded-xl bg-slate-100 p-2 text-slate-700">
+        <div className={`rounded-xl p-2 ${tones[tone].icon}`}>
           {icon}
         </div>
       </div>
 
-      <p className="mt-3 text-2xl font-bold text-slate-950">
+      <p className="mt-3 text-2xl font-black text-slate-950">
         {value}
       </p>
     </div>
@@ -692,12 +736,12 @@ function MiniStat({
   value: string;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-3">
-      <p className="text-xs font-semibold text-slate-500">
+    <div className="rounded-xl bg-slate-50 px-2.5 py-2.5">
+      <p className="text-[11px] font-semibold text-slate-500">
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-bold text-slate-900">
+      <p className="mt-1 text-xs font-bold text-slate-900">
         {value}
       </p>
     </div>
@@ -740,14 +784,14 @@ function PlayerDetails({
   return (
     <div className="fixed inset-0 z-[100] flex justify-end bg-slate-950/30 backdrop-blur-sm">
       <div className="h-full w-full max-w-xl overflow-y-auto bg-white shadow-2xl">
-        <div className="flex items-start justify-between border-b border-slate-200 p-6">
+        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-indigo-50/80 to-sky-50 p-6">
           <div>
-            <h2 className="text-xl font-bold text-slate-950">
+            <h2 className="text-xl font-black text-slate-950">
               {item.player.firstName}{" "}
               {item.player.lastName}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm font-medium text-slate-500">
               Menaxhimi i pagesave
             </p>
           </div>
@@ -755,7 +799,7 @@ function PlayerDetails({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"
+            className="rounded-xl bg-white/80 p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
@@ -763,7 +807,7 @@ function PlayerDetails({
         </div>
 
         <div className="space-y-6 p-6">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             <MiniStat
               label="Detyrime"
               value={lek(
@@ -788,12 +832,12 @@ function PlayerDetails({
             />
           </div>
 
-          <div className="rounded-2xl border border-slate-200 p-4">
-            <p className="text-xs font-semibold text-slate-500">
+          <div className="rounded-[20px] border border-violet-100 bg-gradient-to-br from-violet-50/60 to-white p-4 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.1em] text-violet-600">
               Tarifa aktuale
             </p>
 
-            <p className="mt-2 text-2xl font-bold text-slate-950">
+            <p className="mt-2 text-2xl font-black text-slate-950">
               {item.fee
                 ? lek(
                     item.fee.amountLek
@@ -822,14 +866,14 @@ function PlayerDetails({
 
           <div>
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-950">
+              <h3 className="text-sm font-bold text-slate-950">
                 Detyrimet
               </h3>
 
               <button
                 type="button"
                 onClick={onCharge}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-violet-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700"
               >
                 <Plus className="h-4 w-4" />
                 Shto detyrim
@@ -839,7 +883,7 @@ function PlayerDetails({
             <div className="mt-4 space-y-3">
               {item.charges.length ===
                 0 && (
-                <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-center text-sm text-slate-500">
+                <div className="rounded-[18px] border border-dashed border-violet-200 bg-violet-50/30 p-5 text-center text-sm text-slate-500">
                   Nuk ka detyrime të regjistruara.
                 </div>
               )}
@@ -848,7 +892,7 @@ function PlayerDetails({
                 (charge) => (
                   <div
                     key={charge.id}
-                    className="rounded-2xl border border-slate-200 p-4"
+                    className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm transition hover:border-violet-200"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -890,7 +934,7 @@ function PlayerDetails({
                           onClick={() =>
                             onEditCharge(charge)
                           }
-                          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+                          className="rounded-xl border border-violet-200 bg-violet-50 p-2 text-violet-700 transition hover:bg-violet-100"
                           aria-label="Ndrysho detyrimin"
                           title="Ndrysho detyrimin"
                         >
@@ -902,7 +946,7 @@ function PlayerDetails({
                           onClick={() =>
                             onDeleteCharge(charge)
                           }
-                          className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
+                          className="rounded-xl border border-red-200 bg-red-50/50 p-2 text-red-600 transition hover:bg-red-100"
                           aria-label="Fshi detyrimin"
                           title="Fshi detyrimin"
                         >
@@ -945,7 +989,7 @@ function PlayerDetails({
                               charge
                             )
                           }
-                          className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"
+                          className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
                         >
                           <Banknote className="h-4 w-4" />
                           Regjistro pagesë në dorë
@@ -976,7 +1020,7 @@ function PlayerDetails({
                             .map((payment) => (
                               <div
                                 key={payment.id}
-                                className="rounded-xl bg-emerald-50/60 p-3"
+                                className="rounded-[16px] border border-emerald-100 bg-emerald-50/60 p-3"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
@@ -1045,7 +1089,7 @@ function PlayerDetails({
           <div>
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-slate-950">
+              <h3 className="text-sm font-bold text-slate-950">
                   Historiku i pagesave
                 </h3>
 
@@ -1060,7 +1104,7 @@ function PlayerDetails({
             </div>
 
             {item.payments.length === 0 ? (
-              <div className="mt-4 rounded-2xl border border-dashed border-slate-200 p-5 text-center text-sm text-slate-500">
+              <div className="mt-4 rounded-[18px] border border-dashed border-violet-200 bg-violet-50/30 p-5 text-center text-sm text-slate-500">
                 Nuk ka pagesa të regjistruara.
               </div>
             ) : (
@@ -1080,9 +1124,9 @@ function PlayerDetails({
                     return (
                       <div
                         key={payment.id}
-                        className="rounded-2xl border border-slate-200 p-4"
+                        className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm transition hover:border-violet-200"
                       >
-                        <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-lg font-bold text-slate-950">
                               {lek(payment.amountLek)}
@@ -1097,14 +1141,14 @@ function PlayerDetails({
                             </p>
                           </div>
 
-                          <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
+                          <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-700 ring-1 ring-emerald-100">
                             <Banknote className="h-5 w-5" />
                           </div>
                         </div>
 
                         {payment.notes && (
                           <div className="mt-3 rounded-xl bg-slate-50 px-3 py-2">
-                            <p className="text-xs font-semibold text-slate-500">
+                            <p className="text-xs font-bold uppercase tracking-[0.1em] text-violet-600">
                               Shënime
                             </p>
 
@@ -1239,7 +1283,7 @@ function FeeModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1256,7 +1300,7 @@ function FeeModal({
             )
           }
           placeholder="P.sh. Tarifa mujore"
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1406,7 +1450,7 @@ function ChargeModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1424,7 +1468,7 @@ function ChargeModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1441,7 +1485,7 @@ function ChargeModal({
                 event.target.value
               )
             }
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
           >
             {MUAJT.map(
               (muaj, index) => (
@@ -1469,7 +1513,7 @@ function ChargeModal({
                 event.target.value
               )
             }
-            className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
           />
         </label>
       </div>
@@ -1487,7 +1531,7 @@ function ChargeModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1607,7 +1651,7 @@ function CashModal({
         {charge.title}
       </p>
 
-      <div className="mt-4 rounded-xl bg-slate-50 p-3">
+      <div className="mt-4 rounded-[18px] border border-emerald-100 bg-emerald-50/60 p-4">
         <p className="text-xs font-semibold text-slate-500">
           Shuma e mbetur
         </p>
@@ -1642,7 +1686,7 @@ function CashModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1659,7 +1703,7 @@ function CashModal({
               event.target.value
             )
           }
-          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1819,7 +1863,7 @@ function EditChargeModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1838,7 +1882,7 @@ function EditChargeModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -1855,7 +1899,7 @@ function EditChargeModal({
                 event.target.value
               )
             }
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
           >
             <option value="">
               Pa muaj
@@ -1887,7 +1931,7 @@ function EditChargeModal({
                 event.target.value
               )
             }
-            className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
           />
         </label>
       </div>
@@ -1905,7 +1949,7 @@ function EditChargeModal({
               event.target.value
             )
           }
-          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm"
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -2030,7 +2074,7 @@ function EditPaymentModal({
       title="Ndrysho pagesën"
       onClose={onClose}
     >
-      <div className="rounded-xl bg-slate-50 p-3">
+      <div className="rounded-[18px] border border-violet-100 bg-violet-50/60 p-4">
         <p className="text-xs font-semibold text-slate-500">
           Detyrimi
         </p>
@@ -2067,7 +2111,7 @@ function EditPaymentModal({
               event.target.value
             )
           }
-          className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -2084,7 +2128,7 @@ function EditPaymentModal({
               event.target.value
             )
           }
-          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none"
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
         />
       </label>
 
@@ -2127,7 +2171,7 @@ function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
         >
           Anulo
         </button>
@@ -2136,7 +2180,7 @@ function ConfirmModal({
           type="button"
           onClick={onConfirm}
           disabled={loading}
-          className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-60"
         >
           {loading && (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -2159,16 +2203,16 @@ function Modal({
 }) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-          <h2 className="text-xl font-bold text-slate-950">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[28px] border border-violet-100 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-indigo-50/80 to-sky-50 px-6 py-5">
+          <h2 className="text-xl font-black text-slate-950">
             {title}
           </h2>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"
+            className="rounded-xl bg-white/80 p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
@@ -2200,7 +2244,7 @@ function ModalActions({
         type="button"
         onClick={onClose}
         disabled={saving}
-        className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
       >
         Anulo
       </button>
@@ -2209,7 +2253,7 @@ function ModalActions({
         type="button"
         onClick={onSave}
         disabled={saving}
-        className="inline-flex h-11 items-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+        className="inline-flex h-11 items-center gap-2 rounded-xl bg-violet-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:opacity-60"
       >
         {saving && (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -2227,7 +2271,7 @@ function ErrorBox({
   text: string;
 }) {
   return (
-    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+    <div className="mb-4 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
       {text}
     </div>
   );
