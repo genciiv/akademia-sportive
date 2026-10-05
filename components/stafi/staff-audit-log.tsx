@@ -402,7 +402,7 @@ export function StaffAuditLog() {
             void loadAuditLogs()
           }
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RefreshCw
             size={15}
@@ -423,43 +423,43 @@ export function StaffAuditLog() {
         </div>
       ) : loading &&
         auditLogs.length === 0 ? (
-        <div className="px-5 py-6 text-sm text-slate-500">
+        <div className="px-5 py-7 text-sm text-slate-500">
           Duke ngarkuar historikun...
         </div>
       ) : auditLogs.length === 0 ? (
-        <div className="px-5 py-6 text-sm text-slate-500">
+        <div className="px-5 py-7 text-sm text-slate-500">
           Nuk ka ende veprime administrative të regjistruara.
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="space-y-2 p-3">
           {auditLogs.map(
             (entry) => (
               <div
                 key={entry.id}
-                className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-start sm:justify-between"
+                className="flex flex-col gap-3 rounded-[18px] border border-slate-100 bg-slate-50/50 px-4 py-4 transition hover:border-violet-100 hover:bg-white hover:shadow-sm sm:flex-row sm:items-start sm:justify-between"
               >
                 <div>
-                  <div className="font-semibold text-slate-900">
+                  <div className="font-bold text-slate-900">
                     {ACTION_LABELS[
                       entry.action
                     ] ||
                       entry.action}
                   </div>
 
-                  <div className="mt-1 text-sm text-slate-600">
+                  <div className="mt-1 text-sm font-medium text-slate-700">
                     {entry.entityLabel ||
                       "Pa emër"}
                   </div>
 
-                  <div className="mt-1 text-xs text-slate-500">
+                  <div className="mt-1.5 text-xs leading-5 text-slate-500">
                     {auditDetails(
                       entry
                     )}
                   </div>
                 </div>
 
-                <div className="text-left text-xs text-slate-500 sm:text-right">
-                  <div className="font-medium text-slate-600">
+                <div className="shrink-0 rounded-xl bg-white px-3 py-2 text-left text-xs text-slate-500 ring-1 ring-slate-100 sm:text-right">
+                  <div className="font-semibold text-slate-700">
                     {actorName(
                       entry
                     )}

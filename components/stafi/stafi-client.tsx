@@ -158,18 +158,18 @@ function statusClasses(
   status: MembershipStatus
 ) {
   if (status === "ACTIVE") {
-    return "bg-emerald-50 text-emerald-700";
+    return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100";
   }
 
   if (status === "SUSPENDED") {
-    return "bg-amber-50 text-amber-700";
+    return "bg-amber-50 text-amber-700 ring-1 ring-amber-100";
   }
 
   if (status === "INVITED") {
-    return "bg-blue-50 text-blue-700";
+    return "bg-blue-50 text-blue-700 ring-1 ring-blue-100";
   }
 
-  return "bg-slate-100 text-slate-600";
+  return "bg-slate-100 text-slate-600 ring-1 ring-slate-200";
 }
 
 export default function StafiClient() {
@@ -868,8 +868,8 @@ export default function StafiClient() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-5">
+        <section className="relative overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-indigo-50/70 to-sky-50 p-5 shadow-sm sm:p-6"><div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-violet-200/30 blur-3xl" /><div className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-sky-200/30 blur-3xl" /><div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-950">
               Stafi
@@ -890,7 +890,7 @@ export default function StafiClient() {
                   setMessage("");
                   setCreating(true);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex h-11 items-center gap-2 rounded-2xl bg-violet-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700"
               >
                 <Plus size={17} />
                 {"Shto anëtar"}
@@ -898,7 +898,7 @@ export default function StafiClient() {
             ) : null}
 
             {academyName ? (
-              <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600">
+              <div className="inline-flex h-11 items-center gap-2 rounded-2xl border border-violet-100 bg-white/80 px-4 text-sm font-semibold text-slate-700 shadow-sm">
                 <ShieldCheck size={17} />
                 {academyName}
               </div>
@@ -909,12 +909,14 @@ export default function StafiClient() {
         </div>
 
 
+        </section>
+
         {creating ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
             <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-              <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+              <div className="flex items-start justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-indigo-50/80 to-sky-50 px-6 py-5">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-950">
+                  <h2 className="text-xl font-black text-slate-950">
                     {"Shto anëtar stafi"}
                   </h2>
 
@@ -929,7 +931,7 @@ export default function StafiClient() {
                     setCreating(false)
                   }
                   disabled={saving}
-                  className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-xl bg-white/80 p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="Mbyll"
                 >
                   <X size={19} />
@@ -958,7 +960,7 @@ export default function StafiClient() {
                           event.target.value
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                       placeholder="Emri"
                     />
                   </label>
@@ -977,7 +979,7 @@ export default function StafiClient() {
                           event.target.value
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                       placeholder="Mbiemri"
                     />
                   </label>
@@ -998,7 +1000,7 @@ export default function StafiClient() {
                         event.target.value
                       )
                     }
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                     placeholder="email@example.com"
                   />
 
@@ -1021,7 +1023,7 @@ export default function StafiClient() {
                           event.target.value
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                       placeholder="069..."
                     />
                   </label>
@@ -1042,7 +1044,7 @@ export default function StafiClient() {
                           >
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                     >
                       {roleOptions.map(
                         (option) => (
@@ -1073,7 +1075,7 @@ export default function StafiClient() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Plus size={17} />
 
@@ -1100,13 +1102,13 @@ export default function StafiClient() {
         ) : null}
 
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+          <div className="rounded-[24px] border border-violet-100 bg-white p-6 text-sm text-slate-500 shadow-sm">
             Duke ngarkuar stafin...
           </div>
         ) : staff.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <div className="rounded-[24px] border border-violet-100 bg-gradient-to-br from-white to-violet-50/40 p-10 text-center shadow-sm">
             <UserCog
-              className="mx-auto text-slate-400"
+              className="mx-auto text-violet-400"
               size={32}
             />
 
@@ -1119,11 +1121,11 @@ export default function StafiClient() {
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead className="border-b border-slate-200 bg-slate-50">
-                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <tr className="text-left text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">
                     <th className="px-5 py-3">
                       Anëtari
                     </th>
@@ -1155,7 +1157,7 @@ export default function StafiClient() {
                     (member) => (
                       <tr
                         key={member.id}
-                        className="text-sm"
+                        className="text-sm transition hover:bg-violet-50/35"
                       >
                         <td className="px-5 py-4">
                           <div className="font-semibold text-slate-900">
@@ -1238,7 +1240,7 @@ export default function StafiClient() {
                                       invitingStaffId ===
                                       member.id
                                     }
-                                    className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
                                   >
                                     <MailPlus
                                       size={14}
@@ -1274,7 +1276,7 @@ export default function StafiClient() {
                                       member
                                     )
                                   }
-                                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100"
                                 >
                                   <Pencil
                                     size={14}
@@ -1289,7 +1291,7 @@ export default function StafiClient() {
                                       member
                                     )
                                   }
-                                  className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-2.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/50 px-2.5 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
                                 >
                                   <Trash2
                                     size={14}
@@ -1310,9 +1312,9 @@ export default function StafiClient() {
         )}
 
         {invitations.length > 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <h2 className="font-semibold text-slate-950">
+          <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white shadow-sm">
+            <div className="border-b border-blue-100 bg-gradient-to-r from-blue-50/80 to-violet-50/60 px-5 py-4">
+              <h2 className="font-bold text-slate-950">
                 Ftesat e stafit
               </h2>
 
@@ -1326,7 +1328,7 @@ export default function StafiClient() {
                 (invitation) => (
                   <div
                     key={invitation.id}
-                    className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 px-5 py-4 transition hover:bg-blue-50/30 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <div className="font-semibold text-slate-900">
@@ -1416,11 +1418,11 @@ export default function StafiClient() {
         ) : null}
 
         {editing ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-              <div className="flex items-center justify-between">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
+            <div className="w-full max-w-lg overflow-hidden rounded-[28px] border border-violet-100 bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-indigo-50/80 to-sky-50 px-6 py-5">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-950">
+                  <h2 className="text-xl font-black text-slate-950">
                     Ndrysho anëtarin e stafit
                   </h2>
 
@@ -1436,7 +1438,7 @@ export default function StafiClient() {
                   onClick={() =>
                     setEditing(null)
                   }
-                  className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                  className="rounded-xl bg-white/80 p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900"
                   aria-label="Mbyll"
                 >
                   <X size={20} />
@@ -1447,7 +1449,7 @@ export default function StafiClient() {
                 onSubmit={
                   saveChanges
                 }
-                className="mt-6 space-y-4"
+                className="space-y-5 p-6"
               >
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-slate-700">
@@ -1462,7 +1464,7 @@ export default function StafiClient() {
                           .value as StaffRole
                       )
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-slate-400"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                   >
                     {roleOptions.map(
                       (option) => (
@@ -1502,7 +1504,7 @@ export default function StafiClient() {
                             .value as EditableAccessStatus
                         )
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-slate-400"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                     >
                       <option value="ACTIVE">
                         Aktiv
@@ -1529,7 +1531,7 @@ export default function StafiClient() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {saving
                       ? "Duke ruajtur..."
