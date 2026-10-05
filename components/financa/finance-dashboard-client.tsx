@@ -9,7 +9,9 @@ import {
 import {
   Banknote,
   CircleDollarSign,
+  Download,
   Loader2,
+  Printer,
   ReceiptText,
   TrendingDown,
   TrendingUp,
@@ -29,6 +31,11 @@ import {
 } from "recharts";
 
 import { AppShell } from "@/components/app-shell";
+import {
+  downloadFinanceReportPdf,
+  printFinanceReport,
+} from "@/components/financa/finance-report-export";
+
 
 type FinanceResponse = {
   summary: {
@@ -243,6 +250,9 @@ export default function FinanceDashboardClient() {
   const [reportLoading, setReportLoading] =
     useState(false);
 
+  const [pdfLoading, setPdfLoading] =
+    useState(false);
+
   const [reportError, setReportError] =
     useState("");
 
@@ -391,6 +401,49 @@ export default function FinanceDashboardClient() {
     setReportFrom(from);
     setReportTo(to);
     void ngarkoRaportin(from, to);
+  }
+
+  function printoRaportin() {
+    if (!data?.periodReport) {
+      return;
+    }
+
+    setReportError("");
+
+    try {
+      printFinanceReport(
+        data.periodReport
+      );
+    } catch (error) {
+      setReportError(
+        error instanceof Error
+          ? error.message
+          : "Raporti nuk mund të printohej."
+      );
+    }
+  }
+
+  async function shkarkoRaportinPdf() {
+    if (!data?.periodReport) {
+      return;
+    }
+
+    setPdfLoading(true);
+    setReportError("");
+
+    try {
+      await downloadFinanceReportPdf(
+        data.periodReport
+      );
+    } catch (error) {
+      setReportError(
+        error instanceof Error
+          ? error.message
+          : "PDF-ja nuk mund të shkarkohej."
+      );
+    } finally {
+      setPdfLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -548,9 +601,37 @@ export default function FinanceDashboardClient() {
                 Rezultati i raportit
               </p>
 
-              <p className="text-xs font-semibold text-slate-500">
-                {data.periodReport.from} → {data.periodReport.to}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="mr-1 text-xs font-semibold text-slate-500">
+                  {data.periodReport.from} → {data.periodReport.to}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={printoRaportin}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <Printer className="h-4 w-4" />
+                  Printo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void shkarkoRaportinPdf()}
+                  disabled={pdfLoading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {pdfLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+
+                  {pdfLoading
+                    ? "Duke krijuar..."
+                    : "Shkarko PDF"}
+                </button>
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
