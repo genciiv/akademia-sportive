@@ -33,7 +33,46 @@ const EMPTY_FINANCE = {
   expenseCount: 0,
 };
 
-export async function GET() {
+function parseDateOnly(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+
+  const [year, month, day] =
+    value.split("-").map(Number);
+
+  const date = new Date(
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
+  );
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function nextUtcDay(date: Date) {
+  const result = new Date(date);
+
+  result.setUTCDate(
+    result.getUTCDate() + 1
+  );
+
+  return result;
+}
+
+export async function GET(
+  request: Request
+) {
   const access =
     await requireAnyAcademyPermission([
       PERMISSIONS.REPORTS_SPORTS_VIEW,
@@ -45,6 +84,82 @@ export async function GET() {
   }
 
   const { academyId } = access;
+
+  const url =
+    new URL(request.url);
+
+  const fromParam =
+    url.searchParams.get("from");
+
+  const toParam =
+    url.searchParams.get("to");
+
+  const hasAnyPeriodParam =
+    Boolean(fromParam || toParam);
+
+  if (
+    hasAnyPeriodParam &&
+    (!fromParam || !toParam)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Vendos të dyja datat: nga dhe deri më.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  let period:
+    | {
+        from: string;
+        to: string;
+        start: Date;
+        endExclusive: Date;
+      }
+    | null = null;
+
+  if (fromParam && toParam) {
+    const start =
+      parseDateOnly(fromParam);
+
+    const end =
+      parseDateOnly(toParam);
+
+    if (!start || !end) {
+      return NextResponse.json(
+        {
+          error:
+            "Datat duhet të jenë në formatin YYYY-MM-DD.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (start.getTime() > end.getTime()) {
+      return NextResponse.json(
+        {
+          error:
+            "Data 'Nga' nuk mund të jetë pas datës 'Deri më'.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    period = {
+      from: fromParam,
+      to: toParam,
+      start,
+      endExclusive:
+        nextUtcDay(end),
+    };
+  }
 
   const canViewSports =
     access.permissions.includes(
@@ -379,6 +494,160 @@ export async function GET() {
     };
   }
 
+  let periodReport:
+    | {
+        from: string;
+        to: string;
+
+        sports: {
+          trainingSessions: number;
+          matches: number;
+        };
+
+        finance: {
+          collectedLek: number;
+          expensesLek: number;
+          netLek: number;
+          paymentCount: number;
+          expenseCount: number;
+        };
+      }
+    | null = null;
+
+  if (period) {
+    let periodSports = {
+      trainingSessions: 0,
+      matches: 0,
+    };
+
+    if (canViewSports) {
+      const [
+        trainingSessions,
+        matches,
+      ] = await Promise.all([
+        prisma.trainingSession.count({
+          where: {
+            academyId,
+
+            startsAt: {
+              gte: period.start,
+              lt: period.endExclusive,
+            },
+
+            ...(teamScope?.isScoped
+              ? {
+                  teamId: {
+                    in: teamScope.teamIds,
+                  },
+                }
+              : {}),
+          },
+        }),
+
+        prisma.match.count({
+          where: {
+            academyId,
+
+            startsAt: {
+              gte: period.start,
+              lt: period.endExclusive,
+            },
+
+            ...(teamScope?.isScoped
+              ? {
+                  teamId: {
+                    in: teamScope.teamIds,
+                  },
+                }
+              : {}),
+          },
+        }),
+      ]);
+
+      periodSports = {
+        trainingSessions,
+        matches,
+      };
+    }
+
+    let periodFinance = {
+      collectedLek: 0,
+      expensesLek: 0,
+      netLek: 0,
+      paymentCount: 0,
+      expenseCount: 0,
+    };
+
+    if (canViewFinance) {
+      const [
+        periodPayments,
+        periodExpenses,
+      ] = await Promise.all([
+        prisma.cashPayment.findMany({
+          where: {
+            academyId,
+
+            paidAt: {
+              gte: period.start,
+              lt: period.endExclusive,
+            },
+          },
+
+          select: {
+            amountLek: true,
+          },
+        }),
+
+        prisma.expense.findMany({
+          where: {
+            academyId,
+
+            expenseDate: {
+              gte: period.start,
+              lt: period.endExclusive,
+            },
+          },
+
+          select: {
+            amountLek: true,
+          },
+        }),
+      ]);
+
+      const collectedLek =
+        periodPayments.reduce(
+          (sum, payment) =>
+            sum + payment.amountLek,
+          0
+        );
+
+      const expensesLek =
+        periodExpenses.reduce(
+          (sum, expense) =>
+            sum + expense.amountLek,
+          0
+        );
+
+      periodFinance = {
+        collectedLek,
+        expensesLek,
+        netLek:
+          collectedLek - expensesLek,
+        paymentCount:
+          periodPayments.length,
+        expenseCount:
+          periodExpenses.length,
+      };
+    }
+
+    periodReport = {
+      from: period.from,
+      to: period.to,
+      sports: periodSports,
+      finance: periodFinance,
+    };
+  }
+
   return NextResponse.json({
     generatedAt:
       new Date().toISOString(),
@@ -391,5 +660,6 @@ export async function GET() {
 
     sports,
     finance,
+    periodReport,
   });
 }
