@@ -234,13 +234,13 @@ export default function CandidateDetails({
   return (
     <div className="fixed inset-0 z-[90] bg-slate-950/35 backdrop-blur-[2px]">
       <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-5">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-indigo-50/80 to-sky-50 px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-600">
               Detajet e kandidatit
             </p>
 
-            <h2 className="mt-1 text-xl font-bold text-slate-900">
+            <h2 className="mt-1 text-xl font-black text-slate-950">
               {candidate
                 ? `${candidate.firstName} ${candidate.lastName}`
                 : "Kandidati"}
@@ -250,7 +250,7 @@ export default function CandidateDetails({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+            className="rounded-xl bg-white/80 p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
@@ -439,7 +439,7 @@ export default function CandidateDetails({
                         candidate
                       )
                     }
-                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-50 px-4 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-violet-100 px-4 text-sm font-bold text-violet-700 transition hover:bg-violet-200"
                   >
                     <Plus className="h-4 w-4" />
                     Shto vëzhgim
@@ -466,7 +466,7 @@ export default function CandidateDetails({
                         key={
                           observation.id
                         }
-                        className="rounded-2xl border border-slate-200 p-4"
+                        className="rounded-[20px] border border-slate-200 bg-slate-50/50 p-4 transition hover:border-violet-200 hover:bg-white hover:shadow-sm"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -496,7 +496,7 @@ export default function CandidateDetails({
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 font-bold text-slate-900">
+                            <div className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-bold text-amber-700">
                               <Star className="h-4 w-4" />
                               {observation.overallRating ?? "-"}
                             </div>
@@ -511,7 +511,7 @@ export default function CandidateDetails({
                                       observation
                                     )
                                   }
-                                  className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
+                                  className="rounded-lg p-2 text-slate-500 transition hover:bg-violet-50 hover:text-violet-700"
                                   aria-label="Edito vëzhgimin"
                                 >
                                   <Pencil className="h-4 w-4" />
@@ -633,7 +633,7 @@ function Info({
   value: string;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-4">
+    <div className="rounded-[18px] border border-slate-200 bg-slate-50/70 p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
@@ -658,7 +658,7 @@ function Note({
         {label}
       </p>
 
-      <p className="mt-2 text-xl font-bold text-slate-900">
+      <p className="mt-2 text-xl font-black text-slate-950">
         {value ?? "-"}
       </p>
     </div>
@@ -673,7 +673,7 @@ function BllokTeksti({
   value: string | null;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <div className="rounded-[18px] border border-slate-200 bg-white p-4 shadow-sm">
       <h4 className="text-sm font-bold text-slate-800">
         {title}
       </h4>

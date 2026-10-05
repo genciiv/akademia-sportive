@@ -189,69 +189,85 @@ export default function ScoutingClient() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="mb-1 text-sm font-semibold text-indigo-600">
-              Zbulimi i talenteve
-            </p>
+      <div className="space-y-5">
+        <section className="relative overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-indigo-50/70 to-sky-50 p-5 shadow-sm sm:p-6">
+          <div className="absolute -right-14 -top-16 h-52 w-52 rounded-full bg-violet-200/30 blur-3xl" />
 
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Skautimi
-            </h1>
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100">
+                <Target className="h-6 w-6" />
+              </div>
 
-            <p className="mt-2 max-w-3xl text-sm text-slate-500">
-              Menaxho kandidatët, vlerësimet dhe historikun e vëzhgimeve sportive.
-            </p>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-600">
+                  Zbulimi i talenteve
+                </p>
+
+                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                  Skautimi
+                </h1>
+
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+                  Menaxho kandidatët, vlerësimet dhe historikun e vëzhgimeve sportive.
+                </p>
+              </div>
+            </div>
+
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => {
+                  setKandidatiPerEditim(null);
+                  setModalHapur(true);
+                }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-violet-700"
+              >
+                <Plus className="h-4 w-4" />
+                Shto kandidat
+              </button>
+            )}
           </div>
-          {canManage && (
-            <button
-              type="button"
-              onClick={() => {
-                setKandidatiPerEditim(null);
-                setModalHapur(true);
-              }}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-            >
-              <Plus className="h-4 w-4" />
-              Shto kandidat
-            </button>
-          )}
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <Karte
             title="Kandidatë gjithsej"
+            tone="violet"
             value={total}
             icon={UsersRound}
           />
 
           <Karte
             title="Në vëzhgim"
+            tone="blue"
             value={neVezhgim}
             icon={Eye}
           />
 
           <Karte
             title="Listë e shkurtër"
+            tone="amber"
             value={shortlist}
             icon={Star}
           />
 
           <Karte
             title="Në provë"
+            tone="cyan"
             value={neProve}
             icon={Target}
           />
 
           <Karte
             title="Të afruar"
+            tone="emerald"
             value={teAfuar}
             icon={UserCheck}
           />
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_180px]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -264,7 +280,7 @@ export default function ScoutingClient() {
                   )
                 }
                 placeholder="Kërko kandidat, klub, pozicion ose qytet"
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
               />
             </div>
 
@@ -275,7 +291,7 @@ export default function ScoutingClient() {
                   event.target.value
                 )
               }
-              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="">
                 Të gjitha statuset
@@ -302,7 +318,7 @@ export default function ScoutingClient() {
                   event.target.value
                 )
               }
-              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="">
                 Të gjitha prioritetet
@@ -329,7 +345,7 @@ export default function ScoutingClient() {
                   event.target.value
                 )
               }
-              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
             >
               <option value="">
                 Të gjitha sportet
@@ -351,8 +367,8 @@ export default function ScoutingClient() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-4 sm:px-6">
             <div>
               <h2 className="font-semibold text-slate-900">
                 Kandidatët
@@ -363,7 +379,7 @@ export default function ScoutingClient() {
               </p>
             </div>
 
-            <ClipboardList className="h-5 w-5 text-slate-400" />
+            <ClipboardList className="h-5 w-5 text-violet-500" />
           </div>
 
           {loading ? (
@@ -383,13 +399,13 @@ export default function ScoutingClient() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="space-y-3 bg-slate-50/40 p-3 sm:p-4">
               {kandidatet.map(
                 (candidate) => (
                   <div
                     key={candidate.id}
                     onClick={() => setCandidateIdAktiv(candidate.id)}
-                    className="grid cursor-pointer gap-4 px-5 py-4 transition hover:bg-slate-50 lg:grid-cols-[1.5fr_1fr_1fr_160px_130px]"
+                    className="grid cursor-pointer gap-4 rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md sm:p-5 lg:grid-cols-[1.5fr_1fr_1fr_160px_130px] lg:items-center"
                   >
                     <div>
                       <p className="font-semibold text-slate-900">
@@ -518,28 +534,64 @@ function Karte({
   title,
   value,
   icon: Icon,
+  tone,
 }: {
   title: string;
   value: number;
   icon: React.ComponentType<{
     className?: string;
   }>;
+  tone:
+    | "violet"
+    | "blue"
+    | "amber"
+    | "cyan"
+    | "emerald";
 }) {
+  const tones = {
+    violet: {
+      card: "border-violet-100 bg-violet-50/70",
+      icon: "text-violet-600 ring-violet-100",
+    },
+    blue: {
+      card: "border-blue-100 bg-blue-50/70",
+      icon: "text-blue-600 ring-blue-100",
+    },
+    amber: {
+      card: "border-amber-100 bg-amber-50/70",
+      icon: "text-amber-600 ring-amber-100",
+    },
+    cyan: {
+      card: "border-cyan-100 bg-cyan-50/70",
+      icon: "text-cyan-600 ring-cyan-100",
+    },
+    emerald: {
+      card: "border-emerald-100 bg-emerald-50/70",
+      icon: "text-emerald-600 ring-emerald-100",
+    },
+  } as const;
+
+  const style = tones[tone];
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div
+      className={`rounded-[22px] border p-5 shadow-sm ${style.card}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-slate-500">
+          <p className="text-sm font-semibold text-slate-600">
             {title}
           </p>
 
-          <p className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+          <p className="mt-3 text-3xl font-black tracking-tight text-slate-950">
             {value}
           </p>
         </div>
 
-        <div className="rounded-xl bg-slate-100 p-2.5">
-          <Icon className="h-5 w-5 text-slate-600" />
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ${style.icon}`}
+        >
+          <Icon className="h-5 w-5" />
         </div>
       </div>
     </div>
