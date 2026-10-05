@@ -219,10 +219,10 @@ export default function CandidateModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-5">
+      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-violet-100 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-50 via-indigo-50/80 to-sky-50 px-6 py-5">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-black text-slate-950">
               {eshteEditim
                 ? "Edito kandidatin"
                 : "Shto kandidat"}
@@ -238,7 +238,7 @@ export default function CandidateModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+            className="rounded-xl bg-white/80 p-2 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-white hover:text-slate-900"
             aria-label="Mbyll"
           >
             <X className="h-5 w-5" />
@@ -475,12 +475,12 @@ export default function CandidateModal({
           </div>
         </div>
 
-        <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4">
+        <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+            className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
           >
             Anulo
           </button>
@@ -516,7 +516,7 @@ function Seksion({
 }) {
   return (
     <section>
-      <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-500">
+      <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-violet-600">
         {title}
       </h3>
 
@@ -550,7 +550,7 @@ function Fusha({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
       />
     </label>
   );
@@ -580,7 +580,7 @@ function Nota({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
       />
     </label>
   );
@@ -646,7 +646,7 @@ function TekstIgjate({
           onChange(event.target.value)
         }
         rows={4}
-        className="w-full resize-none rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-slate-400"
+        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
       />
     </label>
   );
