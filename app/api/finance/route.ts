@@ -10,7 +10,48 @@ import {
 import { prisma } from "@/lib/prisma";
 
 
-export async function GET() {
+function parseDateOnlyUtc(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+
+  const [year, month, day] =
+    value.split("-").map(Number);
+
+  const date = new Date(
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    )
+  );
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function addUtcDays(
+  date: Date,
+  days: number
+) {
+  return new Date(
+    date.getTime() +
+      days * 24 * 60 * 60 * 1000
+  );
+}
+
+export async function GET(request: Request) {
   const access =
     await requireAcademyPermission(
       PERMISSIONS.FINANCE_VIEW
@@ -19,6 +60,75 @@ export async function GET() {
   if (!access.ok) {
     return access.response;
   }
+
+  const { searchParams } =
+    new URL(request.url);
+
+  const fromParam =
+    searchParams.get("from");
+
+  const toParam =
+    searchParams.get("to");
+
+  const hasPeriodParams =
+    Boolean(fromParam || toParam);
+
+  if (
+    hasPeriodParams &&
+    (!fromParam || !toParam)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Duhet të përcaktohen të dyja datat: nga dhe deri më.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const periodFrom =
+    parseDateOnlyUtc(fromParam);
+
+  const periodTo =
+    parseDateOnlyUtc(toParam);
+
+  if (
+    hasPeriodParams &&
+    (!periodFrom || !periodTo)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Datat e raportit duhet të jenë në formatin YYYY-MM-DD.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (
+    periodFrom &&
+    periodTo &&
+    periodFrom > periodTo
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Data fillestare nuk mund të jetë pas datës përfundimtare.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const periodEndExclusive =
+    periodTo
+      ? addUtcDays(periodTo, 1)
+      : null;
 
   const now = new Date();
 
@@ -417,7 +527,161 @@ export async function GET() {
     )
     .slice(0, 12);
 
+  let periodReport = null;
+
+  if (
+    periodFrom &&
+    periodTo &&
+    periodEndExclusive
+  ) {
+    const [
+      periodPayments,
+      periodExpenses,
+    ] = await Promise.all([
+      prisma.cashPayment.findMany({
+        where: {
+          academyId:
+            access.academyId,
+          paidAt: {
+            gte: periodFrom,
+            lt: periodEndExclusive,
+          },
+        },
+        orderBy: {
+          paidAt: "desc",
+        },
+        select: {
+          id: true,
+          amountLek: true,
+          paidAt: true,
+          notes: true,
+          player: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          charge: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      }),
+
+      prisma.expense.findMany({
+        where: {
+          academyId:
+            access.academyId,
+          expenseDate: {
+            gte: periodFrom,
+            lt: periodEndExclusive,
+          },
+        },
+        orderBy: [
+          {
+            expenseDate: "desc",
+          },
+          {
+            createdAt: "desc",
+          },
+        ],
+        select: {
+          id: true,
+          category: true,
+          title: true,
+          amountLek: true,
+          expenseDate: true,
+          description: true,
+          notes: true,
+        },
+      }),
+    ]);
+
+    const collectedLek =
+      periodPayments.reduce(
+        (sum, payment) =>
+          sum + payment.amountLek,
+        0
+      );
+
+    const expensesLek =
+      periodExpenses.reduce(
+        (sum, expense) =>
+          sum + expense.amountLek,
+        0
+      );
+
+    const categoryMap =
+      new Map<
+        string,
+        {
+          category: string;
+          totalLek: number;
+          count: number;
+        }
+      >();
+
+    for (const expense of periodExpenses) {
+      const current =
+        categoryMap.get(
+          expense.category
+        ) ?? {
+          category:
+            expense.category,
+          totalLek: 0,
+          count: 0,
+        };
+
+      current.totalLek +=
+        expense.amountLek;
+
+      current.count += 1;
+
+      categoryMap.set(
+        expense.category,
+        current
+      );
+    }
+
+    const expenseCategories =
+      Array.from(
+        categoryMap.values()
+      ).sort(
+        (a, b) =>
+          b.totalLek - a.totalLek
+      );
+
+    periodReport = {
+      from: fromParam,
+      to: toParam,
+      summary: {
+        collectedLek,
+        expensesLek,
+        netLek:
+          collectedLek - expensesLek,
+        paymentCount:
+          periodPayments.length,
+        expenseCount:
+          periodExpenses.length,
+        payingPlayers:
+          new Set(
+            periodPayments.map(
+              (payment) =>
+                payment.player.id
+            )
+          ).size,
+      },
+      expenseCategories,
+      payments: periodPayments,
+      expenses: periodExpenses,
+    };
+  }
+
   return NextResponse.json({
+    periodReport,
     summary: {
       totalCollected,
       collectedThisMonth,
