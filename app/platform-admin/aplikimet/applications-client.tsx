@@ -297,7 +297,7 @@ export default function ApplicationsClient({
         </p>
       </div>
 
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-6 flex gap-2 overflow-x-auto rounded-[22px] border border-slate-200/80 bg-white p-2 shadow-sm">
         {filters.map((item) => {
           const active = filter === item.key;
 
@@ -307,10 +307,10 @@ export default function ApplicationsClient({
               type="button"
               onClick={() => setFilter(item.key)}
               className={[
-                "whitespace-nowrap rounded-xl px-3.5 py-2 text-xs font-semibold transition",
+                "whitespace-nowrap rounded-2xl px-3.5 py-2 text-xs font-bold transition",
                 active
-                  ? "bg-slate-950 text-white"
-                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+                  ? "bg-violet-600 text-white shadow-sm shadow-violet-200"
+                  : "text-slate-600 hover:bg-violet-50 hover:text-violet-700",
               ].join(" ")}
             >
               {item.label}
@@ -328,8 +328,8 @@ export default function ApplicationsClient({
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[420px_minmax(0,1fr)]">
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-100 px-4 py-3">
+        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+          <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50/80 via-white to-sky-50/60 px-4 py-3">
             <p className="text-xs font-semibold text-slate-500">
               {visible.length} aplikime
             </p>
@@ -353,10 +353,10 @@ export default function ApplicationsClient({
                   type="button"
                   onClick={() => setSelectedId(application.id)}
                   className={[
-                    "block w-full border-b border-slate-100 px-4 py-4 text-left transition last:border-b-0",
+                    "block w-full border-l-4 border-b border-slate-100 px-4 py-4 text-left transition last:border-b-0",
                     selected?.id === application.id
-                      ? "bg-blue-50/70"
-                      : "hover:bg-slate-50",
+                      ? "border-l-violet-600 bg-gradient-to-r from-violet-50 via-white to-white"
+                      : "border-l-transparent hover:bg-violet-50/40",
                   ].join(" ")}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -397,8 +397,8 @@ export default function ApplicationsClient({
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white">
-              <div className="border-b border-slate-100 p-5 sm:p-6">
+            <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+              <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-sky-50/50 p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex items-center gap-2">
@@ -422,7 +422,7 @@ export default function ApplicationsClient({
                 </div>
               </div>
 
-              <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-2">
+              <div className="grid gap-3 p-5 sm:p-6 xl:grid-cols-2">
                 <Info
                   icon={<UserRound size={15} />}
                   label="Personi i kontaktit"
@@ -473,7 +473,7 @@ export default function ApplicationsClient({
               </div>
 
               {selected.message ? (
-                <div className="border-t border-slate-100 p-5 sm:p-6">
+                <div className="border-t border-violet-100 bg-slate-50/30 p-5 sm:p-6">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
                     <MessageSquareText size={15} />
                     Mesazhi
@@ -485,7 +485,7 @@ export default function ApplicationsClient({
                 </div>
               ) : null}
 
-              <div className="border-t border-slate-100 p-5 sm:p-6">
+              <div className="border-t border-violet-100 bg-slate-50/30 p-5 sm:p-6">
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-600">
                     Shënime private
@@ -498,7 +498,7 @@ export default function ApplicationsClient({
                     rows={4}
                     maxLength={2000}
                     placeholder="Shënime për komunikimin me akademinë..."
-                    className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 disabled:bg-slate-50"
+                    className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-violet-300 focus:ring-4 focus:ring-violet-50 disabled:bg-slate-50"
                   />
                 </label>
 
@@ -514,7 +514,7 @@ export default function ApplicationsClient({
                       type="button"
                       disabled={saving}
                       onClick={() => updateStatus("CONTACTED")}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50"
                     >
                       <Phone size={14} />
                       Kontaktuar
@@ -524,7 +524,7 @@ export default function ApplicationsClient({
                       type="button"
                       disabled={saving}
                       onClick={() => updateStatus("APPROVED")}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-700 disabled:opacity-50"
                     >
                       <CheckCircle2 size={14} />
                       Aprovo
@@ -534,7 +534,7 @@ export default function ApplicationsClient({
                       type="button"
                       disabled={saving}
                       onClick={() => updateStatus("REJECTED")}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
                     >
                       <XCircle size={14} />
                       Refuzo
@@ -583,28 +583,32 @@ function Info({
   href?: string;
 }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-400">
-        {icon}
-        {label}
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 transition hover:border-violet-200 hover:bg-violet-50/40">
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          {icon}
+        </span>
+
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500">
+          {label}
+        </span>
       </div>
 
       {href ? (
         <a
           href={href}
-          className="mt-1.5 block break-all text-sm font-semibold text-blue-600 hover:underline"
+          className="mt-3 block break-all text-sm font-bold text-violet-700 hover:underline"
         >
           {value}
         </a>
       ) : (
-        <p className="mt-1.5 break-words text-sm font-semibold text-slate-800">
+        <p className="mt-3 break-words text-sm font-bold text-slate-950">
           {value}
         </p>
       )}
     </div>
   );
 }
-
 const MONTHS_SQ = [
   "jan",
   "shk",
