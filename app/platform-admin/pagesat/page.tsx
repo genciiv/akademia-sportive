@@ -43,6 +43,7 @@ export default async function PlatformAdminPaymentsPage() {
             id: true,
             name: true,
             city: true,
+            status: true,
 
             owner: {
               select: {
