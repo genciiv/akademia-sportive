@@ -861,6 +861,7 @@ test("Prisma academy routes retain an academy-scope marker", () => {
       "app/api/platform-admin/academy-applications/[applicationId]/route.ts",
       "app/api/platform-admin/subscriptions/[subscriptionId]/route.ts",
       "app/api/platform-admin/academies/[academyId]/status/route.ts",
+      "app/api/platform-admin/plans/[planId]/route.ts",
       "app/api/platform-admin/users/[userId]/access/route.ts",
       "app/api/platform-admin/users/[userId]/password-reset/route.ts",
       "app/api/platform-admin/users/[userId]/route.ts",

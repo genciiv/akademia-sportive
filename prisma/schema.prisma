@@ -82,16 +82,16 @@ enum AcademyStaffStatus {
 }
 
 model User {
-  id            String  @id @default(cuid())
-  name          String
-  firstName     String?
-  lastName      String?
-  email         String  @unique
-  emailVerified Boolean @default(false)
+  id                 String  @id @default(cuid())
+  name               String
+  firstName          String?
+  lastName           String?
+  email              String  @unique
+  emailVerified      Boolean @default(false)
   isActive           Boolean @default(true)
   mustChangePassword Boolean @default(false)
-  phone         String?
-  image         String?
+  phone              String?
+  image              String?
 
   role PlatformRole @default(USER)
 
@@ -111,6 +111,8 @@ model User {
   updatedAt                        DateTime                   @updatedAt
   createdInterAcademyMatchRequests InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestCreator")
   notificationReads                NotificationRead[]
+
+  platformAuditLogs PlatformAuditLog[] @relation("PlatformAuditLogActor")
 }
 
 model Session {
@@ -1683,6 +1685,30 @@ model KnowledgeArticle {
   @@index([academyId, audience])
   @@index([academyId, isPinned])
   @@index([authorId])
+}
+
+model PlatformAuditLog {
+  id String @id @default(cuid())
+
+  actorUserId String?
+  actorUser   User?   @relation("PlatformAuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  action String
+
+  entityType  String
+  entityId    String?
+  entityLabel String?
+
+  beforeData Json?
+  afterData  Json?
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([entityType, entityId])
 }
 
 model Plan {
