@@ -1,11 +1,16 @@
 "use client";
 
 import {
+  Ban,
   Building2,
   CalendarDays,
+  Loader2,
   MapPin,
+  Power,
+  RotateCcw,
   Search,
   ShieldCheck,
+  TriangleAlert,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -58,15 +63,43 @@ type Academy = {
 type Filter =
   | "ALL"
   | "TRIAL"
-  | "ACTIVE";
+  | "ACTIVE"
+  | "SUSPENDED";
+
+type StatusAction =
+  | "SUSPEND"
+  | "REACTIVATE";
 
 export function AcademiesClient({
   initialAcademies,
 }: {
   initialAcademies: Academy[];
 }) {
+  const [academies, setAcademies] =
+    useState<Academy[]>(
+      initialAcademies
+    );
+
   const [query, setQuery] =
     useState("");
+
+  const [
+    statusTarget,
+    setStatusTarget,
+  ] = useState<{
+    academy: Academy;
+    action: StatusAction;
+  } | null>(null);
+
+  const [
+    statusLoading,
+    setStatusLoading,
+  ] = useState(false);
+
+  const [
+    statusError,
+    setStatusError,
+  ] = useState("");
 
   const [filter, setFilter] =
     useState<Filter>("ALL");
@@ -78,27 +111,32 @@ export function AcademiesClient({
 
   const counts = useMemo(
     () => ({
-      all: initialAcademies.length,
+      all: academies.length,
 
-      trial: initialAcademies.filter(
+      trial: academies.filter(
         (academy) =>
           academy.status === "TRIAL"
       ).length,
 
-      active: initialAcademies.filter(
+      active: academies.filter(
         (academy) =>
-          academy.subscription?.status ===
-          "ACTIVE"
+          academy.status === "ACTIVE"
+      ).length,
+
+      suspended: academies.filter(
+        (academy) =>
+          academy.status ===
+          "SUSPENDED"
       ).length,
     }),
-    [initialAcademies]
+    [academies]
   );
 
   const visible = useMemo(() => {
     const value =
       query.trim().toLowerCase();
 
-    return initialAcademies.filter(
+    return academies.filter(
       (academy) => {
         if (
           filter === "TRIAL" &&
@@ -109,8 +147,15 @@ export function AcademiesClient({
 
         if (
           filter === "ACTIVE" &&
-          academy.subscription?.status !==
-            "ACTIVE"
+          academy.status !== "ACTIVE"
+        ) {
+          return false;
+        }
+
+        if (
+          filter === "SUSPENDED" &&
+          academy.status !==
+            "SUSPENDED"
         ) {
           return false;
         }
@@ -138,11 +183,85 @@ export function AcademiesClient({
       }
     );
   }, [
-    initialAcademies,
+    academies,
     query,
     filter,
   ]);
 
+  async function updateAcademyStatus() {
+    if (
+      !statusTarget ||
+      statusLoading
+    ) {
+      return;
+    }
+
+    setStatusLoading(true);
+    setStatusError("");
+
+    try {
+      const response = await fetch(
+        `/api/platform-admin/academies/${statusTarget.academy.id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            action:
+              statusTarget.action,
+          }),
+        }
+      );
+
+      const data =
+        (await response.json().catch(
+          () => null
+        )) as {
+          error?: string;
+          academy?: {
+            id: string;
+            status: string;
+          };
+        } | null;
+
+      if (
+        !response.ok ||
+        !data?.academy
+      ) {
+        setStatusError(
+          data?.error ||
+            "Veprimi nuk mund të kryhej."
+        );
+        return;
+      }
+
+      const updatedAcademy =
+        data.academy;
+
+      setAcademies((current) =>
+        current.map((academy) =>
+          academy.id ===
+          updatedAcademy.id
+            ? {
+                ...academy,
+                status:
+                  updatedAcademy.status,
+              }
+            : academy
+        )
+      );
+
+      setStatusTarget(null);
+    } catch {
+      setStatusError(
+        "Ndodhi një problem gjatë komunikimit me serverin."
+      );
+    } finally {
+      setStatusLoading(false);
+    }
+  }
   const selected =
     visible.find(
       (academy) =>
@@ -164,7 +283,7 @@ export function AcademiesClient({
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
           title="Akademi totale"
           value={counts.all}
@@ -182,10 +301,18 @@ export function AcademiesClient({
         />
 
         <Stat
-          title="Abonime aktive"
+          title="Akademi aktive"
           value={counts.active}
           icon={
             <ShieldCheck size={18} />
+          }
+        />
+
+        <Stat
+          title="Çaktivizuara"
+          value={counts.suspended}
+          icon={
+            <Ban size={18} />
           }
         />
       </div>
@@ -233,6 +360,18 @@ export function AcademiesClient({
             }
           >
             Aktive {counts.active}
+          </FilterButton>
+
+          <FilterButton
+            active={
+              filter === "SUSPENDED"
+            }
+            onClick={() =>
+              setFilter("SUSPENDED")
+            }
+          >
+            Çaktivizuara{" "}
+            {counts.suspended}
           </FilterButton>
         </div>
       </div>
@@ -543,10 +682,179 @@ export function AcademiesClient({
                   </p>
                 )}
               </div>
+              <div className="border-t border-violet-100 p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                      Statusi i akademisë
+                    </p>
+
+                    <div className="mt-2 flex items-center gap-2">
+                      <AcademyStatus
+                        status={
+                          selected.status
+                        }
+                      />
+
+                      <span className="text-xs text-slate-500">
+                        {selected.status ===
+                        "SUSPENDED"
+                          ? "Aksesi në akademi është i bllokuar."
+                          : "Akademia mund të përdoret normalisht."}
+                      </span>
+                    </div>
+                  </div>
+
+                  {selected.status ===
+                  "SUSPENDED" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatusError("");
+                        setStatusTarget({
+                          academy: selected,
+                          action:
+                            "REACTIVATE",
+                        });
+                      }}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                    >
+                      <RotateCcw
+                        size={16}
+                      />
+
+                      Riaktivizo akademinë
+                    </button>
+                  ) : selected.status !==
+                    "CANCELLED" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatusError("");
+                        setStatusTarget({
+                          academy: selected,
+                          action:
+                            "SUSPEND",
+                        });
+                      }}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-800 transition hover:bg-amber-100"
+                    >
+                      <Power size={16} />
+
+                      Çaktivizo akademinë
+                    </button>
+                  ) : null}
+                </div>
+
+                {selected.status ===
+                "SUSPENDED" ? (
+                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                    <div className="flex gap-3">
+                      <TriangleAlert
+                        size={18}
+                        className="mt-0.5 shrink-0 text-amber-700"
+                      />
+
+                      <p className="text-sm leading-6 text-amber-900">
+                        Pronari, stafi dhe sportistët nuk mund ta përdorin këtë akademi.
+                        Të gjitha të dhënat dhe historiku ruhen.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
           )}
         </section>
       </div>
+      {statusTarget ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white p-6 shadow-2xl">
+            <div
+              className={[
+                "flex h-12 w-12 items-center justify-center rounded-2xl",
+                statusTarget.action ===
+                "SUSPEND"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-emerald-100 text-emerald-700",
+              ].join(" ")}
+            >
+              {statusTarget.action ===
+              "SUSPEND" ? (
+                <TriangleAlert size={23} />
+              ) : (
+                <RotateCcw size={22} />
+              )}
+            </div>
+
+            <h3 className="mt-5 text-xl font-black text-slate-950">
+              {statusTarget.action ===
+              "SUSPEND"
+                ? "Çaktivizo akademinë?"
+                : "Riaktivizo akademinë?"}
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {statusTarget.action ===
+              "SUSPEND"
+                ? `Pronari, stafi dhe sportistët e "${statusTarget.academy.name}" nuk do të mund ta përdorin akademinë derisa ta riaktivizosh. Të dhënat nuk do të fshihen.`
+                : `"${statusTarget.academy.name}" do të rikthehet në përdorim dhe përdoruesit do të kenë përsëri akses.`}
+            </p>
+
+            {statusError ? (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                {statusError}
+              </div>
+            ) : null}
+
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={statusLoading}
+                onClick={() => {
+                  setStatusTarget(null);
+                  setStatusError("");
+                }}
+                className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+              >
+                Anulo
+              </button>
+
+              <button
+                type="button"
+                disabled={statusLoading}
+                onClick={
+                  updateAcademyStatus
+                }
+                className={[
+                  "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold text-white transition disabled:opacity-60",
+                  statusTarget.action ===
+                  "SUSPEND"
+                    ? "bg-amber-600 hover:bg-amber-700"
+                    : "bg-emerald-600 hover:bg-emerald-700",
+                ].join(" ")}
+              >
+                {statusLoading ? (
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                  />
+                ) : statusTarget.action ===
+                  "SUSPEND" ? (
+                  <Power size={16} />
+                ) : (
+                  <RotateCcw size={16} />
+                )}
+
+                {statusTarget.action ===
+                "SUSPEND"
+                  ? "Po, çaktivizoje"
+                  : "Po, riaktivizoje"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -565,8 +873,10 @@ function Stat({
       "border-violet-200 bg-gradient-to-br from-violet-100 via-violet-50/70 to-white",
     "Në trial":
       "border-sky-200 bg-gradient-to-br from-sky-100 via-sky-50/70 to-white",
-    "Abonime aktive":
+    "Akademi aktive":
       "border-emerald-200 bg-gradient-to-br from-emerald-100 via-emerald-50/70 to-white",
+    "Çaktivizuara":
+      "border-amber-200 bg-gradient-to-br from-amber-100 via-amber-50/70 to-white",
   } as const;
 
   return (
