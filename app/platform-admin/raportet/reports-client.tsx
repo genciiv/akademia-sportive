@@ -6,6 +6,8 @@ import {
   CircleDollarSign,
   ClipboardList,
   CreditCard,
+  ShieldCheck,
+  TrendingUp,
   UsersRound,
 } from "lucide-react";
 
@@ -76,6 +78,32 @@ const APPLICATION_LABELS: Record<
   REJECTED: "Refuzuar",
 };
 
+const STATUS_TONES: Record<
+  string,
+  string
+> = {
+  Trial:
+    "bg-blue-100 text-blue-700",
+  Aktive:
+    "bg-emerald-100 text-emerald-700",
+  Pezulluar:
+    "bg-amber-100 text-amber-700",
+  Grace:
+    "bg-violet-100 text-violet-700",
+  Skaduar:
+    "bg-orange-100 text-orange-700",
+  Anuluar:
+    "bg-slate-100 text-slate-600",
+  "Në pritje":
+    "bg-amber-100 text-amber-700",
+  Kontaktuar:
+    "bg-blue-100 text-blue-700",
+  Aprovuar:
+    "bg-emerald-100 text-emerald-700",
+  Refuzuar:
+    "bg-red-100 text-red-700",
+};
+
 export function PlatformReportsClient({
   stats,
   academyStatuses,
@@ -116,18 +144,45 @@ export function PlatformReportsClient({
       })
     );
 
+  const activeAcademies =
+    academyStatuses.find(
+      (item) =>
+        item.status === "ACTIVE"
+    )?.value ?? 0;
+
+  const activeSubscriptions =
+    subscriptionStatuses.find(
+      (item) =>
+        item.status === "ACTIVE"
+    )?.value ?? 0;
+
+  const latestRevenue =
+    monthlyRevenue.at(-1)?.value ?? 0;
+
   return (
     <div>
-      <div className="mb-7">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-          Raportet
-        </h1>
+      <div className="mb-7 rounded-[28px] border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/40 p-6 shadow-sm sm:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-blue-700">
+              <BarChart3 size={13} />
+              Analitika e platformës
+            </div>
 
-        <p className="mt-1.5 text-sm text-slate-500">
-          Pamje e përgjithshme e
-          performancës dhe gjendjes së
-          platformës.
-        </p>
+            <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950">
+              Raportet
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              Pamje e konsoliduar e performancës, të ardhurave dhe gjendjes operative të platformës.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs font-bold text-emerald-700">
+            <ShieldCheck size={15} />
+            Të dhëna të përditësuara
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -184,6 +239,9 @@ export function PlatformReportsClient({
         <Panel
           title="Të ardhurat e platformës"
           subtitle="6 muajt e fundit · ALL"
+          icon={
+            <TrendingUp size={17} />
+          }
         >
           {monthlyRevenue.every(
             (item) =>
@@ -193,7 +251,7 @@ export function PlatformReportsClient({
               text="Nuk ka ende të ardhura të regjistruara."
             />
           ) : (
-            <div className="h-[260px] w-full">
+            <div className="h-[280px] w-full">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -203,12 +261,33 @@ export function PlatformReportsClient({
                     monthlyRevenue
                   }
                   margin={{
-                    top: 10,
-                    right: 8,
-                    left: -12,
+                    top: 14,
+                    right: 12,
+                    left: -8,
                     bottom: 0,
                   }}
                 >
+                  <defs>
+                    <linearGradient
+                      id="revenueFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#3b82f6"
+                        stopOpacity={0.32}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#3b82f6"
+                        stopOpacity={0.03}
+                      />
+                    </linearGradient>
+                  </defs>
+
                   <CartesianGrid
                     stroke="#eef2f7"
                     vertical={false}
@@ -233,14 +312,26 @@ export function PlatformReportsClient({
                     }}
                   />
 
-                  <Tooltip />
+                  <Tooltip
+                    content={
+                      <RevenueTooltip />
+                    }
+                  />
 
                   <Area
                     type="monotone"
                     dataKey="value"
                     stroke="#3b82f6"
                     strokeWidth={3}
-                    fill="#dbeafe"
+                    fill="url(#revenueFill)"
+                    dot={{
+                      r: 3,
+                      fill: "#3b82f6",
+                      strokeWidth: 0,
+                    }}
+                    activeDot={{
+                      r: 5,
+                    }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -251,8 +342,15 @@ export function PlatformReportsClient({
         <Panel
           title="Gjendja e akademive"
           subtitle="Akademitë sipas statusit"
+          icon={
+            <Building2 size={17} />
+          }
         >
           <StatusBarChart
+            data={academyData}
+          />
+
+          <StatusLegend
             data={academyData}
           />
         </Panel>
@@ -260,8 +358,17 @@ export function PlatformReportsClient({
         <Panel
           title="Gjendja e abonimeve"
           subtitle="Cikli aktual i abonimeve"
+          icon={
+            <CreditCard size={17} />
+          }
         >
           <StatusBarChart
+            data={
+              subscriptionData
+            }
+          />
+
+          <StatusLegend
             data={
               subscriptionData
             }
@@ -271,8 +378,19 @@ export function PlatformReportsClient({
         <Panel
           title="Aplikimet"
           subtitle="Statusi i kërkesave për platformën"
+          icon={
+            <ClipboardList
+              size={17}
+            />
+          }
         >
           <StatusBarChart
+            data={
+              applicationData
+            }
+          />
+
+          <StatusLegend
             data={
               applicationData
             }
@@ -286,6 +404,7 @@ export function PlatformReportsClient({
           value={String(
             stats.payments
           )}
+          subtitle="Historiku financiar"
           icon={
             <CreditCard size={17} />
           }
@@ -296,6 +415,9 @@ export function PlatformReportsClient({
           value={formatMoney(
             stats.totalRevenue
           )}
+          subtitle={`Muaji i fundit ${formatMoney(
+            latestRevenue
+          )}`}
           icon={
             <CircleDollarSign
               size={17}
@@ -306,12 +428,9 @@ export function PlatformReportsClient({
         <Summary
           title="Akademi aktive"
           value={String(
-            academyStatuses.find(
-              (item) =>
-                item.status ===
-                "ACTIVE"
-            )?.value ?? 0
+            activeAcademies
           )}
+          subtitle={`${stats.academies} gjithsej`}
           icon={
             <Building2 size={17} />
           }
@@ -320,12 +439,9 @@ export function PlatformReportsClient({
         <Summary
           title="Abonime aktive"
           value={String(
-            subscriptionStatuses.find(
-              (item) =>
-                item.status ===
-                "ACTIVE"
-            )?.value ?? 0
+            activeSubscriptions
           )}
+          subtitle="Cikli aktual"
           icon={
             <BarChart3 size={17} />
           }
@@ -355,7 +471,7 @@ function StatusBarChart({
   }
 
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-[250px] w-full">
       <ResponsiveContainer
         width="100%"
         height="100%"
@@ -363,9 +479,9 @@ function StatusBarChart({
         <BarChart
           data={data}
           margin={{
-            top: 10,
-            right: 8,
-            left: -24,
+            top: 12,
+            right: 10,
+            left: -20,
             bottom: 0,
           }}
         >
@@ -394,20 +510,126 @@ function StatusBarChart({
             }}
           />
 
-          <Tooltip />
+          <Tooltip
+            content={
+              <StatusTooltip />
+            }
+          />
 
           <Bar
             dataKey="value"
-            fill="#2f80c9"
+            fill="#6366f1"
             radius={[
-              6,
-              6,
+              8,
+              8,
               0,
               0,
             ]}
           />
         </BarChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+function RevenueTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{
+    value?: number;
+  }>;
+  label?: string;
+}) {
+  if (
+    !active ||
+    !payload?.length
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-lg">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 text-sm font-bold text-slate-950">
+        {formatMoney(
+          Number(
+            payload[0]?.value ?? 0
+          )
+        )}
+      </p>
+    </div>
+  );
+}
+
+function StatusTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{
+    value?: number;
+  }>;
+  label?: string;
+}) {
+  if (
+    !active ||
+    !payload?.length
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-lg">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 text-sm font-bold text-slate-950">
+        {payload[0]?.value ?? 0}
+      </p>
+    </div>
+  );
+}
+
+function StatusLegend({
+  data,
+}: {
+  data: Array<{
+    label: string;
+    value: number;
+  }>;
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+      {data.map((item) => (
+        <div
+          key={item.label}
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5"
+        >
+          <span
+            className={[
+              "rounded-full px-2 py-0.5 text-[9px] font-bold",
+              STATUS_TONES[
+                item.label
+              ] ??
+                "bg-slate-100 text-slate-600",
+            ].join(" ")}
+          >
+            {item.label}
+          </span>
+
+          <span className="text-xs font-bold text-slate-700">
+            {item.value}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -423,17 +645,40 @@ function Stat({
   hint: string;
   icon: React.ReactNode;
 }) {
+  const tones: Record<
+    string,
+    string
+  > = {
+    Akademi:
+      "border-violet-200 bg-gradient-to-br from-violet-100 via-violet-50/70 to-white",
+
+    Përdorues:
+      "border-blue-200 bg-gradient-to-br from-blue-100 via-blue-50/70 to-white",
+
+    "Aplikime në pritje":
+      "border-amber-200 bg-gradient-to-br from-amber-100 via-amber-50/70 to-white",
+
+    "Të ardhura":
+      "border-emerald-200 bg-gradient-to-br from-emerald-100 via-emerald-50/70 to-white",
+  };
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+    <div
+      className={[
+        "rounded-[24px] border p-5 shadow-sm",
+        tones[title] ??
+          "border-slate-200 bg-white",
+      ].join(" ")}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/80 text-slate-800 shadow-sm">
         {icon}
       </div>
 
-      <p className="mt-4 text-xs font-semibold text-slate-500">
+      <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-slate-500">
         {title}
       </p>
 
-      <p className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+      <p className="mt-1 text-2xl font-black tracking-tight text-slate-950">
         {value}
       </p>
 
@@ -447,22 +692,30 @@ function Stat({
 function Panel({
   title,
   subtitle,
+  icon,
   children,
 }: {
   title: string;
   subtitle: string;
+  icon: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
-      <div className="mb-5">
-        <h2 className="text-sm font-bold text-slate-900">
-          {title}
-        </h2>
+    <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+          {icon}
+        </div>
 
-        <p className="mt-1 text-xs text-slate-400">
-          {subtitle}
-        </p>
+        <div>
+          <h2 className="text-sm font-bold text-slate-900">
+            {title}
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-400">
+            {subtitle}
+          </p>
+        </div>
       </div>
 
       {children}
@@ -473,25 +726,31 @@ function Panel({
 function Summary({
   title,
   value,
+  subtitle,
   icon,
 }: {
   title: string;
   value: string;
+  subtitle: string;
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+    <div className="flex items-start gap-3 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
         {icon}
       </div>
 
-      <div>
-        <p className="text-[11px] text-slate-400">
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold text-slate-400">
           {title}
         </p>
 
-        <p className="mt-0.5 text-sm font-bold text-slate-950">
+        <p className="mt-1 text-sm font-black text-slate-950">
           {value}
+        </p>
+
+        <p className="mt-1 text-[10px] text-slate-400">
+          {subtitle}
         </p>
       </div>
     </div>
@@ -504,7 +763,7 @@ function EmptyChart({
   text: string;
 }) {
   return (
-    <div className="flex h-[260px] items-center justify-center text-center">
+    <div className="flex h-[250px] items-center justify-center rounded-2xl bg-slate-50/40 text-center">
       <div>
         <BarChart3 className="mx-auto h-8 w-8 text-slate-300" />
 
