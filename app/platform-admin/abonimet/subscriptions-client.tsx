@@ -8,7 +8,9 @@ import {
   CreditCard,
   Search,
   ShieldCheck,
+  Sparkles,
   UserRound,
+  WalletCards,
 } from "lucide-react";
 import {
   useMemo,
@@ -245,16 +247,62 @@ export function SubscriptionsClient({
 
   return (
     <div>
-      <div className="mb-7">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-          Abonimet
-        </h1>
+      <section className="mb-6 overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-sky-50 p-6 shadow-sm sm:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-sm shadow-violet-200">
+              <WalletCards size={25} />
+            </div>
 
-        <p className="mt-1.5 text-sm text-slate-500">
-          Monitoro trial-et, planet dhe
-          ciklin e abonimeve të akademive.
-        </p>
-      </div>
+            <div>
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-violet-700">
+                <Sparkles size={12} />
+                Menaxhimi komercial
+              </div>
+
+              <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                Abonimet
+              </h1>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Monitoro planet, trial-et, ciklin
+                e abonimeve dhe pagesat e
+                akademive nga një pamje e vetme.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <div className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-violet-700">
+                <CreditCard size={15} />
+
+                <span className="text-[10px] font-bold uppercase tracking-wide">
+                  Abonime
+                </span>
+              </div>
+
+              <p className="mt-1 text-lg font-black tracking-tight text-slate-950">
+                {counts.all}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-emerald-700">
+                <ShieldCheck size={15} />
+
+                <span className="text-[10px] font-bold uppercase tracking-wide">
+                  Aktive
+                </span>
+              </div>
+
+              <p className="mt-1 text-lg font-black tracking-tight text-slate-950">
+                {counts.active}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
@@ -290,11 +338,11 @@ export function SubscriptionsClient({
         />
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="relative w-full max-w-md">
+      <div className="mt-5 flex flex-col gap-3 rounded-[24px] border border-slate-200/80 bg-white/90 p-3 shadow-sm xl:flex-row xl:items-center xl:justify-between">
+        <div className="relative w-full xl:max-w-md">
           <Search
             size={17}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
           />
 
           <input
@@ -305,11 +353,11 @@ export function SubscriptionsClient({
               )
             }
             placeholder="Kërko akademi, pronar ose plan..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-violet-300 focus:bg-white focus:ring-4 focus:ring-violet-50"
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 xl:justify-end">
           {FILTERS.map((item) => (
             <FilterButton
               key={item.key}
@@ -330,13 +378,13 @@ export function SubscriptionsClient({
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-100 px-5 py-4">
-            <p className="text-sm font-bold text-slate-950">
+        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+          <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50/80 via-white to-sky-50/60 px-5 py-4">
+            <p className="text-sm font-black tracking-tight text-slate-950">
               Lista e abonimeve
             </p>
 
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs font-medium text-slate-500">
               {visible.length} rezultate
             </p>
           </div>
@@ -346,7 +394,7 @@ export function SubscriptionsClient({
               <div>
                 <CreditCard
                   size={30}
-                  className="mx-auto text-slate-300"
+                  className="mx-auto text-violet-300"
                 />
 
                 <p className="mt-3 text-sm font-semibold text-slate-600">
@@ -355,7 +403,7 @@ export function SubscriptionsClient({
               </div>
             </div>
           ) : (
-            <div className="max-h-[720px] overflow-y-auto">
+            <div className="max-h-[720px] divide-y divide-slate-100 overflow-y-auto">
               {visible.map(
                 (subscription) => (
                   <button
@@ -369,23 +417,23 @@ export function SubscriptionsClient({
                       )
                     }
                     className={[
-                      "block w-full border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0",
+                      "group block w-full border-l-4 px-5 py-4 text-left transition duration-150",
                       selected?.id ===
                       subscription.id
-                        ? "bg-blue-50/70"
-                        : "hover:bg-slate-50",
+                        ? "border-violet-500 bg-gradient-to-r from-violet-50 via-white to-sky-50/40"
+                        : "border-transparent hover:bg-slate-50/80",
                     ].join(" ")}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-900">
+                        <p className="truncate text-sm font-black tracking-tight text-slate-950">
                           {
                             subscription
                               .academy.name
                           }
                         </p>
 
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs font-medium text-slate-600">
                           {
                             subscription
                               .plan.name
@@ -402,7 +450,7 @@ export function SubscriptionsClient({
                           /muaj
                         </p>
 
-                        <p className="mt-1 truncate text-[11px] text-slate-400">
+                        <p className="mt-1.5 truncate text-[11px] font-medium text-slate-400">
                           {
                             subscription
                               .academy
@@ -430,21 +478,21 @@ export function SubscriptionsClient({
 
         <section className="min-w-0">
           {!selected ? (
-            <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
+            <div className="flex min-h-[420px] items-center justify-center rounded-[24px] border border-dashed border-violet-200 bg-gradient-to-br from-violet-50/70 via-white to-sky-50/50 p-8 text-center shadow-sm">
               <div>
                 <CreditCard
                   size={30}
-                  className="mx-auto text-slate-300"
+                  className="mx-auto text-violet-300"
                 />
 
-                <p className="mt-3 text-sm font-semibold text-slate-700">
+                <p className="mt-3 text-sm font-bold text-slate-700">
                   Zgjidh një abonim
                 </p>
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-              <div className="border-b border-slate-100 p-5 sm:p-6">
+            <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+              <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-sky-50/50 p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <SubscriptionBadge
@@ -453,14 +501,14 @@ export function SubscriptionsClient({
                       }
                     />
 
-                    <h2 className="mt-3 text-xl font-bold text-slate-950">
+                    <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
                       {
                         selected.academy
                           .name
                       }
                     </h2>
 
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs font-medium text-slate-500">
                       Abonimi krijuar më{" "}
                       {formatDateTime(
                         selected.createdAt
@@ -468,19 +516,19 @@ export function SubscriptionsClient({
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                  <div className="min-w-[160px] rounded-2xl border border-violet-100 bg-white/90 px-4 py-3 shadow-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-violet-500">
                       Plani
                     </p>
 
-                    <p className="mt-1 text-sm font-bold text-slate-950">
+                    <p className="mt-1 text-sm font-black text-slate-950">
                       {
                         selected.plan
                           .name
                       }
                     </p>
 
-                    <p className="mt-1 text-[11px] text-slate-500">
+                    <p className="mt-1 text-[11px] font-medium text-slate-500">
                       {formatMoney(
                 selected.commercialTerms
                   .monthlyPrice,
@@ -493,7 +541,7 @@ export function SubscriptionsClient({
                 </div>
               </div>
 
-              <div className="grid gap-6 p-5 sm:grid-cols-2 sm:p-6">
+              <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
                 <Info
                   icon={
                     <Building2
@@ -558,12 +606,12 @@ export function SubscriptionsClient({
                 currentPlanName={selected.plan.name}
                 currentPeriodEnd={selected.currentPeriodEnd}
               />
-<div className="border-t border-slate-100 p-5 sm:p-6">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+<div className="border-t border-violet-100 bg-slate-50/30 p-5 sm:p-6">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-violet-600">
                   Cikli i abonimit
                 </p>
 
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Info
                     icon={
                       <CalendarDays
@@ -656,19 +704,19 @@ export function SubscriptionsClient({
                 }
               />
 
-              <div className="border-t border-slate-100 p-5 sm:p-6">
+              <div className="border-t border-violet-100 bg-slate-50/30 p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-violet-600">
                       Pagesat e abonimit
                     </p>
 
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs font-medium text-slate-600">
                       Deri në 8 pagesat e fundit.
                     </p>
                   </div>
 
-                  <span className="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700">
+                  <span className="rounded-xl border border-violet-100 bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700">
                     {
                       selected._count
                         .payments
@@ -678,7 +726,7 @@ export function SubscriptionsClient({
 
                 {selected.payments
                   .length === 0 ? (
-                  <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-5 text-sm font-medium text-slate-500">
                     Nuk ka ende pagesa të
                     regjistruara për këtë
                     abonim.
@@ -689,18 +737,18 @@ export function SubscriptionsClient({
                       (payment) => (
                         <div
                           key={payment.id}
-                          className="rounded-xl border border-slate-200 p-4"
+                          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:border-violet-200 hover:shadow-md"
                         >
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                              <p className="text-sm font-bold text-slate-950">
+                              <p className="text-sm font-black tracking-tight text-slate-950">
                                 {formatMoney(
                                   payment.totalAmount,
                                   payment.currency
                                 )}
                               </p>
 
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="mt-1 text-xs font-medium text-slate-600">
                                 {
                                   payment.months
                                 }{" "}
@@ -736,7 +784,7 @@ export function SubscriptionsClient({
                           </div>
 
                           {payment.note ? (
-                            <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                            <p className="mt-3 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
                               {payment.note}
                             </p>
                           ) : null}
@@ -763,19 +811,87 @@ function Stat({
   value: number;
   icon: React.ReactNode;
 }) {
+  const tones: Record<
+    string,
+    {
+      card: string;
+      icon: string;
+      label: string;
+    }
+  > = {
+    "Abonime totale": {
+      card:
+        "border-violet-100 bg-gradient-to-br from-violet-50/90 via-white to-white",
+      icon:
+        "bg-violet-100 text-violet-700 ring-violet-200/70",
+      label: "text-violet-700",
+    },
+
+    "Në trial": {
+      card:
+        "border-sky-100 bg-gradient-to-br from-sky-50/90 via-white to-white",
+      icon:
+        "bg-sky-100 text-sky-700 ring-sky-200/70",
+      label: "text-sky-700",
+    },
+
+    Aktive: {
+      card:
+        "border-emerald-100 bg-gradient-to-br from-emerald-50/90 via-white to-white",
+      icon:
+        "bg-emerald-100 text-emerald-700 ring-emerald-200/70",
+      label: "text-emerald-700",
+    },
+
+    "Kërkojnë vëmendje": {
+      card:
+        "border-amber-100 bg-gradient-to-br from-amber-50/90 via-white to-white",
+      icon:
+        "bg-amber-100 text-amber-700 ring-amber-200/70",
+      label: "text-amber-700",
+    },
+  };
+
+  const tone =
+    tones[title] ?? {
+      card: "border-slate-200 bg-white",
+      icon:
+        "bg-slate-100 text-slate-700 ring-slate-200",
+      label: "text-slate-600",
+    };
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+    <div
+      className={[
+        "group relative overflow-hidden rounded-[24px] border p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        tone.card,
+      ].join(" ")}
+    >
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/60 blur-2xl" />
+
+      <div
+        className={[
+          "relative flex h-10 w-10 items-center justify-center rounded-2xl ring-1",
+          tone.icon,
+        ].join(" ")}
+      >
         {icon}
       </div>
 
-      <p className="mt-4 text-xs font-semibold text-slate-500">
-        {title}
-      </p>
+      <div className="relative mt-5">
+        <p
+          className={[
+            "text-[11px] font-bold uppercase tracking-[0.08em]",
+            tone.label,
+          ].join(" ")}
+        >
+          {title}
+        </p>
 
-      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
-        {value}
-      </p>
+        <p className="mt-1.5 text-3xl font-black tracking-tight text-slate-950">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
@@ -794,10 +910,10 @@ function FilterButton({
       type="button"
       onClick={onClick}
       className={[
-        "whitespace-nowrap rounded-xl px-3.5 py-2 text-xs font-semibold transition",
+        "whitespace-nowrap rounded-2xl px-3.5 py-2.5 text-xs font-bold transition",
         active
-          ? "bg-slate-950 text-white"
-          : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+          ? "bg-violet-600 text-white shadow-sm shadow-violet-200"
+          : "border border-slate-200 bg-slate-50/70 text-slate-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700",
       ].join(" ")}
     >
       {children}
@@ -869,13 +985,18 @@ function Info({
   value: string;
 }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-        {icon}
-        {label}
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 transition hover:border-violet-200 hover:bg-violet-50/40">
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          {icon}
+        </span>
+
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500">
+          {label}
+        </span>
       </div>
 
-      <p className="mt-2 break-words text-sm font-semibold text-slate-900">
+      <p className="mt-3 break-words text-sm font-bold text-slate-950">
         {value}
       </p>
     </div>

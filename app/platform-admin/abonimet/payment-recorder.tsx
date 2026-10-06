@@ -211,24 +211,24 @@ export function PaymentRecorder({
   }
 
   return (
-    <div className="border-t border-slate-100 p-5 sm:p-6">
+    <div className="border-t border-violet-100 bg-gradient-to-br from-white via-violet-50/20 to-sky-50/30 p-5 sm:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-violet-600">
             Regjistro pagesë
           </p>
 
-          <p className="mt-1 text-sm font-semibold text-slate-950">
+          <p className="mt-1 text-sm font-black tracking-tight text-slate-950">
             Pagesë cash për abonimin
           </p>
 
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-slate-500">
             Çmimi merret automatikisht nga kushtet komerciale aktive.
           </p>
         </div>
 
-        <div className="rounded-xl bg-slate-50 px-3 py-2 text-left sm:text-right">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        <div className="rounded-2xl border border-violet-100 bg-white px-4 py-3 text-left shadow-sm sm:text-right">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-500">
             Burimi i çmimit
           </p>
 
@@ -240,7 +240,7 @@ export function PaymentRecorder({
 
       {subscriptionStatus ===
       "TRIALING" ? (
-        <div className="mt-4 flex gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
+        <div className="mt-4 flex gap-3 rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
           <AlertTriangle
             className="mt-0.5 shrink-0 text-blue-700"
             size={17}
@@ -267,7 +267,7 @@ export function PaymentRecorder({
       ) : null}
 
       {cancelled ? (
-        <div className="mt-4 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="mt-4 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4">
           <AlertTriangle
             className="mt-0.5 shrink-0 text-amber-700"
             size={17}
@@ -291,7 +291,7 @@ export function PaymentRecorder({
         className="mt-5"
         onSubmit={submitPayment}
       >
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div>
             <label className="text-xs font-bold text-slate-700">
               Periudha e pagesës
@@ -312,8 +312,8 @@ export function PaymentRecorder({
                     className={[
                       "rounded-xl border px-3 py-2.5 text-xs font-bold transition",
                       months === option
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+                        ? "border-violet-600 bg-violet-600 text-white shadow-sm shadow-violet-200"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700",
                       saving || cancelled
                         ? "cursor-not-allowed opacity-60"
                         : "",
@@ -334,7 +334,7 @@ export function PaymentRecorder({
               Metoda
             </label>
 
-            <div className="mt-2 flex h-[42px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-700">
+            <div className="mt-2 flex h-[42px] items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 text-xs font-bold text-slate-700">
               <Banknote size={16} />
               CASH
             </div>
@@ -343,7 +343,7 @@ export function PaymentRecorder({
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-500">
               Çmimi mujor
             </p>
 
@@ -355,12 +355,12 @@ export function PaymentRecorder({
             </p>
           </div>
 
-          <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-blue-500">
+          <div className="rounded-2xl border border-violet-100 bg-violet-50/80 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-500">
               Totali
             </p>
 
-            <p className="mt-1 text-base font-bold text-blue-950">
+            <p className="mt-1 text-base font-black text-violet-950">
               {formatMoney(
                 totalAmount,
                 commercialTerms.currency
@@ -387,7 +387,7 @@ export function PaymentRecorder({
             }
             rows={3}
             placeholder="Opsionale · p.sh. pagesa u mor në zyrë."
-            className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
+            className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-violet-300 focus:ring-4 focus:ring-violet-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
           />
 
           <p className="mt-1 text-right text-[10px] text-slate-400">
@@ -396,7 +396,7 @@ export function PaymentRecorder({
         </div>
 
         {error ? (
-          <div className="mt-4 flex gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+          <div className="mt-4 flex gap-2 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
             <AlertTriangle
               size={16}
               className="shrink-0"
@@ -406,7 +406,7 @@ export function PaymentRecorder({
         ) : null}
 
         {success ? (
-          <div className="mt-4 flex gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-medium text-emerald-700">
+          <div className="mt-4 flex gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-medium text-emerald-700">
             <CheckCircle2
               size={16}
               className="shrink-0"
@@ -431,7 +431,7 @@ export function PaymentRecorder({
               ) ||
               monthlyPrice < 0
             }
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-violet-200 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? (
               <>
