@@ -5,11 +5,13 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  UserRound,
 } from "lucide-react";
 import {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
@@ -142,12 +144,25 @@ export function PlatformAdminTopbar({
                 {session?.user?.email || ""}
               </p>
             </div>
+            <Link
+              href="/platform-admin/llogaria"
+              onClick={() =>
+                setMenuOpen(false)
+              }
+              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <UserRound size={16} />
+
+              Llogaria ime
+            </Link>
+
+            <div className="my-1 border-t border-slate-100" />
 
             <button
               type="button"
               onClick={logout}
               disabled={loggingOut}
-              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
             >
               <LogOut size={16} />
 
