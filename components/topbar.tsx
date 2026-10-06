@@ -593,16 +593,15 @@ export function Topbar({
                     ""}
                 </p>
               </div>
-
               <Link
-                href="/cilesimet"
+                href="/llogaria"
                 onClick={() =>
                   setMenuOpen(false)
                 }
                 className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
               >
                 <UserRound size={16} />
-                Cilësimet
+                Llogaria ime
               </Link>
 
               <button

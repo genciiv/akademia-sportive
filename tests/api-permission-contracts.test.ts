@@ -853,11 +853,17 @@ function walkRoutes(
 test("Prisma academy routes retain an academy-scope marker", () => {
   const special =
     new Set([
+      "app/api/account/change-password/route.ts",
+      "app/api/account/password-status/route.ts",
       "app/api/academy/route.ts",
       "app/api/academy-applications/route.ts",
       "app/api/platform-admin/academy-applications/route.ts",
       "app/api/platform-admin/academy-applications/[applicationId]/route.ts",
       "app/api/platform-admin/subscriptions/[subscriptionId]/route.ts",
+      "app/api/platform-admin/users/[userId]/access/route.ts",
+      "app/api/platform-admin/users/[userId]/password-reset/route.ts",
+      "app/api/platform-admin/users/[userId]/route.ts",
+      "app/api/platform-admin/users/[userId]/sessions/route.ts",
       "app/api/auth/[...all]/route.ts",
       "app/api/health/ready/route.ts",
       "app/api/invitations/[token]/route.ts",
