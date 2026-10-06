@@ -190,7 +190,7 @@ export function AcademiesClient({
         />
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-5 flex flex-col gap-3 rounded-[22px] border border-slate-200/80 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full max-w-md">
           <Search
             size={17}
@@ -203,7 +203,7 @@ export function AcademiesClient({
               setQuery(event.target.value)
             }
             placeholder="Kërko akademi, pronar, qytet ose plan..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+            className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition hover:border-slate-300 focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
           />
         </div>
 
@@ -238,8 +238,8 @@ export function AcademiesClient({
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-100 px-5 py-4">
+        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+          <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50/80 via-white to-sky-50/60 px-5 py-4">
             <p className="text-sm font-bold text-slate-950">
               Lista e akademive
             </p>
@@ -274,11 +274,11 @@ export function AcademiesClient({
                     )
                   }
                   className={[
-                    "block w-full border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0",
+                    "block w-full border-l-4 border-b border-slate-100 px-5 py-4 text-left transition last:border-b-0",
                     selected?.id ===
                     academy.id
-                      ? "bg-blue-50/70"
-                      : "hover:bg-slate-50",
+                      ? "border-l-violet-600 bg-gradient-to-r from-violet-50 via-white to-white"
+                      : "border-l-transparent hover:bg-violet-50/40",
                   ].join(" ")}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -329,8 +329,8 @@ export function AcademiesClient({
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-              <div className="border-b border-slate-100 p-5 sm:p-6">
+            <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm">
+              <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50/70 via-white to-sky-50/50 p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -363,7 +363,7 @@ export function AcademiesClient({
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <div className="rounded-2xl border border-violet-100 bg-white px-4 py-3 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                       Plani
                     </p>
@@ -377,7 +377,7 @@ export function AcademiesClient({
                 </div>
               </div>
 
-              <div className="grid gap-6 p-5 sm:grid-cols-2 sm:p-6">
+              <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
                 <Info
                   icon={
                     <UserRound size={15} />
@@ -421,7 +421,7 @@ export function AcademiesClient({
                 />
               </div>
 
-              <div className="border-t border-slate-100 p-5 sm:p-6">
+              <div className="border-t border-violet-100 bg-slate-50/30 p-5 sm:p-6">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
                   Përdorimi
                 </p>
@@ -466,7 +466,7 @@ export function AcademiesClient({
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 p-5 sm:p-6">
+              <div className="border-t border-violet-100 bg-slate-50/30 p-5 sm:p-6">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
                   Abonimi
                 </p>
@@ -560,23 +560,37 @@ function Stat({
   value: number;
   icon: React.ReactNode;
 }) {
+  const tones = {
+    "Akademi totale":
+      "border-violet-200 bg-gradient-to-br from-violet-100 via-violet-50/70 to-white",
+    "Në trial":
+      "border-sky-200 bg-gradient-to-br from-sky-100 via-sky-50/70 to-white",
+    "Abonime aktive":
+      "border-emerald-200 bg-gradient-to-br from-emerald-100 via-emerald-50/70 to-white",
+  } as const;
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+    <div
+      className={[
+        "rounded-[24px] border p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        tones[title as keyof typeof tones] ??
+          "border-slate-200 bg-white",
+      ].join(" ")}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-violet-700 shadow-sm ring-1 ring-slate-100">
         {icon}
       </div>
 
-      <p className="mt-4 text-xs font-semibold text-slate-500">
+      <p className="mt-4 text-xs font-bold text-slate-500">
         {title}
       </p>
 
-      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+      <p className="mt-1 text-3xl font-black tracking-tight text-slate-950">
         {value}
       </p>
     </div>
   );
 }
-
 function FilterButton({
   active,
   onClick,
@@ -591,10 +605,10 @@ function FilterButton({
       type="button"
       onClick={onClick}
       className={[
-        "whitespace-nowrap rounded-xl px-3.5 py-2 text-xs font-semibold transition",
+        "whitespace-nowrap rounded-2xl px-3.5 py-2 text-xs font-bold transition",
         active
-          ? "bg-slate-950 text-white"
-          : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+          ? "bg-violet-600 text-white shadow-sm shadow-violet-200"
+          : "border border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700",
       ].join(" ")}
     >
       {children}
@@ -610,18 +624,17 @@ function MiniStat({
   value: number;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 px-3 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+    <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm">
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">
         {label}
       </p>
 
-      <p className="mt-1 text-lg font-bold text-slate-950">
+      <p className="mt-1 text-lg font-black text-slate-950">
         {value}
       </p>
     </div>
   );
 }
-
 function Info({
   icon,
   label,
@@ -632,19 +645,23 @@ function Info({
   value: string;
 }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-        {icon}
-        {label}
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 transition hover:border-violet-200 hover:bg-violet-50/40">
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          {icon}
+        </span>
+
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500">
+          {label}
+        </span>
       </div>
 
-      <p className="mt-2 break-words text-sm font-semibold text-slate-900">
+      <p className="mt-3 break-words text-sm font-bold text-slate-950">
         {value}
       </p>
     </div>
   );
 }
-
 function AcademyStatus({
   status,
 }: {
