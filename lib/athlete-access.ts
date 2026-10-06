@@ -113,6 +113,25 @@ export async function requireAthleteAccess(): Promise<AthleteAccessResult> {
       ),
     };
   }
+  if (
+    athleteAccount.academy.status === "SUSPENDED" ||
+    athleteAccount.academy.status === "CANCELLED"
+  ) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error:
+            "Akademia është çaktivizuar dhe portali i sportistit nuk është i disponueshëm.",
+          reason:
+            "ACADEMY_SUSPENDED",
+        },
+        {
+          status: 403,
+        }
+      ),
+    };
+  }
   const portalAccess = await checkAthletePortalAccess(
     athleteAccount.academyId,
     {

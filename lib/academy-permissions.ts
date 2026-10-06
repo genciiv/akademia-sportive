@@ -106,6 +106,42 @@ async function getAcademyAccessContext(): Promise<
       ),
     };
   }
+  if (
+    membership.academy.status === "SUSPENDED"
+  ) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error:
+            "Kjo akademi është çaktivizuar përkohësisht nga administratori i platformës.",
+          code: "ACADEMY_SUSPENDED",
+        },
+        {
+          status: 403,
+        }
+      ),
+    };
+  }
+
+  if (
+    membership.academy.status === "CANCELLED"
+  ) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error:
+            "Kjo akademi nuk është më aktive.",
+          code: "ACADEMY_CANCELLED",
+        },
+        {
+          status: 403,
+        }
+      ),
+    };
+  }
+
 
   const role = String(membership.role);
 

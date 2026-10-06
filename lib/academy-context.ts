@@ -48,6 +48,13 @@ export async function merrAkademineAktive() {
 
     redirect("/krijo-akademine");
   }
+  if (
+    membership.academy.status === "SUSPENDED" ||
+    membership.academy.status === "CANCELLED"
+  ) {
+    redirect("/akademia-pezulluar");
+  }
+
 
   return {
     session,
