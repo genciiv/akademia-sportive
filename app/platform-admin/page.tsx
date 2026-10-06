@@ -137,10 +137,10 @@ export default async function PlatformAdminPage() {
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.1fr_.9fr]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <section className="rounded-[24px] border border-violet-100 bg-gradient-to-br from-white via-white to-violet-50/40 p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-sm font-bold text-slate-950">
+              <h2 className="text-sm font-black tracking-tight text-slate-950">
                 Aplikimet e fundit
               </h2>
 
@@ -151,7 +151,7 @@ export default async function PlatformAdminPage() {
 
             <Link
               href="/platform-admin/aplikimet"
-              className="flex items-center gap-1 text-xs font-semibold text-blue-700"
+              className="flex items-center gap-1 text-xs font-bold text-violet-700 transition hover:text-violet-900"
             >
               Shiko të gjitha
               <ArrowRight size={14} />
@@ -163,13 +163,13 @@ export default async function PlatformAdminPage() {
               Nuk ka ende aplikime.
             </div>
           ) : (
-            <div className="mt-5 divide-y divide-slate-100">
+            <div className="mt-5 space-y-2">
               {applications.map(
                 (application) => (
                   <Link
                     key={application.id}
                     href="/platform-admin/aplikimet"
-                    className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white px-4 py-3.5 transition hover:border-violet-200 hover:bg-violet-50/50 hover:shadow-sm"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-bold text-slate-900">
@@ -200,8 +200,8 @@ export default async function PlatformAdminPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <h2 className="text-sm font-bold text-slate-950">
+        <section className="rounded-[24px] border border-violet-100 bg-gradient-to-br from-white via-white to-violet-50/40 p-5 shadow-sm sm:p-6">
+          <h2 className="text-sm font-black tracking-tight text-slate-950">
             Gjendja e platformës
           </h2>
 
@@ -249,43 +249,43 @@ function StatCard({
   hint: string;
   accent?: boolean;
 }) {
+  const tones = {
+    "Akademi totale":
+      "border-violet-200 bg-gradient-to-br from-violet-100 via-violet-50/70 to-white",
+    "Aplikime në pritje":
+      "border-amber-200 bg-gradient-to-br from-amber-100 via-amber-50/70 to-white",
+    "Përdorues":
+      "border-sky-200 bg-gradient-to-br from-sky-100 via-sky-50/70 to-white",
+    "Abonime aktive":
+      "border-emerald-200 bg-gradient-to-br from-emerald-100 via-emerald-50/70 to-white",
+  } as const;
+
   return (
     <div
       className={[
-        "rounded-2xl border bg-white p-5",
-        accent
-          ? "border-blue-200 shadow-sm"
-          : "border-slate-200",
+        "rounded-[24px] border p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        tones[title as keyof typeof tones] ??
+          "border-slate-200 bg-white",
       ].join(" ")}
     >
-      <div className="flex items-center justify-between">
-        <div
-          className={[
-            "flex h-9 w-9 items-center justify-center rounded-xl",
-            accent
-              ? "bg-blue-50 text-blue-700"
-              : "bg-slate-100 text-slate-500",
-          ].join(" ")}
-        >
-          {icon}
-        </div>
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-violet-700 shadow-sm ring-1 ring-slate-100">
+        {icon}
       </div>
 
-      <p className="mt-5 text-xs font-semibold text-slate-500">
+      <p className="mt-5 text-xs font-bold text-slate-500">
         {title}
       </p>
 
-      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+      <p className="mt-1 text-3xl font-black tracking-tight text-slate-950">
         {value}
       </p>
 
-      <p className="mt-1.5 text-[11px] text-slate-400">
+      <p className="mt-1.5 text-[11px] font-medium text-slate-400">
         {hint}
       </p>
     </div>
   );
 }
-
 function Metric({
   label,
   value,
@@ -293,19 +293,35 @@ function Metric({
   label: string;
   value: number;
 }) {
+  const tones = {
+    "Akademi totale":
+      "border-violet-100 bg-violet-50/70 text-violet-700",
+    "Akademi në trial":
+      "border-amber-100 bg-amber-50/70 text-amber-700",
+    "Abonime aktive":
+      "border-emerald-100 bg-emerald-50/70 text-emerald-700",
+    "Aplikime në pritje":
+      "border-sky-100 bg-sky-50/70 text-sky-700",
+  } as const;
+
   return (
-    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-      <span className="text-sm text-slate-600">
+    <div
+      className={[
+        "flex items-center justify-between rounded-2xl border px-4 py-4 transition hover:-translate-y-0.5 hover:shadow-sm",
+        tones[label as keyof typeof tones] ??
+          "border-slate-100 bg-slate-50",
+      ].join(" ")}
+    >
+      <span className="text-sm font-semibold">
         {label}
       </span>
 
-      <span className="text-sm font-bold text-slate-950">
+      <span className="flex h-8 min-w-8 items-center justify-center rounded-xl bg-white px-2 text-sm font-black text-slate-950 shadow-sm">
         {value}
       </span>
     </div>
   );
 }
-
 function StatusBadge({
   status,
 }: {
