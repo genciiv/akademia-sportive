@@ -56,6 +56,8 @@ function normalizePath(
 const PUBLIC_OR_SPECIAL_ROUTES =
   new Set([
     "app/api/auth/[...all]/route.ts",
+    "app/api/account/change-password/route.ts",
+    "app/api/account/password-status/route.ts",
     "app/api/health/live/route.ts",
     "app/api/health/ready/route.ts",
     "app/api/academy/route.ts",
@@ -144,6 +146,34 @@ test("all academy API routes use an access guard or are explicitly allowlisted",
 });
 
 test("special routes keep their expected authentication model", () => {
+  const accountPasswordStatus =
+    readFileSync(
+      join(
+        process.cwd(),
+        "app/api/account/password-status/route.ts"
+      ),
+      "utf8"
+    );
+
+  assert.match(
+    accountPasswordStatus,
+    /auth\.api\.getSession/
+  );
+
+  const accountChangePassword =
+    readFileSync(
+      join(
+        process.cwd(),
+        "app/api/account/change-password/route.ts"
+      ),
+      "utf8"
+    );
+
+  assert.match(
+    accountChangePassword,
+    /auth\.api\.getSession/
+  );
+
   const academyRoute =
     readFileSync(
       join(

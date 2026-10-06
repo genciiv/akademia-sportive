@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import {
   FormEvent,
@@ -81,6 +83,35 @@ export default function Page() {
 
       setDukeHyre(false);
       return;
+    }
+
+    try {
+      const passwordStatusResponse =
+        await fetch(
+          "/api/account/password-status",
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+
+      if (passwordStatusResponse.ok) {
+        const passwordStatus =
+          await passwordStatusResponse.json();
+
+        if (
+          passwordStatus?.mustChangePassword === true
+        ) {
+          router.push(
+            "/ndrysho-fjalekalimin"
+          );
+
+          router.refresh();
+          return;
+        }
+      }
+    } catch {
+      // Nëse kontrolli dështon, vazhdojmë me routing-un normal.
     }
 
     let destination = nextPath;
@@ -191,6 +222,15 @@ export default function Page() {
               {gabimi}
             </div>
           ) : null}
+
+          <div className="flex justify-end">
+            <Link
+              href="/harrova-fjalekalimin"
+              className="text-xs font-semibold text-violet-700 transition hover:text-violet-800"
+            >
+              Harrove fjalëkalimin?
+            </Link>
+          </div>
 
           <button
             type="submit"

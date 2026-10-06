@@ -33,6 +33,8 @@ export default async function PlatformAdminUsersPage() {
         lastName: true,
         email: true,
         emailVerified: true,
+        isActive: true,
+        mustChangePassword: true,
         phone: true,
         role: true,
         createdAt: true,
@@ -90,6 +92,7 @@ export default async function PlatformAdminUsersPage() {
     <PlatformAdminShell>
       <UsersClient
         initialUsers={serialized}
+        currentAdminId={access.user.id}
       />
     </PlatformAdminShell>
   );

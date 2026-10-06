@@ -88,6 +88,8 @@ model User {
   lastName      String?
   email         String  @unique
   emailVerified Boolean @default(false)
+  isActive           Boolean @default(true)
+  mustChangePassword Boolean @default(false)
   phone         String?
   image         String?
 
