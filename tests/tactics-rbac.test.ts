@@ -151,7 +151,7 @@ test("tactics API preserves academy and team scope enforcement", () => {
 
   assert.match(
     detail,
-    /!existing\.teamId/
+    /existingTeamIds\.length === 0/
   );
 });
 

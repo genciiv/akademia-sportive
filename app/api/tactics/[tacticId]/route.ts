@@ -215,6 +215,10 @@ export async function PATCH(
         academyId:
           access.academyId,
       },
+
+      include: {
+        targetTeams: true,
+      },
     });
 
   if (!existing) {
@@ -229,12 +233,18 @@ export async function PATCH(
     );
   }
 
+  const existingTeamIds =
+    existing.targetTeams.map(
+      (target) => target.teamId
+    );
+
   if (
     teamScope.isScoped &&
     (
-      !existing.teamId ||
-      !teamScope.teamIds.includes(
-        existing.teamId
+      existingTeamIds.length === 0 ||
+      existingTeamIds.some(
+        (teamId) =>
+          !teamScope.teamIds.includes(teamId)
       )
     )
   ) {
@@ -309,18 +319,33 @@ export async function PATCH(
           body.notes
         );
 
-  const teamId =
-    body.teamId === undefined
-      ? existing.teamId
-      : optionalText(
-          body.teamId
-        );
+  const teamIds =
+    body.teamIds === undefined
+      ? existingTeamIds
+      : Array.isArray(body.teamIds)
+        ? Array.from(
+            new Set(
+              body.teamIds
+                .map((value) =>
+                  String(value).trim()
+                )
+                .filter(Boolean)
+            )
+          )
+        : existingTeamIds;
 
   const isActive =
     body.isActive === undefined
       ? existing.isActive
       : Boolean(
           body.isActive
+        );
+
+  const visibleToPlayers =
+    body.visibleToPlayers === undefined
+      ? existing.visibleToPlayers
+      : Boolean(
+          body.visibleToPlayers
         );
 
   const boardDataResult =
@@ -468,12 +493,12 @@ export async function PATCH(
 
   if (
     teamScope.isScoped &&
-    !teamId
+    teamIds.length === 0
   ) {
     return NextResponse.json(
       {
         error:
-          "Duhet të zgjedhësh një nga ekipet që menaxhon.",
+          "Duhet të zgjedhësh të paktën një nga ekipet që menaxhon.",
       },
       {
         status: 403,
@@ -481,60 +506,81 @@ export async function PATCH(
     );
   }
 
-  let team:
-    | {
-        id: string;
-        sport: string;
+  if (
+    teamScope.isScoped &&
+    teamIds.some(
+      (teamId) =>
+        !teamScope.teamIds.includes(teamId)
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke akses tek një ose më shumë ekipe të zgjedhura.",
+      },
+      {
+        status: 403,
       }
-    | null = null;
+    );
+  }
 
-  if (teamId) {
-    if (
-      teamScope.isScoped &&
-      !teamScope.teamIds.includes(
-        teamId
+  const selectedTeams =
+    teamIds.length === 0
+      ? []
+      : await prisma.team.findMany({
+          where: {
+            id: {
+              in: teamIds,
+            },
+            academyId:
+              access.academyId,
+            status: "ACTIVE",
+          },
+
+          select: {
+            id: true,
+            sport: true,
+          },
+        });
+
+  if (
+    selectedTeams.length !==
+    teamIds.length
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Një ose më shumë ekipe të zgjedhura nuk janë të vlefshme.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const selectedSports =
+    new Set(
+      selectedTeams.map(
+        (team) => String(team.sport)
       )
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Nuk ke akses tek ekipi i zgjedhur.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+    );
 
-    team =
-      await prisma.team.findFirst({
-        where: {
-          id: teamId,
-          academyId:
-            access.academyId,
-          status: "ACTIVE",
-        },
+  if (selectedSports.size > 1) {
+    return NextResponse.json(
+      {
+        error:
+          "Të gjitha ekipet e zgjedhura duhet të jenë të të njëjtit sport.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
 
-        select: {
-          id: true,
-          sport: true,
-        },
-      });
-
-    if (!team) {
-      return NextResponse.json(
-        {
-          error:
-            "Ekipi i zgjedhur nuk është i vlefshëm.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    sport =
-      String(team.sport);
+  if (selectedTeams.length > 0) {
+    sport = String(
+      selectedTeams[0].sport
+    );
   }
 
   const tactic =
@@ -556,8 +602,19 @@ export async function PATCH(
         description,
         notes,
         teamId:
-          team?.id ?? null,
+          teamIds[0] ?? null,
+
+        targetTeams: {
+          deleteMany: {},
+          create: teamIds.map(
+            (teamId) => ({
+              teamId,
+            })
+          ),
+        },
+
         isActive,
+        visibleToPlayers,
 
         ...(boardDataResult.value ===
         undefined
@@ -575,6 +632,19 @@ export async function PATCH(
             name: true,
             sport: true,
             ageGroup: true,
+          },
+        },
+
+        targetTeams: {
+          include: {
+            team: {
+              select: {
+                id: true,
+                name: true,
+                sport: true,
+                ageGroup: true,
+              },
+            },
           },
         },
       },
@@ -622,6 +692,12 @@ export async function DELETE(
       select: {
         id: true,
         teamId: true,
+
+        targetTeams: {
+          select: {
+            teamId: true,
+          },
+        },
       },
     });
 
@@ -637,12 +713,18 @@ export async function DELETE(
     );
   }
 
+  const existingTeamIds =
+    existing.targetTeams.map(
+      (target) => target.teamId
+    );
+
   if (
     teamScope.isScoped &&
     (
-      !existing.teamId ||
-      !teamScope.teamIds.includes(
-        existing.teamId
+      existingTeamIds.length === 0 ||
+      existingTeamIds.some(
+        (teamId) =>
+          !teamScope.teamIds.includes(teamId)
       )
     )
   ) {

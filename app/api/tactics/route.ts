@@ -115,11 +115,17 @@ export async function GET() {
             ? {
                 OR: [
                   {
-                    teamId: null,
+                    targetTeams: {
+                      none: {},
+                    },
                   },
                   {
-                    teamId: {
-                      in: teamScope.teamIds,
+                    targetTeams: {
+                      some: {
+                        teamId: {
+                          in: teamScope.teamIds,
+                        },
+                      },
                     },
                   },
                 ],
@@ -135,6 +141,19 @@ export async function GET() {
               sport: true,
               ageGroup: true,
               status: true,
+            },
+          },
+
+          targetTeams: {
+            include: {
+              team: {
+                select: {
+                  id: true,
+                  name: true,
+                  sport: true,
+                  ageGroup: true,
+                },
+              },
             },
           },
         },
@@ -191,11 +210,12 @@ export async function GET() {
           hasManagePermission &&
           (
             !teamScope.isScoped ||
-            Boolean(
-              tactic.teamId &&
-              teamScope.teamIds.includes(
-                tactic.teamId
-              )
+            tactic.targetTeams.length > 0 &&
+            tactic.targetTeams.every(
+              (target) =>
+                teamScope.teamIds.includes(
+                  target.teamId
+                )
             )
           ),
       })
@@ -259,13 +279,29 @@ export async function POST(
   const notes =
     optionalText(body.notes);
 
-  const teamId =
-    optionalText(body.teamId);
+  const teamIds = Array.isArray(body.teamIds)
+    ? Array.from(
+        new Set(
+          body.teamIds
+            .map((value) =>
+              String(value).trim()
+            )
+            .filter(Boolean)
+        )
+      )
+    : [];
 
   const isActive =
     body.isActive === undefined
       ? true
       : Boolean(body.isActive);
+
+  const visibleToPlayers =
+    body.visibleToPlayers === undefined
+      ? false
+      : Boolean(
+          body.visibleToPlayers
+        );
 
   const boardDataResult =
     normalizeBoardData(
@@ -415,12 +451,12 @@ export async function POST(
 
   if (
     teamScope.isScoped &&
-    !teamId
+    teamIds.length === 0
   ) {
     return NextResponse.json(
       {
         error:
-          "Duhet të zgjedhësh një nga ekipet që menaxhon.",
+          "Duhet të zgjedhësh të paktën një nga ekipet që menaxhon.",
       },
       {
         status: 403,
@@ -428,60 +464,80 @@ export async function POST(
     );
   }
 
-  let team:
-    | {
-        id: string;
-        sport: string;
+  if (
+    teamScope.isScoped &&
+    teamIds.some(
+      (teamId) =>
+        !teamScope.teamIds.includes(teamId)
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Nuk ke akses tek një ose më shumë ekipe të zgjedhura.",
+      },
+      {
+        status: 403,
       }
-    | null = null;
+    );
+  }
 
-  if (teamId) {
-    if (
-      teamScope.isScoped &&
-      !teamScope.teamIds.includes(
-        teamId
+  const selectedTeams =
+    teamIds.length === 0
+      ? []
+      : await prisma.team.findMany({
+          where: {
+            id: {
+              in: teamIds,
+            },
+            academyId:
+              access.academyId,
+            status: "ACTIVE",
+          },
+
+          select: {
+            id: true,
+            sport: true,
+          },
+        });
+
+  if (
+    selectedTeams.length !==
+    teamIds.length
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Një ose më shumë ekipe të zgjedhura nuk janë të vlefshme.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const selectedSports =
+    new Set(
+      selectedTeams.map(
+        (team) => String(team.sport)
       )
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Nuk ke akses tek ekipi i zgjedhur.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+    );
 
-    team =
-      await prisma.team.findFirst({
-        where: {
-          id: teamId,
-          academyId:
-            access.academyId,
-          status: "ACTIVE",
-        },
+  if (selectedSports.size > 1) {
+    return NextResponse.json(
+      {
+        error:
+          "Të gjitha ekipet e zgjedhura duhet të jenë të të njëjtit sport.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
 
-        select: {
-          id: true,
-          sport: true,
-        },
-      });
-
-    if (!team) {
-      return NextResponse.json(
-        {
-          error:
-            "Ekipi i zgjedhur nuk është i vlefshëm.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
+  if (selectedTeams.length > 0) {
     sport = String(
-      team.sport
+      selectedTeams[0].sport
     );
   }
 
@@ -492,7 +548,15 @@ export async function POST(
           access.academyId,
 
         teamId:
-          team?.id ?? null,
+          teamIds[0] ?? null,
+
+        targetTeams: {
+          create: teamIds.map(
+            (teamId) => ({
+              teamId,
+            })
+          ),
+        },
 
         name,
         formation,
@@ -506,6 +570,7 @@ export async function POST(
         description,
         notes,
         isActive,
+        visibleToPlayers,
 
         ...(boardDataResult.value ===
         undefined
@@ -523,6 +588,19 @@ export async function POST(
             name: true,
             sport: true,
             ageGroup: true,
+          },
+        },
+
+        targetTeams: {
+          include: {
+            team: {
+              select: {
+                id: true,
+                name: true,
+                sport: true,
+                ageGroup: true,
+              },
+            },
           },
         },
       },

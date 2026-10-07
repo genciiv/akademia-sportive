@@ -49,10 +49,15 @@ type Tactic = {
   notes: string | null;
   boardData: unknown;
   isActive: boolean;
+  visibleToPlayers: boolean;
   createdAt: string;
   updatedAt: string;
   teamId: string | null;
   team: Team | null;
+  targetTeams: Array<{
+    teamId: string;
+    team: Team;
+  }>;
   canManage: boolean;
 };
 
@@ -328,9 +333,9 @@ export default function TaktikatClient() {
     );
 
   const [
-    teamId,
-    setTeamId,
-  ] = useState("");
+    selectedTeamIds,
+    setSelectedTeamIds,
+  ] = useState<string[]>([]);
 
   const [
     sport,
@@ -356,6 +361,11 @@ export default function TaktikatClient() {
     isActive,
     setIsActive,
   ] = useState(true);
+
+  const [
+    visibleToPlayers,
+    setVisibleToPlayers,
+  ] = useState(false);
 
   async function loadTactics() {
     setLoading(true);
@@ -485,7 +495,7 @@ export default function TaktikatClient() {
   const teamTactics =
     tactics.filter(
       (tactic) =>
-        tactic.teamId
+        tactic.targetTeams.length > 0
     ).length;
 
   const formationsCount =
@@ -502,12 +512,13 @@ export default function TaktikatClient() {
     setName("");
     setFormation("4-3-3");
     setPhase("ATTACK");
-    setTeamId("");
+    setSelectedTeamIds([]);
     setSport("");
     setObjective("");
     setDescription("");
     setNotes("");
     setIsActive(true);
+    setVisibleToPlayers(false);
     setEditing(null);
   }
 
@@ -518,9 +529,9 @@ export default function TaktikatClient() {
       isTeamScoped &&
       teams.length > 0
     ) {
-      setTeamId(
-        teams[0].id
-      );
+      setSelectedTeamIds([
+        teams[0].id,
+      ]);
 
       setSport(
         teams[0].sport
@@ -540,8 +551,14 @@ export default function TaktikatClient() {
         "4-3-3"
     );
     setPhase(tactic.phase);
-    setTeamId(
-      tactic.teamId || ""
+    setSelectedTeamIds(
+      tactic.targetTeams.length > 0
+        ? tactic.targetTeams.map(
+            (target) => target.teamId
+          )
+        : tactic.teamId
+          ? [tactic.teamId]
+          : []
     );
     setSport(
       tactic.sport || ""
@@ -557,6 +574,9 @@ export default function TaktikatClient() {
     );
     setIsActive(
       tactic.isActive
+    );
+    setVisibleToPlayers(
+      tactic.visibleToPlayers
     );
     setShowForm(true);
   }
@@ -589,14 +609,15 @@ export default function TaktikatClient() {
             name,
             formation,
             phase,
-            teamId:
-              teamId || null,
+            teamIds:
+              selectedTeamIds,
             sport:
               sport || null,
             objective,
             description,
             notes,
             isActive,
+            visibleToPlayers,
 
             boardData: {
               formation,
@@ -1141,71 +1162,81 @@ export default function TaktikatClient() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Ekipi">
-                    <select
-                      value={
-                        teamId
-                      }
-                      onChange={(
-                        event
-                      ) => {
-                        const id =
-                          event
-                            .target
-                            .value;
+                  <Field label="Ekipet">
+                    <div className="rounded-xl border border-blue-100 bg-white p-3 shadow-sm">
+                      <div className="grid max-h-48 gap-2 overflow-y-auto sm:grid-cols-2">
+                        {teams.map(
+                          (team) => {
+                            const checked =
+                              selectedTeamIds.includes(
+                                team.id
+                              );
 
-                        setTeamId(
-                          id
-                        );
+                            return (
+                              <label
+                                key={team.id}
+                                className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 px-3 py-2.5 transition hover:bg-slate-50"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const nextIds =
+                                      checked
+                                        ? selectedTeamIds.filter(
+                                            (id) =>
+                                              id !== team.id
+                                          )
+                                        : [
+                                            ...selectedTeamIds,
+                                            team.id,
+                                          ];
 
-                        const team =
-                          teams.find(
-                            (
-                              item
-                            ) =>
-                              item.id ===
-                              id
-                          );
+                                    setSelectedTeamIds(
+                                      nextIds
+                                    );
 
-                        if (
-                          team &&
-                          !sport
-                        ) {
-                          setSport(
-                            team.sport
-                          );
-                        }
-                      }}
-                      className="w-full rounded-xl border border-blue-100 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-100/60"
-                    >
+                                    if (
+                                      !checked &&
+                                      !sport
+                                    ) {
+                                      setSport(
+                                        team.sport
+                                      );
+                                    }
+                                  }}
+                                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                />
+
+                                <span className="min-w-0">
+                                  <span className="block text-sm font-semibold text-slate-800">
+                                    {team.name}
+                                  </span>
+
+                                  {team.ageGroup ? (
+                                    <span className="mt-0.5 block text-xs text-slate-500">
+                                      {team.ageGroup}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </label>
+                            );
+                          }
+                        )}
+                      </div>
+
                       {!isTeamScoped ? (
-                        <option value="">
-                          Pa ekip specifik
-                        </option>
-                      ) : null}
-
-                      {teams.map(
-                        (
-                          team
-                        ) => (
-                          <option
-                            key={
-                              team.id
-                            }
-                            value={
-                              team.id
-                            }
-                          >
-                            {
-                              team.name
-                            }
-                            {team.ageGroup
-                              ? ` • ${team.ageGroup}`
-                              : ""}
-                          </option>
-                        )
+                        <p className="mt-3 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
+                          {selectedTeamIds.length === 0
+                            ? "Asnjë ekip i zgjedhur — taktika publikohet për të gjithë sportistët e akademisë."
+                            : `${selectedTeamIds.length} ekipe të zgjedhura.`}
+                        </p>
+                      ) : (
+                        <p className="mt-3 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
+                          Zgjidh të paktën një nga ekipet që menaxhon.
+                        </p>
                       )}
-                    </select>
+                    </div>
                   </Field>
 
                   <Field label="Sporti">
@@ -1333,6 +1364,34 @@ export default function TaktikatClient() {
                       Tregoje në
                       bibliotekën
                       operative.
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-white px-4 py-3 shadow-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      visibleToPlayers
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setVisibleToPlayers(
+                        event
+                          .target
+                          .checked
+                      )
+                    }
+                    className="h-4 w-4 rounded border-blue-300 accent-blue-600"
+                  />
+
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">
+                      E dukshme për sportistët
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Publikoje këtë taktikë në portalin e sportistit.
                     </p>
                   </div>
                 </label>

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { requireAthleteAccess } from "@/lib/athlete-access";
+import { AthleteTacticPitch } from "@/components/sportist/athlete-tactic-pitch";
 import { prisma } from "@/lib/prisma";
 
 function phaseLabel(value: string) {
@@ -108,16 +109,31 @@ export default async function AthleteTacticsPage() {
     );
 
   const tactics =
-    activeTeamIds.length === 0
-      ? []
-      : await prisma.tactic.findMany({
+    await prisma.tactic.findMany({
           where: {
             academyId:
               access.academyId,
 
-            teamId: {
-              in: activeTeamIds,
-            },
+            OR: [
+              {
+                targetTeams: {
+                  none: {},
+                },
+              },
+              ...(activeTeamIds.length > 0
+                ? [
+                    {
+                      targetTeams: {
+                        some: {
+                          teamId: {
+                            in: activeTeamIds,
+                          },
+                        },
+                      },
+                    },
+                  ]
+                : []),
+            ],
 
             isActive: true,
             visibleToPlayers: true,
@@ -140,6 +156,7 @@ export default async function AthleteTacticsPage() {
             sport: true,
             objective: true,
             description: true,
+            boardData: true,
             updatedAt: true,
 
             team: {
@@ -266,6 +283,34 @@ export default async function AthleteTacticsPage() {
                 </div>
 
                 <div className="p-5">
+                  <div className="mb-6 overflow-hidden rounded-[24px] border border-emerald-100 bg-gradient-to-b from-emerald-50/70 to-white p-3 sm:p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-600">
+                          Skema taktike
+                        </p>
+                        <p className="mt-0.5 text-xs font-medium text-slate-500">
+                          Pozicionimi në fushë
+                        </p>
+                      </div>
+
+                      {tactic.formation ? (
+                        <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[10px] font-black text-emerald-700 shadow-sm">
+                          {tactic.formation}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <AthleteTacticPitch
+                      formation={
+                        tactic.formation
+                      }
+                      boardData={
+                        tactic.boardData
+                      }
+                    />
+                  </div>
+
                   {tactic.objective ? (
                     <div className="rounded-2xl bg-blue-50 p-4">
                       <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.08em] text-blue-700">

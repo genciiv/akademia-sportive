@@ -738,6 +738,7 @@ model Team {
   matches                           Match[]
   notifications                     Notification[]
   tactics                           Tactic[]
+  tacticTargets                     TacticTeam[]
   sentInterAcademyMatchRequests     InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestRequesterTeam")
   receivedInterAcademyMatchRequests InterAcademyMatchRequest[] @relation("InterAcademyMatchRequestOpponentTeam")
   homeInterAcademyMatches           InterAcademyMatch[]        @relation("InterAcademyMatchHomeTeam")
@@ -1603,6 +1604,8 @@ model Tactic {
   teamId String?
   team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
+  targetTeams TacticTeam[]
+
   name String
 
   formation String?
@@ -1624,6 +1627,19 @@ model Tactic {
   @@index([academyId])
   @@index([academyId, isActive])
   @@index([academyId, phase])
+  @@index([teamId])
+}
+
+model TacticTeam {
+  tacticId String
+  tactic   Tactic @relation(fields: [tacticId], references: [id], onDelete: Cascade)
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([tacticId, teamId])
   @@index([teamId])
 }
 
