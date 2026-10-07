@@ -8,6 +8,8 @@ const layout = fs.readFileSync("app/sportist/(portal)/layout.tsx", "utf8");
 
 const navigation = fs.readFileSync("components/athlete-portal-nav.tsx", "utf8");
 
+const shell = fs.readFileSync("components/athlete-portal-shell.tsx", "utf8");
+
 test("athlete schedule page requires athlete access", () => {
   assert.match(page, /requireAthleteAccess/);
 
@@ -61,10 +63,24 @@ test("athlete schedule does not use academy staff permissions", () => {
   );
 });
 
-test("athlete portal navigation exposes the schedule page", () => {
-  assert.match(layout, /AthletePortalNav/);
+test("athlete portal shell exposes navigation and the schedule page", () => {
+  assert.match(
+    layout,
+    /AthletePortalShell/
+  );
 
-  assert.match(navigation, /href:\s*"\/sportist\/orari"/);
+  assert.match(
+    shell,
+    /AthletePortalNav/
+  );
 
-  assert.match(navigation, /label:\s*"Orari"/);
+  assert.match(
+    navigation,
+    /href:\s*"\/sportist\/orari"/
+  );
+
+  assert.match(
+    navigation,
+    /label:\s*"Orari"/
+  );
 });

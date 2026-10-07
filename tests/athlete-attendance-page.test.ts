@@ -54,7 +54,7 @@ test("athlete attendance provides statistics for every attendance status", () =>
 test("athlete attendance statistics derive from the athlete history", () => {
   assert.match(page, /attendances\.reduce/);
 
-  assert.match(page, /const total = attendances\.length/);
+  assert.match(page, /const total\s*=\s*attendances\.length/);
 
   assert.match(page, /Math\.round/);
 });
