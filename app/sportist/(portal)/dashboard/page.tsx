@@ -1,6 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import {
+  Activity,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock3,
+  Dumbbell,
+  MapPin,
+  Medal,
+  Megaphone,
+  Scale,
+  Sparkles,
+  Trophy,
+  UserRound,
+} from "lucide-react";
+
 import { requireAthleteAccess } from "@/lib/athlete-access";
 import { prisma } from "@/lib/prisma";
 
@@ -741,1220 +758,672 @@ export default async function AthleteDashboardPage() {
         )
       : null;
 
-  const maxPhysicalWeight = Math.max(
-    1,
-    ...physicalProgress.map(
-      (measurement) => measurement.weightKg ?? 0,
-    ),
-  );
-
-  const maxPhysicalBodyFat = Math.max(
-    1,
-    ...physicalProgress.map(
-      (measurement) => measurement.bodyFatPercent ?? 0,
-    ),
-  );
-
-  const maxPhysicalMuscleMass = Math.max(
-    1,
-    ...physicalProgress.map(
-      (measurement) => measurement.muscleMassKg ?? 0,
-    ),
-  );
-
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl bg-slate-950 text-white shadow-sm">
+      <section className="overflow-hidden rounded-[26px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-violet-50 shadow-sm">
         <div className="grid lg:grid-cols-[1.35fr_.65fr]">
-          <div className="p-6 sm:p-8">
+          <div className="p-6 sm:p-8 xl:p-9">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                Profili i sportistit
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-blue-700">
+                <Sparkles size={13} />
+                Përmbledhja ime
               </span>
 
-              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-300">
-                {String(player.status)}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold text-emerald-700">
+                <CheckCircle2 size={13} />
+                {player.status === "ACTIVE"
+                  ? "Aktiv"
+                  : String(player.status)}
               </span>
             </div>
 
-            <h1 className="mt-5 text-3xl font-black tracking-tight sm:text-4xl">
+            <p className="mt-6 text-sm font-medium text-slate-500">
+              Mirë se erdhe,
+            </p>
+
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               {athleteName}
             </h1>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-300">
-              <span>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
                 {player.position || "Pa pozicion"}
               </span>
 
-              <span className="text-slate-600">
-                •
-              </span>
-
-              <span>
+              <span className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
                 Nr. {player.jerseyNumber ?? "—"}
               </span>
 
               {primaryTeam ? (
-                <>
-                  <span className="text-slate-600">
-                    •
-                  </span>
-
-                  <span>
-                    {primaryTeam.name}
-                  </span>
-                </>
+                <span className="rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700">
+                  {primaryTeam.name}
+                </span>
               ) : null}
             </div>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">
-              {access.academy.name}
+            <p className="mt-5 max-w-xl text-sm leading-6 text-slate-500">
+              Këtu ke një pamje të shpejtë të aktivitetit,
+              performancës dhe progresit tënd në{" "}
+              <span className="font-semibold text-slate-700">
+                {access.academy.name}
+              </span>.
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               <Link
-                href="/sportist/ndeshjet"
-                className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100"
+                href="/sportist/orari"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
               >
-                Shiko ndeshjet
+                <CalendarDays size={16} />
+                Shiko orarin
               </Link>
 
               <Link
-                href="/sportist/orari"
-                className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
+                href="/sportist/ndeshjet"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
               >
-                Shiko orarin
+                <Trophy size={16} />
+                Ndeshjet
               </Link>
             </div>
           </div>
 
-          <div
-            className="relative flex min-h-56 items-center justify-center bg-slate-900 bg-cover bg-center lg:min-h-full"
-            style={
-              player.photo
-                ? {
-                    backgroundImage: `linear-gradient(to top, rgba(2,6,23,.75), rgba(2,6,23,.05)), url(${player.photo})`,
-                  }
-                : undefined
-            }
-          >
-            {!player.photo ? (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/10 text-4xl font-black text-white">
-                {athleteInitials}
-              </div>
+          <div className="relative flex min-h-[230px] items-center justify-center bg-gradient-to-br from-blue-100 via-violet-100 to-emerald-50 lg:min-h-full">
+            {player.photo ? (
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `linear-gradient(to top, rgba(255,255,255,.9), rgba(255,255,255,.12)), url(${player.photo})`,
+                }}
+              />
             ) : null}
 
-            <div className="absolute bottom-4 right-4 rounded-xl bg-black/40 px-3 py-2 text-right backdrop-blur-sm">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="relative z-10 flex h-28 w-28 items-center justify-center rounded-[30px] border border-white/80 bg-white/80 text-3xl font-black text-blue-700 shadow-lg backdrop-blur">
+              {athleteInitials || (
+                <UserRound size={36} />
+              )}
+            </div>
+
+            <div className="absolute bottom-5 left-5 right-5 z-10 rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur">
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
                 Akademia
               </p>
 
-              <p className="mt-0.5 text-sm font-bold text-white">
+              <p className="mt-1 truncate text-sm font-bold text-slate-900">
                 {access.academy.name}
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="rounded-2xl bg-slate-950 p-5 text-white sm:p-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
-            Performanca
-          </p>
-
-          <h2 className="mt-1 text-xl font-bold">
-            Statistikat e karrierës
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-400">
-            Përmbledhja nga ndeshjet e përfunduara me ekipet e tua aktive.
-          </p>
-        </div>
-
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              Ndeshje
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.appearances}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              Titullar
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.starts}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              Minuta
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.minutes}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              Gola
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.goals}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              Asiste
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.assists}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              Min / ndeshje
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.minutesPerAppearance === null
-                ? "—"
-                : professionalStats.minutesPerAppearance.toFixed(1)}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white/10 p-4">
-            <p className="text-xs text-slate-400">
-              G+A
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.goalContributions}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-emerald-400 p-4 text-slate-950">
-            <p className="text-xs font-semibold text-emerald-950/70">
-              Vlerësimi
-            </p>
-
-            <p className="mt-1 text-2xl font-black">
-              {professionalStats.averageRating === null
-                ? "—"
-                : professionalStats.averageRating.toFixed(1)}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-              Qendra e Performancës
-            </p>
-
-            <h2 className="mt-1 text-xl font-bold text-slate-950">
-              Ecuria e Performancës
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Vlerësimet e trajnerit në pesë paraqitjet më të fundit.
-            </p>
-          </div>
-
-          <div className="self-start rounded-xl bg-slate-950 px-3 py-2 sm:self-auto">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Mesatarja
-            </p>
-
-            <p className="mt-0.5 text-lg font-black text-white">
-              {professionalStats.averageRating === null
-                ? "—"
-                : professionalStats.averageRating.toFixed(1)}
-            </p>
-          </div>
-        </div>
-
-        {performanceTrend.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-500">
-            Ende nuk ka vlerësime të regjistruara të performancës.
-          </p>
-        ) : (
-          <div className="mt-6 overflow-x-auto pb-2">
-            <div className="grid min-w-[520px] grid-cols-5 gap-3">
-              {performanceTrend.map((performance) => {
-                const barHeight = Math.max(
-                  8,
-                  Math.min(
-                    100,
-                    (performance.rating / 10) * 100,
-                  ),
-                );
-
-                return (
-                  <Link
-                    key={performance.matchId}
-                    href={`/sportist/ndeshjet/${performance.matchId}`}
-                    className="group min-w-0"
-                  >
-                    <div className="flex h-40 items-end overflow-hidden rounded-xl bg-slate-50 px-3 pt-4">
-                      <div
-                        className="w-full rounded-t-lg bg-emerald-500 transition group-hover:bg-emerald-600"
-                        style={{
-                          height: `${barHeight}%`,
-                        }}
-                      />
-                    </div>
-
-                    <div className="mt-2 text-center">
-                      <p className="text-lg font-black text-slate-950">
-                        {performance.rating.toFixed(1)}
-                      </p>
-
-                      <p className="mt-1 truncate text-xs font-semibold text-slate-600">
-                        {performance.opponentName}
-                      </p>
-
-                      <p className="mt-1 text-[11px] text-slate-400">
-                        {formatDate(performance.startsAt)}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-              Qendra e Performancës
-            </p>
-
-            <h2 className="mt-1 text-xl font-bold text-slate-950">
-              Performanca në Ndeshjen e Fundit
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Statistikat individuale nga paraqitja jote më e fundit.
-            </p>
-          </div>
-
-          {lastAppearance ? (
-            <Link
-              href={`/sportist/ndeshjet/${lastAppearance.match.id}`}
-              className="text-sm font-bold text-slate-950 hover:underline"
-            >
-              Detajet e ndeshjes →
-            </Link>
-          ) : null}
-        </div>
-
-        {!lastAppearance ? (
-          <p className="mt-6 text-sm text-slate-500">
-            Ende nuk ka paraqitje të përfunduara.
-          </p>
-        ) : (
-          <div className="mt-6">
-            <div className="flex flex-col gap-3 rounded-xl bg-slate-950 p-4 text-white sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Ndeshja e fundit
+              {primaryTeam ? (
+                <p className="mt-1 truncate text-xs text-slate-500">
+                  {primaryTeam.name}
+                  {primaryTeam.ageGroup
+                    ? ` · ${primaryTeam.ageGroup}`
+                    : ""}
                 </p>
-
-                <p className="mt-1 truncate text-lg font-black">
-                  {lastAppearance.match.opponentName}
-                </p>
-
-                <p className="mt-1 text-sm text-slate-400">
-                  {formatDateTime(lastAppearance.match.startsAt)}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-lg bg-white/10 px-3 py-2 text-sm font-bold">
-                  {lastAppearance.minutesPlayed} min
-                </span>
-
-                {lastMatchPerformance?.coachRating !== null &&
-                lastMatchPerformance?.coachRating !== undefined ? (
-                  <span className="rounded-lg bg-emerald-400 px-3 py-2 text-sm font-black text-slate-950">
-                    {Number(lastMatchPerformance.coachRating).toFixed(1)} vlerësim
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            {!lastMatchPerformance ? (
-              <div className="mt-4 rounded-xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">
-                  Ende nuk janë regjistruar statistikat individuale për këtë paraqitje.
-                </p>
-
-                <p className="mt-2 text-sm font-semibold text-slate-700">
-                  Minuta të luajtura: {lastAppearance.minutesPlayed}
-                </p>
-              </div>
-            ) : (
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Minuta</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastAppearance.minutesPlayed}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Goditje</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.shots}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Në portë</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.shotsOnTarget}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Pasime</p>
-                  <p className="mt-1 text-lg font-black text-slate-950">
-                    {lastMatchPerformance.passesCompleted}/
-                    {lastMatchPerformance.passesAttempted}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {lastPassAccuracy === null
-                      ? "Pa tentativa"
-                      : `${lastPassAccuracy}% saktësi`}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Driblime</p>
-                  <p className="mt-1 text-lg font-black text-slate-950">
-                    {lastMatchPerformance.dribblesCompleted}/
-                    {lastMatchPerformance.dribblesAttempted}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {lastDribbleAccuracy === null
-                      ? "Pa tentativa"
-                      : `${lastDribbleAccuracy}% sukses`}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Duele të fituara</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.duelsWon}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Ndërhyrje</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.tackles}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Interceptime</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.interceptions}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Faulle të kryera</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.foulsCommitted}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Faulle të fituara</p>
-                  <p className="mt-1 text-xl font-black text-slate-950">
-                    {lastMatchPerformance.foulsWon}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-emerald-50 p-4">
-                  <p className="text-xs font-semibold text-emerald-700">
-                    Vlerësimi
-                  </p>
-
-                  <p className="mt-1 text-xl font-black text-emerald-900">
-                    {lastMatchPerformance.coachRating === null
-                      ? "—"
-                      : Number(lastMatchPerformance.coachRating).toFixed(1)}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1.4fr_.6fr]">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="bg-slate-950 p-5 text-white sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                  Aktiviteti i ardhshëm
-                </p>
-
-                <h2 className="mt-1 text-xl font-bold">
-                  Çfarë ke më pas
-                </h2>
-              </div>
-
-              {nextActivity ? (
-                <span
-                  className={[
-                    "rounded-full px-3 py-1 text-xs font-bold",
-                    nextActivity.type === "MATCH"
-                      ? "bg-emerald-400/15 text-emerald-300"
-                      : "bg-sky-400/15 text-sky-300",
-                  ].join(" ")}
-                >
-                  {nextActivity.type === "MATCH"
-                    ? "Ndeshje"
-                    : "Stërvitje"}
-                </span>
               ) : null}
             </div>
-
-            {!nextActivity ? (
-              <p className="mt-5 text-sm text-slate-400">
-                Nuk ka aktivitete të ardhshme të planifikuara për momentin.
-              </p>
-            ) : (
-              <div className="mt-6">
-                <p className="text-2xl font-black tracking-tight">
-                  {nextActivity.title}
-                </p>
-
-                <p className="mt-2 text-sm font-semibold text-slate-300">
-                  {nextActivity.subtitle}
-                </p>
-
-                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-                  <span className="rounded-lg bg-white/10 px-3 py-2 text-slate-200">
-                    {formatDateTime(nextActivity.startsAt)}
-                  </span>
-
-                  {nextActivity.location ? (
-                    <span className="rounded-lg bg-white/10 px-3 py-2 text-slate-200">
-                      {nextActivity.location}
-                    </span>
-                  ) : null}
-                </div>
-
-                <Link
-                  href={nextActivity.href}
-                  className="mt-5 inline-flex rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100"
-                >
-                  {nextActivity.type === "MATCH"
-                    ? "Shiko ndeshjen"
-                    : "Shiko orarin"}
-                </Link>
-              </div>
-            )}
           </div>
-
-          {nextActivity ? (
-            <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
-              <div className="p-4 sm:p-5">
-                <p className="text-xs font-semibold text-slate-400">
-                  Lloji
-                </p>
-
-                <p className="mt-1 font-black text-slate-950">
-                  {nextActivity.type === "MATCH"
-                    ? "Ndeshje"
-                    : "Stërvitje"}
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-5">
-                <p className="text-xs font-semibold text-slate-400">
-                  Ekipi / aktiviteti
-                </p>
-
-                <p className="mt-1 truncate font-black text-slate-950">
-                  {nextActivity.subtitle}
-                </p>
-              </div>
-            </div>
-          ) : null}
         </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-            Prezenca
-          </p>
-
-          <div className="mt-4 flex items-end gap-2">
-            <p className="text-5xl font-black tracking-tight text-slate-950">
-              {attendanceRate === null
-                ? "—"
-                : `${attendanceRate}%`}
-            </p>
-          </div>
-
-          <p className="mt-3 text-sm leading-6 text-slate-500">
-            {attendanceHistory.length === 0
-              ? "Ende nuk ka regjistrime prezence."
-              : `${attendedSessions} nga ${attendanceHistory.length} seanca të ndjekura.`}
-          </p>
-
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-emerald-500"
-              style={{
-                width: `${attendanceRate ?? 0}%`,
-              }}
-            />
-          </div>
-
-          <Link
-            href="/sportist/prezenca"
-            className="mt-5 inline-flex text-sm font-bold text-slate-950 hover:underline"
-          >
-            Shiko prezencën →
-          </Link>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-              Forma
-            </p>
-
-            <h2 className="mt-1 text-xl font-bold text-slate-950">
-              Forma e fundit
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Pesë paraqitjet e fundit në ndeshje të përfunduara.
-            </p>
-          </div>
-
-          <Link
-            href="/sportist/ndeshjet"
-            className="text-sm font-bold text-slate-950 hover:underline"
-          >
-            Të gjitha ndeshjet →
-          </Link>
-        </div>
-
-        {recentForm.length === 0 ? (
-          <p className="mt-5 text-sm text-slate-500">
-            Ende nuk ka paraqitje të përfunduara.
-          </p>
-        ) : (
-          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {recentForm.map(
-              (appearance) => {
-                const match =
-                  appearance.match;
-
-                const score =
-                  match.ourScore === null ||
-                  match.opponentScore === null
-                    ? "—"
-                    : match.isHome
-                      ? `${match.ourScore} - ${match.opponentScore}`
-                      : `${match.opponentScore} - ${match.ourScore}`;
-
-                const outcomeLabel =
-                  appearance.outcome === "WIN"
-                    ? "F"
-                    : appearance.outcome === "DRAW"
-                      ? "B"
-                      : appearance.outcome === "LOSS"
-                        ? "H"
-                        : "—";
-
-                const outcomeClass =
-                  appearance.outcome === "WIN"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : appearance.outcome === "DRAW"
-                      ? "bg-amber-100 text-amber-700"
-                      : appearance.outcome === "LOSS"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-slate-100 text-slate-600";
-
-                return (
-                  <Link
-                    key={appearance.id}
-                    href={`/sportist/ndeshjet/${match.id}`}
-                    className="rounded-xl border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span
-                        className={[
-                          "flex h-8 w-8 items-center justify-center rounded-lg text-xs font-black",
-                          outcomeClass,
-                        ].join(" ")}
-                      >
-                        {outcomeLabel}
-                      </span>
-
-                      <span className="text-sm font-black text-slate-950">
-                        {score}
-                      </span>
-                    </div>
-
-                    <p className="mt-4 truncate text-sm font-bold text-slate-950">
-                      {match.opponentName}
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500">
-                      {appearance.minutesPlayed} min
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-400">
-                      {formatDateTime(
-                        match.startsAt,
-                      )}
-                    </p>
-                  </Link>
-                );
-              },
-            )}
-          </div>
-        )}
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-500">Statusi</p>
+        <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-5">
+          <div className="flex items-center justify-between">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm">
+              <Trophy size={19} />
+            </span>
 
-          <p className="mt-2 text-lg font-semibold">{String(player.status)}</p>
-        </div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-blue-500">
+              Karriera
+            </span>
+          </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-500">Pozicioni</p>
+          <p className="mt-5 text-3xl font-black text-slate-950">
+            {professionalStats.appearances}
+          </p>
 
-          <p className="mt-2 text-lg font-semibold">{player.position || "—"}</p>
-        </div>
+          <p className="mt-1 text-sm font-semibold text-slate-700">
+            Ndeshje
+          </p>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-500">Numri</p>
-
-          <p className="mt-2 text-lg font-semibold">
-            {player.jerseyNumber ?? "—"}
+          <p className="mt-1 text-xs text-slate-500">
+            {professionalStats.minutes} minuta gjithsej
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-500">Datëlindja</p>
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5">
+          <div className="flex items-center justify-between">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
+              <ClipboardCheck size={19} />
+            </span>
 
-          <p className="mt-2 text-lg font-semibold">
-            {formatDate(player.dateOfBirth)}
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-emerald-600">
+              Prezenca
+            </span>
+          </div>
+
+          <p className="mt-5 text-3xl font-black text-slate-950">
+            {attendanceRate === null
+              ? "—"
+              : `${attendanceRate}%`}
+          </p>
+
+          <p className="mt-1 text-sm font-semibold text-slate-700">
+            Pjesëmarrja
+          </p>
+
+          <Link
+            href="/sportist/prezenca"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"
+          >
+            Shiko historikun
+            <ArrowRight size={12} />
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-5">
+          <div className="flex items-center justify-between">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-violet-600 shadow-sm">
+              <Activity size={19} />
+            </span>
+
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-violet-600">
+              Performanca
+            </span>
+          </div>
+
+          <p className="mt-5 text-3xl font-black text-slate-950">
+            {professionalStats.averageRating === null
+              ? "—"
+              : professionalStats.averageRating.toFixed(1)}
+          </p>
+
+          <p className="mt-1 text-sm font-semibold text-slate-700">
+            Vlerësimi mesatar
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            {professionalStats.goals} gola ·{" "}
+            {professionalStats.assists} asiste
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-5">
+          <div className="flex items-center justify-between">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-amber-600 shadow-sm">
+              <Medal size={19} />
+            </span>
+
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-amber-600">
+              Kontribute
+            </span>
+          </div>
+
+          <p className="mt-5 text-3xl font-black text-slate-950">
+            {professionalStats.goalContributions}
+          </p>
+
+          <p className="mt-1 text-sm font-semibold text-slate-700">
+            Gola + asiste
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            {professionalStats.starts} ndeshje si titullar
           </p>
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Ekipet aktive</h2>
-
-          <div className="mt-4 space-y-3">
-            {activeTeams.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                Nuk je i lidhur me një ekip aktiv.
-              </p>
-            ) : (
-              activeTeams.map(({ team }) => (
-                <div
-                  key={team.id}
-                  className="rounded-lg border border-slate-100 bg-slate-50 p-3"
-                >
-                  <p className="font-medium">{team.name}</p>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {[team.sport, team.ageGroup]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <section className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                Qendra Fizike
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-blue-600">
+                Çfarë ke më pas
               </p>
 
-              <h2 className="mt-1 text-xl font-bold text-slate-950">
-                Progresi Fizik
+              <h2 className="mt-1 text-lg font-bold text-slate-950">
+                Aktiviteti i ardhshëm
               </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Evolucioni i matjeve fizike në tetë regjistrimet më të fundit.
-              </p>
             </div>
 
-            {latestMeasurement ? (
-              <div className="self-start rounded-xl bg-slate-950 px-3 py-2 text-white sm:self-auto">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Matja e fundit
-                </p>
-
-                <p className="mt-0.5 text-sm font-black">
-                  {formatDate(latestMeasurement.measuredAt)}
-                </p>
-              </div>
-            ) : null}
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <Clock3 size={18} />
+            </span>
           </div>
 
-          {!latestMeasurement ? (
-            <p className="mt-6 text-sm text-slate-500">
-              Ende nuk ka matje fizike të regjistruara.
-            </p>
+          {nextActivity ? (
+            <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
+              <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                {nextActivity.type === "MATCH"
+                  ? "Ndeshje"
+                  : "Stërvitje"}
+              </span>
+
+              <h3 className="mt-4 text-lg font-bold text-slate-950">
+                {nextActivity.title}
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {nextActivity.subtitle}
+              </p>
+
+              <div className="mt-4 space-y-2 text-sm text-slate-600">
+                <p className="flex items-center gap-2">
+                  <CalendarDays
+                    size={15}
+                    className="text-blue-500"
+                  />
+                  {formatDateTime(
+                    nextActivity.startsAt
+                  )}
+                </p>
+
+                {nextActivity.location ? (
+                  <p className="flex items-center gap-2">
+                    <MapPin
+                      size={15}
+                      className="text-blue-500"
+                    />
+                    {nextActivity.location}
+                  </p>
+                ) : null}
+              </div>
+
+              <Link
+                href={nextActivity.href}
+                className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-blue-700"
+              >
+                Shiko detajet
+                <ArrowRight size={15} />
+              </Link>
+            </div>
           ) : (
-            <>
-              <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Pesha</p>
-                  <p className="mt-1 text-2xl font-black text-slate-950">
-                    {latestMeasurement.weightKg != null
-                      ? `${latestMeasurement.weightKg} kg`
-                      : "—"}
-                  </p>
-                </div>
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+              <CalendarDays
+                size={24}
+                className="mx-auto text-slate-300"
+              />
 
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Yndyra trupore</p>
-                  <p className="mt-1 text-2xl font-black text-slate-950">
-                    {latestMeasurement.bodyFatPercent != null
-                      ? `${latestMeasurement.bodyFatPercent}%`
-                      : "—"}
-                  </p>
-                </div>
+              <p className="mt-3 text-sm font-semibold text-slate-700">
+                Nuk ka aktivitet të planifikuar.
+              </p>
+            </div>
+          )}
+        </div>
 
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Masë muskulore</p>
-                  <p className="mt-1 text-2xl font-black text-slate-950">
-                    {latestMeasurement.muscleMassKg != null
-                      ? `${latestMeasurement.muscleMassKg} kg`
-                      : "—"}
-                  </p>
-                </div>
+        <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-600">
+                Ndeshja
+              </p>
 
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Gjatësia</p>
-                  <p className="mt-1 text-2xl font-black text-slate-950">
-                    {latestMeasurement.heightCm != null
-                      ? `${latestMeasurement.heightCm} cm`
-                      : "—"}
+              <h2 className="mt-1 text-lg font-bold text-slate-950">
+                Ndeshja e ardhshme
+              </h2>
+            </div>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+              <Trophy size={18} />
+            </span>
+          </div>
+
+          {nextMatch ? (
+            <div className="mt-6 rounded-2xl border border-violet-100 bg-violet-50/60 p-5">
+              <p className="text-xs font-semibold text-violet-700">
+                {nextMatch.competitionName ||
+                  nextMatch.team.name}
+              </p>
+
+              <h3 className="mt-3 text-xl font-black text-slate-950">
+                {nextMatch.isHome
+                  ? `${nextMatch.team.name} - ${nextMatch.opponentName}`
+                  : `${nextMatch.opponentName} - ${nextMatch.team.name}`}
+              </h3>
+
+              <div className="mt-4 space-y-2 text-sm text-slate-600">
+                <p className="flex items-center gap-2">
+                  <CalendarDays
+                    size={15}
+                    className="text-violet-500"
+                  />
+                  {formatDateTime(
+                    nextMatch.startsAt
+                  )}
+                </p>
+
+                {nextMatch.facility?.name ||
+                nextMatch.location ? (
+                  <p className="flex items-center gap-2">
+                    <MapPin
+                      size={15}
+                      className="text-violet-500"
+                    />
+                    {nextMatch.facility?.name ||
+                      nextMatch.location}
                   </p>
-                </div>
+                ) : null}
               </div>
 
-              <div className="mt-6 grid gap-4 xl:grid-cols-3">
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                  <p className="text-sm font-bold text-slate-950">Pesha</p>
-                  <p className="mt-1 text-xs text-slate-500">Historiku në kg</p>
+              <Link
+                href={`/sportist/ndeshjet/${nextMatch.id}`}
+                className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-violet-700"
+              >
+                Hap ndeshjen
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+              <Trophy
+                size={24}
+                className="mx-auto text-slate-300"
+              />
 
-                  <div className="mt-5 flex h-28 items-end gap-2">
-                    {physicalProgress.map((measurement) => (
-                      <div
-                        key={`weight-${measurement.measuredAt.toISOString()}`}
-                        className="flex min-w-0 flex-1 items-end"
-                      >
-                        <div
-                          className="w-full rounded-t-md bg-slate-900"
-                          style={{
-                            height: `${Math.max(
-                              6,
-                              ((measurement.weightKg ?? 0) /
-                                maxPhysicalWeight) *
-                                100,
-                            )}%`,
-                          }}
-                          title={
-                            measurement.weightKg != null
-                              ? `${measurement.weightKg} kg`
-                              : "Pa të dhëna"
-                          }
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                  <p className="text-sm font-bold text-slate-950">Yndyra trupore</p>
-                  <p className="mt-1 text-xs text-slate-500">Historiku në përqindje</p>
-
-                  <div className="mt-5 flex h-28 items-end gap-2">
-                    {physicalProgress.map((measurement) => (
-                      <div
-                        key={`fat-${measurement.measuredAt.toISOString()}`}
-                        className="flex min-w-0 flex-1 items-end"
-                      >
-                        <div
-                          className="w-full rounded-t-md bg-slate-700"
-                          style={{
-                            height: `${Math.max(
-                              6,
-                              ((measurement.bodyFatPercent ?? 0) /
-                                maxPhysicalBodyFat) *
-                                100,
-                            )}%`,
-                          }}
-                          title={
-                            measurement.bodyFatPercent != null
-                              ? `${measurement.bodyFatPercent}%`
-                              : "Pa të dhëna"
-                          }
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                  <p className="text-sm font-bold text-slate-950">Masë muskulore</p>
-                  <p className="mt-1 text-xs text-slate-500">Historiku në kg</p>
-
-                  <div className="mt-5 flex h-28 items-end gap-2">
-                    {physicalProgress.map((measurement) => (
-                      <div
-                        key={`muscle-${measurement.measuredAt.toISOString()}`}
-                        className="flex min-w-0 flex-1 items-end"
-                      >
-                        <div
-                          className="w-full rounded-t-md bg-emerald-500"
-                          style={{
-                            height: `${Math.max(
-                              6,
-                              ((measurement.muscleMassKg ?? 0) /
-                                maxPhysicalMuscleMass) *
-                                100,
-                            )}%`,
-                          }}
-                          title={
-                            measurement.muscleMassKg != null
-                              ? `${measurement.muscleMassKg} kg`
-                              : "Pa të dhëna"
-                          }
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 overflow-x-auto">
-                <div className="min-w-[620px]">
-                  <div className="grid grid-cols-5 gap-3 border-b border-slate-200 pb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-                    <span>Data</span>
-                    <span>Pesha</span>
-                    <span>Yndyra</span>
-                    <span>Muskuj</span>
-                    <span>Gjatësia</span>
-                  </div>
-
-                  <div className="divide-y divide-slate-100">
-                    {[...physicalProgress].reverse().map((measurement) => (
-                      <div
-                        key={measurement.measuredAt.toISOString()}
-                        className="grid grid-cols-5 gap-3 py-3 text-sm"
-                      >
-                        <span className="font-semibold text-slate-700">
-                          {formatDate(measurement.measuredAt)}
-                        </span>
-
-                        <span>
-                          {measurement.weightKg != null
-                            ? `${measurement.weightKg} kg`
-                            : "—"}
-                        </span>
-
-                        <span>
-                          {measurement.bodyFatPercent != null
-                            ? `${measurement.bodyFatPercent}%`
-                            : "—"}
-                        </span>
-
-                        <span>
-                          {measurement.muscleMassKg != null
-                            ? `${measurement.muscleMassKg} kg`
-                            : "—"}
-                        </span>
-
-                        <span>
-                          {measurement.heightCm != null
-                            ? `${measurement.heightCm} cm`
-                            : "—"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
+              <p className="mt-3 text-sm font-semibold text-slate-700">
+                Nuk ka ndeshje të planifikuar.
+              </p>
+            </div>
           )}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-              Akademia
-            </p>
-
-            <h2 className="mt-1 text-xl font-bold text-slate-950">
-              Përditësimet e Akademisë
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Njoftimet më të fundit për ty dhe ekipet ku je aktiv.
-            </p>
-          </div>
-
-          {academyUpdates.length > 0 ? (
-            <span className="self-start rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 sm:self-auto">
-              {academyUpdates.length} njoftime
-            </span>
-          ) : null}
-        </div>
-
-        {academyUpdates.length === 0 ? (
-          <div className="mt-6 rounded-xl bg-slate-50 p-5">
-            <p className="text-sm text-slate-500">
-              Nuk ka njoftime aktive për momentin.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-6 divide-y divide-slate-100">
-            {academyUpdates.map((notification) => {
-              const isRead =
-                notification.notificationReads.length > 0;
-
-              const priorityLabel =
-                notification.priority === "URGENT"
-                  ? "Urgjent"
-                  : notification.priority === "IMPORTANT"
-                    ? "I rëndësishëm"
-                    : "Normal";
-
-              return (
-                <article
-                  key={notification.id}
-                  className="py-5 first:pt-0 last:pb-0"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-black text-slate-950">
-                          {notification.title}
-                        </h3>
-
-                        {!isRead ? (
-                          <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold text-sky-700">
-                            I palexuar
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-500">
-                            I lexuar
-                          </span>
-                        )}
-
-                        {notification.priority !== "NORMAL" ? (
-                          <span
-                            className={[
-                              "rounded-full px-2.5 py-1 text-[11px] font-bold",
-                              notification.priority === "URGENT"
-                                ? "bg-rose-50 text-rose-700"
-                                : "bg-amber-50 text-amber-700",
-                            ].join(" ")}
-                          >
-                            {priorityLabel}
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        {notification.message}
-                      </p>
-
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
-                        <span>
-                          {formatDateTime(notification.publishedAt)}
-                        </span>
-
-                        <span>·</span>
-
-                        <span>
-                          {notification.audience === "ALL"
-                            ? "Gjithë akademia"
-                            : notification.team?.name || "Ekipi"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {notification.href ? (
-                      <Link
-                        href={notification.href}
-                        className="shrink-0 text-sm font-bold text-slate-950 hover:underline"
-                      >
-                        Hap njoftimin →
-                      </Link>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Seancat e ardhshme</h2>
-
-          <div className="mt-4 space-y-3">
-            {upcomingSessions.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                Nuk ka seanca të ardhshme për ekipet e tua.
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
+        <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-600">
+                Forma
               </p>
-            ) : (
-              upcomingSessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="rounded-lg border border-slate-100 bg-slate-50 p-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-medium">{session.title}</p>
 
-                      <p className="mt-1 text-sm text-slate-500">
-                        {session.team.name}
-                      </p>
-                    </div>
+              <h2 className="mt-1 text-lg font-bold text-slate-950">
+                Paraqitjet e fundit
+              </h2>
+            </div>
 
-                    <p className="text-sm font-medium">
-                      {formatDateTime(session.startsAt)}
-                    </p>
-                  </div>
-
-                  <p className="mt-2 text-sm text-slate-500">
-                    {session.facility?.name ||
-                      session.location ||
-                      session.branch?.name ||
-                      "Vendndodhja nuk është përcaktuar"}
-                  </p>
-                </div>
-              ))
-            )}
+            <Link
+              href="/sportist/ndeshjet"
+              className="text-xs font-bold text-blue-600 hover:underline"
+            >
+              Shiko të gjitha
+            </Link>
           </div>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-lg font-semibold">Ndeshjet e ardhshme</h2>
-
-          <div className="mt-4 space-y-3">
-            {upcomingMatches.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                Nuk ka ndeshje të ardhshme për ekipet e tua.
-              </p>
-            ) : (
-              upcomingMatches.map((match) => (
-                <div
-                  key={match.id}
-                  className="rounded-lg border border-slate-100 bg-slate-50 p-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-medium">
-                        {match.isHome
-                          ? `${match.team.name} - ${match.opponentName}`
-                          : `${match.opponentName} - ${match.team.name}`}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {match.competitionName || match.team.name}
-                      </p>
-                    </div>
-
-                    <p className="text-sm font-medium">
-                      {formatDateTime(match.startsAt)}
-                    </p>
-                  </div>
-
-                  <p className="mt-2 text-sm text-slate-500">
-                    {match.facility?.name ||
-                      match.location ||
-                      "Vendndodhja nuk është përcaktuar"}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="text-lg font-semibold">Prezenca e fundit</h2>
-
-        <div className="mt-4 space-y-3">
-          {recentAttendances.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Ende nuk ka prezenca të regjistruara.
+          {recentForm.length === 0 ? (
+            <p className="mt-6 text-sm text-slate-500">
+              Ende nuk ka paraqitje të regjistruara.
             </p>
           ) : (
-            recentAttendances.map((attendance) => (
-              <div
-                key={attendance.id}
-                className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-medium">
-                    {attendance.trainingSession.title}
+            <div className="mt-6 grid gap-3 sm:grid-cols-5">
+              {recentForm.map(
+                (appearance) => (
+                  <Link
+                    key={appearance.id}
+                    href={`/sportist/ndeshjet/${appearance.match.id}`}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
+                  >
+                    <div
+                      className={[
+                        "flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black",
+                        appearance.outcome === "WIN"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : appearance.outcome === "DRAW"
+                            ? "bg-amber-100 text-amber-700"
+                            : appearance.outcome === "LOSS"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-slate-200 text-slate-600",
+                      ].join(" ")}
+                    >
+                      {appearance.outcome === "WIN"
+                        ? "F"
+                        : appearance.outcome === "DRAW"
+                          ? "B"
+                          : appearance.outcome === "LOSS"
+                            ? "H"
+                            : "—"}
+                    </div>
+
+                    <p className="mt-3 truncate text-xs font-bold text-slate-800">
+                      {appearance.match.opponentName}
+                    </p>
+
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      {appearance.minutesPlayed} min
+                    </p>
+                  </Link>
+                )
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-blue-600">
+                Prezenca
+              </p>
+
+              <h2 className="mt-1 text-lg font-bold text-slate-950">
+                Aktiviteti i fundit
+              </h2>
+            </div>
+
+            <Link
+              href="/sportist/prezenca"
+              className="text-xs font-bold text-blue-600 hover:underline"
+            >
+              Historiku
+            </Link>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {recentAttendances.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                Ende nuk ka prezenca të regjistruara.
+              </p>
+            ) : (
+              recentAttendances
+                .slice(0, 3)
+                .map((attendance) => (
+                  <div
+                    key={attendance.id}
+                    className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {
+                          attendance
+                            .trainingSession
+                            .title
+                        }
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-400">
+                        {formatDate(
+                          attendance
+                            .trainingSession
+                            .startsAt
+                        )}
+                      </p>
+                    </div>
+
+                    <span
+                      className={[
+                        "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold",
+                        attendance.status ===
+                        "PRESENT"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : attendance.status ===
+                            "LATE"
+                            ? "bg-amber-100 text-amber-700"
+                            : attendance.status ===
+                              "EXCUSED"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-rose-100 text-rose-700",
+                      ].join(" ")}
+                    >
+                      {attendanceLabel(
+                        attendance.status
+                      )}
+                    </span>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
+        <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-amber-600">
+                Akademia
+              </p>
+
+              <h2 className="mt-1 text-lg font-bold text-slate-950">
+                Përditësimet e fundit
+              </h2>
+            </div>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+              <Megaphone size={18} />
+            </span>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {academyUpdates.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">
+                Nuk ka njoftime të reja.
+              </div>
+            ) : (
+              academyUpdates
+                .slice(0, 3)
+                .map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={[
+                          "mt-1 h-2.5 w-2.5 shrink-0 rounded-full",
+                          notification.notificationReads.length === 0
+                            ? "bg-blue-500"
+                            : "bg-slate-300",
+                        ].join(" ")}
+                      />
+
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900">
+                          {notification.title}
+                        </p>
+
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                          {notification.message}
+                        </p>
+
+                        <p className="mt-2 text-[11px] text-slate-400">
+                          {formatDate(
+                            notification.publishedAt
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-600">
+                Profili fizik
+              </p>
+
+              <h2 className="mt-1 text-lg font-bold text-slate-950">
+                Matja e fundit
+              </h2>
+            </div>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+              <Scale size={18} />
+            </span>
+          </div>
+
+          {latestMeasurement ? (
+            <>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-blue-50 p-4">
+                  <p className="text-xs text-slate-500">
+                    Gjatësia
                   </p>
 
-                  <p className="mt-1 text-sm text-slate-500">
-                    {attendance.trainingSession.team.name}
-                    {" · "}
-                    {formatDateTime(attendance.trainingSession.startsAt)}
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {latestMeasurement.heightCm === null
+                      ? "—"
+                      : `${latestMeasurement.heightCm} cm`}
                   </p>
                 </div>
 
-                <p className="text-sm font-semibold">
-                  {attendanceLabel(attendance.status)}
-                </p>
+                <div className="rounded-2xl bg-emerald-50 p-4">
+                  <p className="text-xs text-slate-500">
+                    Pesha
+                  </p>
+
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {latestMeasurement.weightKg === null
+                      ? "—"
+                      : `${latestMeasurement.weightKg} kg`}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-amber-50 p-4">
+                  <p className="text-xs text-slate-500">
+                    Yndyrë trupore
+                  </p>
+
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {latestMeasurement.bodyFatPercent === null
+                      ? "—"
+                      : `${latestMeasurement.bodyFatPercent}%`}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-violet-50 p-4">
+                  <p className="text-xs text-slate-500">
+                    Masë muskulore
+                  </p>
+
+                  <p className="mt-1 text-xl font-black text-slate-950">
+                    {latestMeasurement.muscleMassKg === null
+                      ? "—"
+                      : `${latestMeasurement.muscleMassKg} kg`}
+                  </p>
+                </div>
               </div>
-            ))
+
+              <p className="mt-4 text-xs text-slate-400">
+                Matja e fundit:{" "}
+                {formatDate(
+                  latestMeasurement.measuredAt
+                )}
+              </p>
+            </>
+          ) : (
+            <div className="mt-5 rounded-2xl bg-slate-50 p-6 text-center">
+              <Dumbbell
+                size={24}
+                className="mx-auto text-slate-300"
+              />
+
+              <p className="mt-3 text-sm text-slate-500">
+                Ende nuk ka matje fizike të regjistruara.
+              </p>
+            </div>
           )}
         </div>
       </section>

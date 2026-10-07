@@ -1,0 +1,2 @@
+ALTER TABLE "Tactic"
+ADD COLUMN "visibleToPlayers" BOOLEAN NOT NULL DEFAULT false;

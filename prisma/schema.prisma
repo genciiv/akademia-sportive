@@ -1615,7 +1615,8 @@ model Tactic {
 
   boardData Json?
 
-  isActive Boolean @default(true)
+  isActive         Boolean @default(true)
+  visibleToPlayers Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

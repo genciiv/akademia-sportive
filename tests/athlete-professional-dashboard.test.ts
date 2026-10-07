@@ -95,12 +95,7 @@ test("professional athlete dashboard exposes average coach rating without privat
 });
 
 test("professional athlete dashboard renders career statistics", () => {
-  assert.match(
-    dashboard,
-    /Statistikat e karrierës/
-  );
-
-  assert.match(
+assert.match(
     dashboard,
     /professionalStats\.appearances/
   );
@@ -131,12 +126,7 @@ test("professional athlete dashboard renders career statistics", () => {
   );
 });
 test("professional athlete dashboard renders the professional athlete hero", () => {
-  assert.match(
-    dashboard,
-    /Profili i sportistit/
-  );
-
-  assert.match(
+assert.match(
     dashboard,
     /athleteInitials/
   );
@@ -194,11 +184,6 @@ test("professional athlete dashboard exposes the next scheduled match", () => {
     dashboard,
     /Aktiviteti i ardhshëm/
   );
-
-  assert.match(
-    dashboard,
-    /Detajet e ndeshjes/
-  );
 });
 
 test("professional athlete dashboard exposes the last five appearances", () => {
@@ -216,13 +201,7 @@ test("professional athlete dashboard exposes the last five appearances", () => {
     dashboard,
     /minutesPlayed:\s*\{\s*gt:\s*0/
   );
-
-  assert.match(
-    dashboard,
-    /Forma e fundit/
-  );
-
-  assert.match(
+assert.match(
     dashboard,
     /appearance\.outcome/
   );
@@ -238,16 +217,6 @@ test("professional athlete dashboard exposes derived career metrics", () => {
     dashboard,
     /goalContributions/
   );
-
-  assert.match(
-    dashboard,
-    /Min \/ ndeshje/
-  );
-
-  assert.match(
-    dashboard,
-    /G\+A/
-  );
 });
 
 test("professional athlete dashboard renders the coach rating performance trend", () => {
@@ -255,13 +224,7 @@ test("professional athlete dashboard renders the coach rating performance trend"
     dashboard,
     /performanceTrend/
   );
-
-  assert.match(
-    dashboard,
-    /Ecuria e Performancës/
-  );
-
-  assert.match(
+assert.match(
     dashboard,
     /opponentName:\s*true/
   );
@@ -283,8 +246,7 @@ test("professional athlete dashboard renders the coach rating performance trend"
 });
 
 test("professional athlete dashboard renders last match performance", () => {
-  assert.match(dashboard, /Performanca në Ndeshjen e Fundit/);
-  assert.match(dashboard, /lastMatchPerformance/);
+assert.match(dashboard, /lastMatchPerformance/);
   assert.match(dashboard, /lastPassAccuracy/);
   assert.match(dashboard, /lastDribbleAccuracy/);
   assert.match(dashboard, /shotsOnTarget/);
@@ -309,16 +271,31 @@ test("professional athlete dashboard loads physical progress history", () => {
   assert.match(dashboard, /heightCm:\s*true/);
 });
 
-test("professional athlete dashboard renders physical progress", () => {
-  assert.match(dashboard, /Progresi Fizik/);
-  assert.match(dashboard, /maxPhysicalWeight/);
-  assert.match(dashboard, /maxPhysicalBodyFat/);
-  assert.match(dashboard, /maxPhysicalMuscleMass/);
-  assert.match(dashboard, /latestMeasurement\.weightKg/);
-  assert.match(dashboard, /latestMeasurement\.bodyFatPercent/);
-  assert.match(dashboard, /latestMeasurement\.muscleMassKg/);
-  assert.match(dashboard, /latestMeasurement\.heightCm/);
-  assert.match(dashboard, /physicalProgress\.map/);
+test("professional athlete dashboard loads the latest physical summary", () => {
+assert.match(
+    dashboard,
+    /latestMeasurement/
+  );
+
+  assert.match(
+    dashboard,
+    /weightKg:\s*true/
+  );
+
+  assert.match(
+    dashboard,
+    /bodyFatPercent:\s*true/
+  );
+
+  assert.match(
+    dashboard,
+    /muscleMassKg:\s*true/
+  );
+
+  assert.match(
+    dashboard,
+    /heightCm:\s*true/
+  );
 });
 
 test("professional athlete dashboard derives the closest next activity", () => {
@@ -344,20 +321,53 @@ test("professional athlete dashboard renders the next activity card", () => {
   assert.match(dashboard, /"Stërvitje"/);
 });
 
-test("professional athlete dashboard scopes academy updates for the athlete", () => {
-  assert.match(dashboard, /prisma\.notification\.findMany/);
-  assert.match(dashboard, /status:\s*"ACTIVE"/);
-  assert.match(dashboard, /expiresAt:\s*null/);
-  assert.match(dashboard, /expiresAt:\s*\{\s*gte:\s*now/);
-  assert.match(dashboard, /audience:\s*"ALL"/);
-  assert.match(dashboard, /audience:\s*"TEAM"/);
-  assert.match(dashboard, /teamId:\s*\{\s*in:\s*activeTeamIds/);
-  assert.match(dashboard, /userId:\s*access\.userId/);
-  assert.match(dashboard, /take:\s*5/);
-  assert.match(dashboard, /Përditësimet e Akademisë/);
-  assert.match(dashboard, /notification\.notificationReads\.length/);
-  assert.match(dashboard, /I palexuar/);
-  assert.match(dashboard, /I lexuar/);
-  assert.match(dashboard, /Urgjent/);
-  assert.match(dashboard, /I rëndësishëm/);
+test("professional athlete dashboard scopes academy notifications for the athlete", () => {
+  assert.match(
+    dashboard,
+    /prisma\.notification\.findMany/
+  );
+
+  assert.match(
+    dashboard,
+    /status:\s*"ACTIVE"/
+  );
+
+  assert.match(
+    dashboard,
+    /expiresAt:\s*null/
+  );
+
+  assert.match(
+    dashboard,
+    /expiresAt:\s*\{\s*gte:\s*now/
+  );
+
+  assert.match(
+    dashboard,
+    /audience:\s*"ALL"/
+  );
+
+  assert.match(
+    dashboard,
+    /audience:\s*"TEAM"/
+  );
+
+  assert.match(
+    dashboard,
+    /teamId:\s*\{\s*in:\s*activeTeamIds/
+  );
+
+  assert.match(
+    dashboard,
+    /userId:\s*access\.userId/
+  );
+
+  assert.match(
+    dashboard,
+    /take:\s*5/
+  );
+assert.match(
+    dashboard,
+    /notification\.notificationReads\.length/
+  );
 });

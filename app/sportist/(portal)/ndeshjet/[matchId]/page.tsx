@@ -348,8 +348,8 @@ export default async function AthleteMatchDetailPage({
         ← Kthehu te ndeshjet
       </Link>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-100 px-5 py-4 text-center">
+      <section className="overflow-hidden rounded-[28px] border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-blue-50 shadow-sm">
+        <div className="border-b border-white/80 bg-white/55 px-5 py-5 text-center backdrop-blur-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             {match.competitionName ||
               matchTypeLabel(String(match.matchType))}
@@ -366,20 +366,20 @@ export default async function AthleteMatchDetailPage({
           </p>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 py-8">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 py-9 sm:px-8">
           <div className="text-right">
-            <p className="text-lg font-bold text-slate-950 sm:text-2xl">
+            <p className="text-lg font-black tracking-tight text-slate-950 sm:text-2xl">
               {homeName}
             </p>
           </div>
 
           <div className="min-w-[110px] text-center">
             {match.status === "COMPLETED" ? (
-              <div className="rounded-2xl bg-slate-950 px-5 py-3 text-2xl font-bold text-white sm:text-3xl">
+              <div className="rounded-2xl bg-gradient-to-br from-slate-950 to-slate-800 px-6 py-3 text-2xl font-black text-white shadow-[0_14px_30px_rgba(15,23,42,0.22)] sm:text-3xl">
                 {homeScore ?? "-"} : {awayScore ?? "-"}
               </div>
             ) : (
-              <div className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700">
+              <div className="rounded-2xl border border-violet-100 bg-white px-6 py-3 text-sm font-black text-violet-700 shadow-sm">
                 VS
               </div>
             )}
@@ -390,22 +390,22 @@ export default async function AthleteMatchDetailPage({
           </div>
 
           <div>
-            <p className="text-lg font-bold text-slate-950 sm:text-2xl">
+            <p className="text-lg font-black tracking-tight text-slate-950 sm:text-2xl">
               {awayName}
             </p>
           </div>
         </div>
 
-        <div className="border-t border-slate-100 px-5 py-4 text-center text-sm text-slate-500">
+        <div className="border-t border-white/80 bg-white/50 px-5 py-4 text-center text-sm font-medium text-slate-500">
           {match.facility?.name ||
             match.location ||
             "Vendndodhja nuk është përcaktuar"}
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="text-xl font-semibold text-slate-950">
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
+        <section className="rounded-[24px] border border-blue-100 bg-gradient-to-br from-blue-50/80 via-white to-violet-50/60 p-6 shadow-sm">
+          <h2 className="text-lg font-black text-slate-950">
             Ngjarjet e ndeshjes
           </h2>
 
@@ -418,7 +418,7 @@ export default async function AthleteMatchDetailPage({
               {match.events.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4"
+                  className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 transition hover:border-blue-200 hover:bg-blue-50/40"
                 >
                   <div className="w-14 shrink-0 text-center text-sm font-bold text-slate-700">
                     {event.minute}'
@@ -447,34 +447,34 @@ export default async function AthleteMatchDetailPage({
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="text-xl font-semibold text-slate-950">
+        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-black text-slate-950">
             Informacioni
           </h2>
 
-          <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex justify-between gap-4">
+          <dl className="mt-5 space-y-2 text-sm">
+            <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-3 py-2.5">
               <dt className="text-slate-500">Ekipi</dt>
               <dd className="text-right font-medium">
                 {match.team.name}
               </dd>
             </div>
 
-            <div className="flex justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-3 py-2.5">
               <dt className="text-slate-500">Lloji</dt>
               <dd className="text-right font-medium">
                 {matchTypeLabel(String(match.matchType))}
               </dd>
             </div>
 
-            <div className="flex justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-3 py-2.5">
               <dt className="text-slate-500">Statusi</dt>
               <dd className="text-right font-medium">
                 {statusLabel(String(match.status))}
               </dd>
             </div>
 
-            <div className="flex justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-3 py-2.5">
               <dt className="text-slate-500">
                 Fusha
               </dt>
@@ -488,10 +488,10 @@ export default async function AthleteMatchDetailPage({
         </section>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
+      <section className="rounded-[28px] border border-emerald-100 bg-gradient-to-br from-emerald-50/45 via-white to-cyan-50/40 p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-950">
+            <h2 className="text-lg font-black text-slate-950">
               Formacioni
             </h2>
 
@@ -542,10 +542,10 @@ export default async function AthleteMatchDetailPage({
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
+      <section className="rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50/55 via-white to-violet-50/50 p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-950">
+            <h2 className="text-lg font-black text-slate-950">
               Performanca ime
             </h2>
 
@@ -556,11 +556,11 @@ export default async function AthleteMatchDetailPage({
 
           {athleteMatchPlayer ? (
             <div className="flex flex-wrap gap-2 text-sm">
-              <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-bold text-slate-700 shadow-sm">
                 ⚽ {athleteGoals} gol
               </span>
 
-              <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 font-bold text-slate-700 shadow-sm">
                 🎯 {athleteAssists} asist
               </span>
 
@@ -576,13 +576,13 @@ export default async function AthleteMatchDetailPage({
                 </span>
               ) : null}
 
-              <span className="rounded-full bg-slate-950 px-3 py-1 font-medium text-white">
+              <span className="rounded-full bg-slate-950 px-3 py-1.5 font-bold text-white shadow-sm">
                 ⏱ {athleteMatchPlayer.minutesPlayed} min
               </span>
 
               {athletePerformance?.coachRating !== null &&
               athletePerformance?.coachRating !== undefined ? (
-                <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-bold text-emerald-700">
                   ⭐ {Number(
                     athletePerformance.coachRating
                   ).toFixed(1)}
@@ -608,28 +608,28 @@ export default async function AthleteMatchDetailPage({
           </div>
         ) : (
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Minuta</p>
               <p className="mt-1 text-xl font-bold">
                 {athleteMatchPlayer.minutesPlayed}
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Goditje</p>
               <p className="mt-1 text-xl font-bold">
                 {athletePerformance.shots}
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Në portë</p>
               <p className="mt-1 text-xl font-bold">
                 {athletePerformance.shotsOnTarget}
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Vlerësimi</p>
               <p className="mt-1 text-xl font-bold">
                 {athletePerformance.coachRating === null
@@ -640,7 +640,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Pasime</p>
 
               <p className="mt-1 text-lg font-bold">
@@ -655,7 +655,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Driblime</p>
 
               <p className="mt-1 text-lg font-bold">
@@ -670,7 +670,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">
                 Duele të fituara
               </p>
@@ -680,7 +680,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">Ndërhyrje</p>
 
               <p className="mt-1 text-xl font-bold">
@@ -688,7 +688,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">
                 Interceptime
               </p>
@@ -698,7 +698,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">
                 Faulle të kryera
               </p>
@@ -708,7 +708,7 @@ export default async function AthleteMatchDetailPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
               <p className="text-xs text-slate-500">
                 Faulle të fituara
               </p>

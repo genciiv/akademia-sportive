@@ -124,7 +124,7 @@ test("published athlete pitch highlights the linked athlete and shows substitute
 
   assert.match(
     pitch,
-    /TI - \$\{slot\}/
+    /TI\s*·\s*\$\{slot\}/
   );
 
   assert.match(
@@ -135,5 +135,15 @@ test("published athlete pitch highlights the linked athlete and shows substitute
   assert.match(
     pitch,
     /Stoli/
+  );
+
+  assert.match(
+    pitch,
+    /perspective:1400px/
+  );
+
+  assert.match(
+    pitch,
+    /rotateX\(7deg\)/
   );
 });

@@ -1,205 +1,276 @@
 "use client";
 
 import {
+  Activity,
+  Bell,
   CalendarDays,
   ClipboardCheck,
+  Dumbbell,
+  Goal,
+  Layers3,
   LayoutDashboard,
-  LogOut,
-  Menu,
+  LibraryBig,
+  Settings,
   Trophy,
   UserRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import {
+  usePathname,
+} from "next/navigation";
 
-import { authClient } from "@/lib/auth-client";
+import { Logo } from "@/components/logo";
 
-type AthletePortalNavProps = {
+type Props = {
   athleteName: string;
   academyName: string;
+  mobile?: boolean;
+  onClose?: () => void;
 };
 
-const navigation = [
+const groups = [
   {
-    href: "/sportist/dashboard",
-    label: "Përmbledhje",
-    icon: LayoutDashboard,
+    title: "PORTALI",
+    items: [
+      {
+        href: "/sportist/dashboard",
+        label: "Përmbledhje",
+        icon: LayoutDashboard,
+      },
+      {
+        href: "/sportist/orari",
+        label: "Orari",
+        icon: CalendarDays,
+      },
+      {
+        href: "/sportist/ndeshjet",
+        label: "Ndeshjet",
+        icon: Trophy,
+      },
+      {
+        href: "/sportist/prezenca",
+        label: "Prezenca",
+        icon: ClipboardCheck,
+      },
+    ],
   },
   {
-    href: "/sportist/orari",
-    label: "Orari",
-    icon: CalendarDays,
+    title: "PERFORMANCA",
+    items: [
+      {
+        href: "/sportist/performanca",
+        label: "Performanca",
+        icon: Activity,
+      },
+      {
+        href: "/sportist/profili-fizik",
+        label: "Profili fizik",
+        icon: Dumbbell,
+      },
+    ],
   },
   {
-    href: "/sportist/ndeshjet",
-    label: "Ndeshjet",
-    icon: Trophy,
+    title: "STËRVITJA",
+    items: [
+      {
+        href: "/sportist/ushtrimet",
+        label: "Ushtrimet",
+        icon: Layers3,
+      },
+      {
+        href: "/sportist/taktikat",
+        label: "Taktikat",
+        icon: Goal,
+      },
+    ],
   },
   {
-    href: "/sportist/prezenca",
-    label: "Prezenca",
-    icon: ClipboardCheck,
+    title: "MATERIALE",
+    items: [
+      {
+        href: "/sportist/baza-e-njohurive",
+        label: "Baza e njohurive",
+        icon: LibraryBig,
+      },
+      {
+        href: "/sportist/njoftimet",
+        label: "Njoftimet",
+        icon: Bell,
+      },
+    ],
+  },
+  {
+    title: "LLOGARIA",
+    items: [
+      {
+        href: "/sportist/llogaria",
+        label: "Llogaria ime",
+        icon: Settings,
+      },
+    ],
   },
 ] as const;
 
-function initials(name: string) {
-  return name
+function initials(
+  name: string
+) {
+  const parts = name
+    .trim()
     .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return "SP";
+  }
+
+  if (parts.length === 1) {
+    return parts[0]
+      .slice(0, 2)
+      .toUpperCase();
+  }
+
+  return `${parts[0][0]}${
+    parts[parts.length - 1][0]
+  }`.toUpperCase();
 }
 
 export function AthletePortalNav({
   athleteName,
   academyName,
-}: AthletePortalNavProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const [signingOut, setSigningOut] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  async function handleSignOut() {
-    if (signingOut) {
-      return;
-    }
-
-    setSigningOut(true);
-
-    try {
-      await authClient.signOut();
-
-      router.push("/hyrje");
-      router.refresh();
-    } finally {
-      setSigningOut(false);
-    }
-  }
-
-  function navigationLinks(closeMobile = false) {
-    return navigation.map((item) => {
-      const Icon = item.icon;
-
-      const active =
-        pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-      return (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={() => {
-            if (closeMobile) {
-              setMobileOpen(false);
-            }
-          }}
-          className={[
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-            active
-              ? "bg-slate-900 text-white"
-              : "text-slate-700 hover:bg-slate-100",
-          ].join(" ")}
-        >
-          <Icon className="h-4 w-4" />
-
-          {item.label}
-        </Link>
-      );
-    });
-  }
-
-  const profile = (
-    <div className="border-b border-slate-100 p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-          {initials(athleteName) || <UserRound className="h-4 w-4" />}
-        </div>
-
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-950">
-            {athleteName}
-          </p>
-
-          <p className="truncate text-xs text-slate-500">
-            {academyName}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const logoutButton = (
-    <div className="border-t border-slate-100 p-3">
-      <button
-        type="button"
-        onClick={handleSignOut}
-        disabled={signingOut}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <LogOut className="h-4 w-4" />
-
-        {signingOut ? "Duke dalë..." : "Dil nga llogaria"}
-      </button>
-    </div>
-  );
+  mobile = false,
+  onClose,
+}: Props) {
+  const pathname =
+    usePathname();
 
   return (
-    <>
-      <div className="lg:hidden">
-        <button
-          type="button"
-          onClick={() => setMobileOpen((open) => !open)}
-          aria-expanded={mobileOpen}
-          aria-controls="athlete-mobile-navigation"
-          className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm"
-        >
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-              Menu
-            </p>
+    <aside
+      className={[
+        "flex h-full w-[265px] shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-5",
+        mobile
+          ? "w-[285px] shadow-2xl"
+          : "",
+      ].join(" ")}
+    >
+      <div className="mb-5 flex items-start justify-between px-2">
+        <div>
+          <Logo />
 
-            <p className="mt-0.5 truncate text-sm font-semibold text-slate-950">
-              Portali i Sportistit
-            </p>
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-violet-700">
+            <UserRound size={12} />
+            Athlete Portal
           </div>
+        </div>
 
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-white">
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </span>
-        </button>
-
-        {mobileOpen ? (
-          <div
-            id="athlete-mobile-navigation"
-            className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+        {mobile ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
+            aria-label="Mbyll menunë"
           >
-            {profile}
-
-            <nav className="space-y-1 p-3">
-              {navigationLinks(true)}
-            </nav>
-
-            {logoutButton}
-          </div>
+            <X size={20} />
+          </button>
         ) : null}
       </div>
 
-      <aside className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white lg:block">
-        {profile}
+      <div className="mb-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-violet-50 p-3.5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xs font-bold text-blue-700 shadow-sm">
+            {initials(
+              athleteName
+            )}
+          </div>
 
-        <nav className="space-y-1 p-3">
-          {navigationLinks()}
-        </nav>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-slate-900">
+              {athleteName}
+            </p>
 
-        {logoutButton}
-      </aside>
-    </>
+            <p className="mt-0.5 truncate text-[11px] text-slate-500">
+              {academyName}
+            </p>
+
+            <span className="mt-1.5 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-700">
+              Aktiv
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto pr-1">
+        {groups.map(
+          (group) => (
+            <div
+              key={group.title}
+              className="mb-6"
+            >
+              <p className="mb-2 px-3 text-[10px] font-semibold tracking-[0.08em] text-slate-400">
+                {group.title}
+              </p>
+
+              <div className="space-y-1">
+                {group.items.map(
+                  (item) => {
+                    const Icon =
+                      item.icon;
+
+                    const active =
+                      pathname ===
+                        item.href ||
+                      pathname.startsWith(
+                        `${item.href}/`
+                      );
+
+                    return (
+                      <Link
+                        key={
+                          item.href
+                        }
+                        href={
+                          item.href
+                        }
+                        onClick={
+                          onClose
+                        }
+                        className={[
+                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                          active
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "flex h-8 w-8 items-center justify-center rounded-lg transition",
+                            active
+                              ? "bg-white text-blue-600 shadow-sm"
+                              : "bg-slate-50 text-slate-400",
+                          ].join(" ")}
+                        >
+                          <Icon
+                            size={17}
+                            strokeWidth={
+                              1.8
+                            }
+                          />
+                        </span>
+
+                        <span>
+                          {
+                            item.label
+                          }
+                        </span>
+                      </Link>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+          )
+        )}
+      </nav>
+    </aside>
   );
 }
