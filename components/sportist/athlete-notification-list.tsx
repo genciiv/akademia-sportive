@@ -286,7 +286,7 @@ export function AthleteNotificationList({
             disabled={
               markingAll
             }
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-60"
           >
             <CheckCheck
               size={16}
@@ -322,7 +322,7 @@ export function AthleteNotificationList({
                   )
                 }
                 className={[
-                  "group flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition",
+                  "group flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
                   notification.isRead
                     ? "border-slate-100 bg-slate-50/60 hover:border-slate-200"
                     : "border-blue-100 bg-blue-50/50 shadow-sm hover:border-blue-200",

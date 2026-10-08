@@ -450,7 +450,7 @@ export default async function AthletePerformancePage() {
 
           <Link
             href="/sportist/ndeshjet"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
           >
             Shiko ndeshjet
             <ArrowRight size={15} />
@@ -595,9 +595,13 @@ export default async function AthletePerformancePage() {
                           item.matchId
                         }
                         href={`/sportist/ndeshjet/${item.matchId}`}
-                        className="group"
+                        aria-label={`Vlerësimi ${item.rating.toFixed(1)} kundër ${item.opponentName}, ${formatDate(item.startsAt)}`}
+                        className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
                       >
-                        <div className="flex h-44 items-end overflow-hidden rounded-2xl bg-violet-50 px-3 pt-4">
+                        <div
+                          className="flex h-44 items-end overflow-hidden rounded-2xl bg-violet-50 px-3 pt-4"
+                          aria-hidden="true"
+                        >
                           <div
                             className="w-full rounded-t-xl bg-violet-500 transition group-hover:bg-violet-600"
                             style={{
@@ -673,6 +677,12 @@ export default async function AthletePerformancePage() {
                   key={
                     metric.label
                   }
+                  role="img"
+                  aria-label={`${metric.label}: ${
+                    metric.value === null
+                      ? "pa të dhëna"
+                      : `${metric.value}%`
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-sm font-semibold text-slate-700">
@@ -689,7 +699,7 @@ export default async function AthletePerformancePage() {
                     </p>
                   </div>
 
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100" aria-hidden="true">
                     <div
                       className={[
                         "h-full rounded-full",
@@ -835,7 +845,7 @@ export default async function AthletePerformancePage() {
 
           <Link
             href="/sportist/ndeshjet"
-            className="text-sm font-bold text-blue-600 hover:underline"
+            className="rounded-md text-sm font-bold text-blue-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
             Të gjitha ndeshjet
           </Link>
@@ -879,7 +889,7 @@ export default async function AthletePerformancePage() {
                         item.matchId
                       }
                       href={`/sportist/ndeshjet/${item.matchId}`}
-                      className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-blue-50/40 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-blue-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="min-w-0">
                         <p className="font-bold text-slate-900">
