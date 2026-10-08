@@ -192,7 +192,33 @@ export function AthletePortalTopbar({
       null
     );
 
+
+
   useEffect(() => {
+    function handleEscape(
+      event: KeyboardEvent
+    ) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setMenuOpen(false);
+      setNotificationOpen(false);
+    }
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, []);
+useEffect(() => {
     function handleClickOutside(
       event: MouseEvent
     ) {
@@ -345,7 +371,7 @@ export function AthletePortalTopbar({
         <button
           type="button"
           onClick={onMenu}
-          className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
+          className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 lg:hidden"
           aria-label="Hap menunë"
         >
           <Menu size={21} />
@@ -392,7 +418,7 @@ export function AthletePortalTopbar({
               }
             }}
             className={[
-              "relative flex h-10 w-10 items-center justify-center rounded-xl border transition",
+              "relative flex h-10 w-10 items-center justify-center rounded-xl border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
               notificationOpen
                 ? "border-blue-200 bg-blue-50 text-blue-700"
                 : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
@@ -401,6 +427,8 @@ export function AthletePortalTopbar({
             aria-expanded={
               notificationOpen
             }
+            aria-haspopup="dialog"
+            aria-controls="athlete-notifications-panel"
           >
             <Bell size={18} />
 
@@ -414,7 +442,12 @@ export function AthletePortalTopbar({
           </button>
 
           {notificationOpen ? (
-            <div className="absolute right-0 top-[50px] z-50 w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:w-[390px]">
+            <div
+              id="athlete-notifications-panel"
+              role="dialog"
+              aria-label="Njoftimet e sportistit"
+              className="absolute right-0 top-[50px] z-50 w-[340px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:w-[390px]"
+            >
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3.5">
                 <div>
                   <p className="text-sm font-bold text-slate-900">
@@ -473,7 +506,7 @@ export function AthletePortalTopbar({
                               )
                             }
                             className={[
-                              "flex w-full items-start gap-3 rounded-xl p-3 text-left transition",
+                              "flex w-full items-start gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                               notification.isRead
                                 ? "hover:bg-slate-50"
                                 : "bg-blue-50/60 hover:bg-blue-50",
@@ -553,7 +586,7 @@ export function AthletePortalTopbar({
                       false
                     )
                   }
-                  className="flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-50"
+                  className="flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   Shiko të gjitha njoftimet
                 </Link>
@@ -578,11 +611,13 @@ export function AthletePortalTopbar({
                 false
               );
             }}
-            className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-slate-50"
+            className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             aria-label="Hap profilin"
             aria-expanded={
               menuOpen
             }
+            aria-haspopup="menu"
+            aria-controls="athlete-profile-menu"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 text-xs font-bold text-white">
               {initials(
@@ -607,7 +642,12 @@ export function AthletePortalTopbar({
           </button>
 
           {menuOpen ? (
-            <div className="absolute right-0 top-[52px] z-50 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+            <div
+              id="athlete-profile-menu"
+              role="menu"
+              aria-label="Menuja e profilit"
+              className="absolute right-0 top-[52px] z-50 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+            >
               <div className="border-b border-slate-100 px-3 py-2.5">
                 <p className="truncate text-xs font-semibold text-slate-900">
                   {athleteName}
@@ -624,7 +664,7 @@ export function AthletePortalTopbar({
                 onClick={() =>
                   setMenuOpen(false)
                 }
-                className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                role="menuitem" className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <UserRound size={16} />
                 Përmbledhja sportive
@@ -635,7 +675,7 @@ export function AthletePortalTopbar({
                 onClick={() =>
                   setMenuOpen(false)
                 }
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                role="menuitem" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <UserRound size={16} />
                 Llogaria ime
@@ -645,7 +685,7 @@ export function AthletePortalTopbar({
                 onClick={() =>
                   setMenuOpen(false)
                 }
-                className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                role="menuitem" className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <span className="flex items-center gap-2">
                   <Bell size={16} />
@@ -667,7 +707,7 @@ export function AthletePortalTopbar({
                 disabled={
                   signingOut
                 }
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+                role="menuitem" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
               >
                 <LogOut size={16} />
 
