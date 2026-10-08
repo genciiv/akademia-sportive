@@ -751,7 +751,7 @@ export default async function AthleteDashboardPage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/sportist/orari"
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <CalendarDays size={16} />
                 Shiko orarin
@@ -759,7 +759,7 @@ export default async function AthleteDashboardPage() {
 
               <Link
                 href="/sportist/ndeshjet"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <Trophy size={16} />
                 Ndeshjet
