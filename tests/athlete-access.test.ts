@@ -61,3 +61,37 @@ test("athlete access rechecks portal entitlement without applying creation capac
 
   assert.match(source, /status:\s*403/);
 });
+
+test("athlete access rejects inactive suspended and departed players", () => {
+  assert.match(
+    source,
+    /athleteAccount\.player\.status === "INACTIVE"/
+  );
+
+  assert.match(
+    source,
+    /athleteAccount\.player\.status === "SUSPENDED"/
+  );
+
+  assert.match(
+    source,
+    /athleteAccount\.player\.status === "LEFT"/
+  );
+
+  assert.match(
+    source,
+    /reason:\s*"ATHLETE_INACTIVE"/
+  );
+
+  assert.match(
+    source,
+    /status:\s*403/
+  );
+});
+
+test("injured athletes are not blocked from portal access", () => {
+  assert.doesNotMatch(
+    source,
+    /athleteAccount\.player\.status === "INJURED"/
+  );
+});
