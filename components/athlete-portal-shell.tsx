@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useState,
 } from "react";
 
@@ -23,7 +24,34 @@ export function AthletePortalShell({
     setMobileOpen,
   ] = useState(false);
 
-  return (
+
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      return;
+    }
+
+    function handleEscape(
+      event: KeyboardEvent
+    ) {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [mobileOpen]);
+return (
     <div className="min-h-screen bg-[#f4f6fa] p-0 lg:p-7">
       <div className="mx-auto flex min-h-screen max-w-[1560px] overflow-hidden bg-white shadow-soft lg:min-h-[calc(100vh-56px)] lg:rounded-[24px]">
         <div className="hidden lg:block">
@@ -38,14 +66,21 @@ export function AthletePortalShell({
         </div>
 
         {mobileOpen ? (
-          <div className="fixed inset-0 z-50 flex lg:hidden">
-            <div
+          <div
+            className="fixed inset-0 z-50 flex lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menuja e portalit"
+          >
+            <button
+              type="button"
               className="absolute inset-0 bg-slate-950/35"
               onClick={() =>
                 setMobileOpen(
                   false
                 )
               }
+              aria-label="Mbyll menunë"
             />
 
             <div className="relative z-10 h-full">

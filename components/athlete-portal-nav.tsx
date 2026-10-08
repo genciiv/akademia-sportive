@@ -167,7 +167,7 @@ export function AthletePortalNav({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
+            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             aria-label="Mbyll menunë"
           >
             <X size={20} />
@@ -199,7 +199,7 @@ export function AthletePortalNav({
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto pr-1">
+      <nav className="flex-1 overflow-y-auto pr-1" aria-label="Navigimi i portalit të sportistit">
         {groups.map(
           (group) => (
             <div
@@ -234,8 +234,13 @@ export function AthletePortalNav({
                         onClick={
                           onClose
                         }
+                        aria-current={
+                          active
+                            ? "page"
+                            : undefined
+                        }
                         className={[
-                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
                           active
                             ? "bg-blue-50 text-blue-700"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
