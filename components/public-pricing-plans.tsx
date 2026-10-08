@@ -95,26 +95,26 @@ export async function PublicPricingPlans() {
   return (
     <section
       id="planet"
-      className="bg-[#f7fbff] px-5 py-16 sm:py-20 lg:px-8 lg:py-24"
+      className="relative z-10 bg-transparent px-5 py-20 sm:px-6 sm:py-24 lg:py-28"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1140px]">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#3552ff]">
             Planet
           </p>
 
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-[#171d3a] sm:text-4xl">
             Një plan për çdo fazë të akademisë.
           </h2>
 
-          <p className="mt-4 text-sm leading-6 text-slate-500">
+          <p className="mt-4 text-sm leading-6 text-[#5a6285]">
             Fillo me 7 ditë PRO falas dhe zgjidh planin që i përshtatet
             strukturës dhe mënyrës së punës së akademisë.
           </p>
         </div>
 
         {plans.length === 0 ? (
-          <div className="mt-12 rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          <div className="mt-12 rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-[#5a6285]">
             Aktualisht nuk ka plane aktive për aplikim.
           </div>
         ) : (
@@ -192,52 +192,52 @@ function PlanCard({
 
   const cardClass =
     copy.variant === "dark"
-      ? "relative flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-800 bg-slate-950 p-7 text-white shadow-[0_22px_65px_rgba(15,23,42,0.18)]"
+      ? "relative flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white p-7 text-white shadow-[0_22px_65px_rgba(15,23,42,0.18)]"
       : copy.variant === "primary"
-        ? "relative flex h-full flex-col rounded-[26px] border border-blue-300 bg-white p-7 shadow-[0_20px_60px_rgba(37,99,235,0.12)]"
+        ? "relative flex h-full flex-col rounded-[26px] border border-[#9fb0ff] bg-white p-7 shadow-[0_20px_60px_rgba(37,99,235,0.12)]"
         : copy.variant ===
             "unlimited"
-          ? "relative flex h-full flex-col overflow-hidden rounded-[26px] border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-7 shadow-sm"
+          ? "relative flex h-full flex-col overflow-hidden rounded-[26px] border border-[#dce9ff] bg-white p-7 shadow-sm"
           : "flex h-full flex-col rounded-[26px] border border-slate-200 bg-white p-7 shadow-sm";
 
   const titleClass = isDark
-    ? "text-blue-300"
+    ? "text-[#3552ff]"
     : copy.variant ===
         "primary"
-      ? "text-blue-600"
+      ? "text-[#3552ff]"
       : copy.variant ===
           "unlimited"
-        ? "text-blue-700"
-        : "text-slate-400";
+        ? "text-[#3552ff]"
+        : "text-[#7b82a2]";
 
   const descriptionClass =
     isDark
-      ? "text-slate-300"
-      : "text-slate-500";
+      ? "text-[#5a6285]"
+      : "text-[#5a6285]";
 
   const itemClass = isDark
-    ? "text-slate-300"
+    ? "text-[#5a6285]"
     : "text-slate-600";
 
   const checkClass = isDark
-    ? "text-blue-300"
-    : "text-blue-600";
+    ? "text-[#3552ff]"
+    : "text-[#3552ff]";
 
   const buttonClass =
     copy.variant === "dark"
-      ? "mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+      ? "mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#171d3a] transition hover:bg-[#dce9ff]/70"
       : copy.variant === "primary"
-        ? "mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+        ? "mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-[#3552ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2945ef]"
         : copy.variant ===
             "unlimited"
-          ? "mt-auto flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+          ? "mt-auto flex w-full items-center justify-center gap-2 rounded-xl border border-[#9fb0ff]/55 bg-white px-5 py-3 text-sm font-semibold text-[#3552ff] transition hover:bg-[#dce9ff]/70"
           : "mt-auto flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50";
 
   return (
     <div className={cardClass}>
       {copy.variant ===
       "dark" ? (
-        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#dce9ff]/700/20 blur-3xl" />
       ) : null}
 
       {copy.variant ===
@@ -247,7 +247,7 @@ function PlanCard({
 
       <div className="relative flex h-full flex-col">
         {copy.badge ? (
-          <span className="absolute right-0 top-0 rounded-full bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white">
+          <span className="absolute right-0 top-0 rounded-full bg-[#3552ff] px-3 py-1.5 text-[11px] font-semibold text-white">
             {copy.badge}
           </span>
         ) : null}
@@ -276,7 +276,7 @@ function PlanCard({
               "text-3xl font-bold",
               isDark
                 ? "text-white"
-                : "text-slate-950",
+                : "text-[#171d3a]",
             ].join(" ")}
           >
             {formatMoney(
@@ -288,8 +288,8 @@ function PlanCard({
             className={[
               "pb-1 text-xs",
               isDark
-                ? "text-slate-400"
-                : "text-slate-500",
+                ? "text-[#7b82a2]"
+                : "text-[#5a6285]",
             ].join(" ")}
           >
             {plan.currency} / muaj
