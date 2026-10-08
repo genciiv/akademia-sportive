@@ -1,8 +1,4 @@
-import Image from "next/image";
 import Link from "next/link";
-import { PublicHomeNav } from "@/components/public-home-nav";
-import { PublicHomeMotion } from "@/components/public-home-motion";
-import { PublicPricingPlans } from "@/components/public-pricing-plans";
 import {
   ArrowRight,
   BarChart3,
@@ -11,11 +7,15 @@ import {
   Check,
   Dumbbell,
   HeartPulse,
-  Menu,
-  ShieldCheck,
   Target,
   UsersRound,
 } from "lucide-react";
+
+import { PublicFinalCta } from "@/components/public-final-cta";
+import { PublicHome3DScene } from "@/components/public-home-3d-scene";
+import { PublicHomeMotion } from "@/components/public-home-motion";
+import { PublicHomeNav } from "@/components/public-home-nav";
+import { PublicPricingPlans } from "@/components/public-pricing-plans";
 
 const features = [
   {
@@ -23,59 +23,100 @@ const features = [
     title: "Sportistët & ekipet",
     description:
       "Menaxho sportistët, ekipet dhe strukturën sportive nga një vend.",
+    tone: "bg-[#bdf1de] text-[#187b55]",
   },
   {
     icon: CalendarDays,
     title: "Kalendari & stërvitjet",
     description:
       "Planifiko seanca, ndeshje, ambiente dhe aktivitetet e akademisë.",
+    tone: "bg-[#dce9ff] text-[#3552ff]",
   },
   {
     icon: BarChart3,
     title: "Performanca",
-    description: "Ndiq progresin dhe të dhënat sportive me një pamje të qartë.",
+    description:
+      "Ndiq progresin dhe të dhënat sportive me një pamje të qartë.",
+    tone: "bg-[#dccfff] text-[#6354bd]",
   },
   {
     icon: HeartPulse,
     title: "Profili fizik & mjekësor",
     description:
       "Mbaj informacionin fizik dhe mjekësor të lidhur me sportistin.",
+    tone: "bg-[#ffd5c0] text-[#a45e3d]",
   },
   {
     icon: Target,
     title: "Taktika & skautim",
-    description: "Organizo vlerësimet, kandidatët dhe punën taktike të stafit.",
+    description:
+      "Organizo vlerësimet, kandidatët dhe punën taktike të stafit.",
+    tone: "bg-[#dce9ff] text-[#3552ff]",
   },
   {
     icon: Building2,
     title: "Administrimi",
     description:
       "Menaxho ambientet, stafin, financat dhe proceset e përditshme.",
+    tone: "bg-[#bdf1de] text-[#187b55]",
+  },
+];
+
+const footballModules = [
+  {
+    title: "Stërvitje të planifikuara",
+    description:
+      "Organizo seanca, ambiente dhe grupet pa rrëmujë.",
+    accent: "bg-[#bdf1de]",
+  },
+  {
+    title: "Ndeshje dhe rezultate",
+    description:
+      "Mbaj historikun e ndeshjeve dhe informacionin e ekipit.",
+    accent: "bg-[#dce9ff]",
+  },
+  {
+    title: "Zhvillimi i sportistit",
+    description:
+      "Shiko prezencën, performancën dhe progresin fizik në kohë.",
+    accent: "bg-[#dccfff]",
   },
 ];
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white text-slate-950">
+    <main className="relative min-h-screen overflow-x-clip bg-[#eef3fb] text-[#171d3a]">
       <PublicHomeMotion />
       <PublicHomeNav />
 
-      <section className="relative overflow-hidden bg-[#f7fbff]">
-        <div className="absolute right-[-120px] top-[-120px] h-[420px] w-[420px] rounded-full bg-blue-100/70 blur-3xl" />
+      <PublicHome3DScene />
 
-        <div className="relative mx-auto grid min-h-[720px] max-w-7xl items-center gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[1.02fr_.98fr] lg:gap-14 lg:px-8 lg:py-24">
+      {/* ======================================================
+          HERO
+      ====================================================== */}
+
+      <section className="relative z-10 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -left-52 bottom-[-160px] h-[520px] w-[520px] rounded-full bg-[#bdf1de]/45 blur-[110px]" />
+          <div className="absolute -right-44 top-[-180px] h-[520px] w-[520px] rounded-full bg-[#dccfff]/40 blur-[110px]" />
+          <div className="absolute bottom-[-160px] right-[-80px] h-[400px] w-[400px] rounded-full bg-[#ffd5c0]/38 blur-[110px]" />
+        </div>
+
+        <div className="mx-auto grid min-h-[720px] max-w-[1140px] items-center gap-14 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.04fr_.96fr] lg:py-24">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 shadow-sm">
-              <span className="h-2 w-2 rounded-full bg-blue-500" />7 ditë PRO
-              falas për çdo akademi të re
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-[#3552ff] shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-[#3552ff]" />
+              7 ditë PRO falas për çdo akademi të re
             </div>
 
-            <h1 className="mt-7 text-4xl font-bold leading-[1.05] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[64px]">
+            <h1 className="mt-7 text-[clamp(2.8rem,6vw,5rem)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[#171d3a]">
               Drejto akademinë.
-              <span className="block text-blue-600">Zhvillo sportistët.</span>
+              <span className="block text-[#3552ff]">
+                Zhvillo sportistët.
+              </span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+            <p className="mt-6 max-w-[620px] text-base leading-7 text-[#5a6285] sm:text-lg sm:leading-8">
               Një platformë e vetme për sportistët, ekipet, trajnerët,
               stërvitjet, performancën, financat dhe punën e përditshme të
               akademisë.
@@ -84,7 +125,7 @@ export default function HomePage() {
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/apliko?plan=STARTER"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#3552ff] px-7 py-4 text-sm font-semibold text-white shadow-[0_12px_32px_-12px_rgba(53,82,255,.58)] transition hover:-translate-y-0.5 hover:bg-[#2945ef] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#3552ff]/25"
               >
                 Fillo me 7 ditë falas
                 <ArrowRight size={16} />
@@ -92,21 +133,21 @@ export default function HomePage() {
 
               <a
                 href="#platforma"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-full border-[1.5px] border-[#171d3a]/65 bg-white px-7 py-4 text-sm font-semibold text-[#171d3a] transition hover:-translate-y-0.5 hover:bg-[#f7f9fe]"
               >
                 Shiko si funksionon
               </a>
             </div>
 
-            <div className="mt-9 grid max-w-xl gap-3 text-sm text-slate-500 sm:grid-cols-3">
+            <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#687095]">
               {[
                 "Pa kartë pagese",
                 "Role & akses të kontrolluar",
                 "Multi-sport",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                    <Check size={13} />
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#dce9ff] text-[#3552ff]">
+                    <Check size={13} strokeWidth={2.5} />
                   </span>
 
                   <span>{item}</span>
@@ -115,72 +156,80 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -left-8 top-12 z-10 hidden w-52 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl lg:block">
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-blue-600">
+          {/* HERO DASHBOARD */}
+
+          <div className="relative mx-auto w-full max-w-[520px]">
+            <div className="absolute -left-8 top-14 z-20 hidden w-48 rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_20px_55px_-28px_rgba(23,29,58,.35)] lg:block">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#3552ff]">
                 Sot
               </p>
 
-              <p className="mt-2 text-3xl font-bold text-slate-950">6</p>
+              <p className="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#171d3a]">
+                6
+              </p>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-xs leading-5 text-[#687095]">
                 aktivitete të planifikuara
               </p>
             </div>
 
-            <div className="ml-auto max-w-[520px] overflow-hidden rounded-[30px] border border-blue-100 bg-white p-3 shadow-[0_24px_70px_rgba(30,64,175,0.12)]">
-              <div className="rounded-[24px] bg-[#f7f9fc] p-5">
+            <div className="relative overflow-hidden rounded-[30px_30px_86px_30px] border border-slate-200 bg-white p-3 shadow-[0_32px_80px_-38px_rgba(23,29,58,.4)]">
+              <div className="rounded-[24px_24px_76px_24px] bg-[#f7f9fe] p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-400">
+                    <p className="text-xs font-medium text-[#8b91ad]">
                       Akademia Sportive
                     </p>
 
-                    <p className="mt-1 text-base font-bold text-slate-950">
+                    <p className="mt-1 text-base font-bold text-[#171d3a]">
                       Paneli i sotëm
                     </p>
                   </div>
 
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white">
-                    <BarChart3 size={18} />
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#3552ff] text-white shadow-[0_12px_24px_-12px_rgba(53,82,255,.55)]">
+                    <BarChart3 size={19} />
                   </span>
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   {[
-                    ["Sportistë", "128"],
-                    ["Ekipe", "12"],
-                    ["Trajnerë", "14"],
-                    ["Seanca", "36"],
-                  ].map(([label, value]) => (
+                    ["Sportistë", "128", "bg-[#bdf1de]"],
+                    ["Ekipe", "12", "bg-[#dce9ff]"],
+                    ["Trajnerë", "14", "bg-[#dccfff]"],
+                    ["Seanca", "36", "bg-[#ffd5c0]"],
+                  ].map(([label, value, tone]) => (
                     <div
                       key={label}
-                      className="rounded-2xl border border-slate-200 bg-white p-4"
+                      className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm"
                     >
-                      <p className="text-[11px] font-medium text-slate-400">
+                      <div
+                        className={`mb-3 h-2.5 w-8 rounded-full ${tone}`}
+                      />
+
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8b91ad]">
                         {label}
                       </p>
 
-                      <p className="mt-2 text-2xl font-bold text-slate-950">
+                      <p className="mt-1 text-2xl font-extrabold tracking-[-0.035em] text-[#171d3a]">
                         {value}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="mt-3 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-[#8b91ad]">
                         Aktiviteti i javës
                       </p>
 
-                      <p className="mt-1 text-sm font-semibold text-slate-900">
+                      <p className="mt-1 text-sm font-semibold text-[#171d3a]">
                         Ecuria e akademisë
                       </p>
                     </div>
 
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-600">
+                    <span className="rounded-full bg-[#dce9ff] px-3 py-1 text-[11px] font-semibold text-[#3552ff]">
                       +18%
                     </span>
                   </div>
@@ -189,7 +238,7 @@ export default function HomePage() {
                     {[46, 72, 58, 88, 66, 94, 82].map((height, index) => (
                       <div
                         key={index}
-                        className="flex-1 rounded-t-md bg-blue-500"
+                        className="flex-1 rounded-full bg-gradient-to-t from-[#3552ff] to-[#93a5ff]"
                         style={{ height: `${height}%` }}
                       />
                     ))}
@@ -198,12 +247,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="absolute -bottom-8 right-6 hidden w-64 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl lg:block">
-              <p className="text-xs font-semibold text-blue-600">
+            <div className="absolute -bottom-8 right-6 hidden w-60 rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_20px_55px_-28px_rgba(23,29,58,.35)] lg:block">
+              <p className="text-xs font-semibold text-[#3552ff]">
                 Nga zyra te fusha
               </p>
 
-              <p className="mt-1 text-sm leading-6 text-slate-600">
+              <p className="mt-1 text-xs leading-5 text-[#687095]">
                 Të dhënat sportive dhe administrative në të njëjtin sistem.
               </p>
             </div>
@@ -211,226 +260,363 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-slate-100 bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-5 py-7 text-center sm:grid-cols-4 lg:px-8">
+      {/* ======================================================
+          QUICK BENEFITS
+      ====================================================== */}
+
+      <section className="relative z-10 px-5 py-8 sm:px-6">
+        <div className="mx-auto grid max-w-[1140px] grid-cols-2 gap-3 rounded-[30px] border border-slate-200 bg-white p-4 shadow-[0_20px_45px_-34px_rgba(23,29,58,.2)] sm:grid-cols-4 sm:gap-4 sm:p-5">
           {[
-            ["1 platformë", "Për gjithë akademinë"],
-            ["Çdo ekip", "Në të njëjtin sistem"],
-            ["Çdo trajner", "Me akses të kontrolluar"],
-            ["Çdo të dhënë", "Kur të duhet"],
-          ].map(([title, subtitle]) => (
-            <div key={title}>
-              <p className="text-sm font-semibold text-slate-900">{title}</p>
-              <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+            ["1 platformë", "Për gjithë akademinë", "bg-[#bdf1de]"],
+            ["Çdo ekip", "Në të njëjtin sistem", "bg-[#dccfff]"],
+            ["Çdo trajner", "Me akses të kontrolluar", "bg-[#dce9ff]"],
+            ["Çdo të dhënë", "Kur të duhet", "bg-[#ffd5c0]"],
+          ].map(([title, subtitle, tone]) => (
+            <div
+              key={title}
+              className="rounded-[22px] border border-slate-200 bg-white px-4 py-5 text-center"
+            >
+              <span
+                className={`mx-auto mb-3 block h-2.5 w-8 rounded-full ${tone}`}
+              />
+
+              <p className="text-sm font-bold text-[#171d3a]">
+                {title}
+              </p>
+
+              <p className="mt-1 text-xs text-[#707897]">
+                {subtitle}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* ======================================================
+          PLATFORM / FEATURES
+      ====================================================== */}
+
       <section
         id="platforma"
-        className="bg-white px-5 py-16 sm:py-20 lg:px-8 lg:py-24"
+        className="relative z-10 px-5 py-20 sm:px-6 sm:py-24 lg:py-28"
       >
-        <div className="mx-auto max-w-7xl">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+        <div className="mx-auto max-w-[1140px]">
+          <div className="mx-auto max-w-2xl text-center" data-reveal>
+            <span className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#3552ff]">
               Platforma
-            </p>
+            </span>
 
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            <h2 className="mt-5 text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] text-[#171d3a] sm:text-4xl lg:text-5xl">
               Gjithçka që i duhet akademisë.
             </h2>
 
-            <p className="mt-4 text-base leading-7 text-slate-500">
-              Një sistem i organizuar për punën sportive dhe administrative.
+            <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#5a6285]">
+              Një sistem i organizuar për punën sportive dhe administrative,
+              nga fusha deri te zyra.
             </p>
           </div>
 
           <div
             id="funksionet"
-            className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
           >
-            {features.map((feature) => {
+            {features.map((feature, index) => {
               const Icon = feature.icon;
 
+              const radiusClasses = [
+                "rounded-[28px_28px_78px_28px]",
+                "rounded-[28px_78px_28px_28px]",
+                "rounded-[78px_28px_28px_28px]",
+                "rounded-[28px_28px_28px_78px]",
+                "rounded-[28px_78px_28px_28px]",
+                "rounded-[78px_28px_28px_28px]",
+              ];
+
               return (
-                <div
+                <article
                   key={feature.title}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100/40"
+                  data-reveal
+                  data-tilt-card
+                  className={[
+                    "min-h-[230px] border border-slate-200 bg-white p-7 shadow-[0_20px_45px_-34px_rgba(23,29,58,.24)] transition hover:-translate-y-1 hover:shadow-[0_28px_55px_-34px_rgba(23,29,58,.28)]",
+                    radiusClasses[index % radiusClasses.length],
+                  ].join(" ")}
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                    <Icon size={18} />
+                  <span
+                    className={[
+                      "flex h-[52px] w-[52px] items-center justify-center rounded-[18px]",
+                      feature.tone,
+                    ].join(" ")}
+                  >
+                    <Icon size={20} strokeWidth={1.9} />
                   </span>
 
-                  <h3 className="mt-5 text-base font-semibold text-slate-950">
+                  <h3 className="mt-6 text-xl font-bold tracking-[-0.025em] text-[#171d3a]">
                     {feature.title}
                   </h3>
 
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                  <p className="mt-3 text-sm leading-6 text-[#5a6285]">
                     {feature.description}
                   </p>
-                </div>
+                </article>
               );
             })}
           </div>
         </div>
       </section>
 
-      <section className="bg-[#f7fbff] px-5 py-16 sm:py-20 lg:px-8 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="relative min-h-[420px] overflow-hidden rounded-[28px] shadow-sm sm:min-h-[500px]">
-            <Image
-              src="/home/football.webp"
-              alt="Stërvitje sportive në akademi"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 ease-out hover:scale-[1.025]"
-            />
-          </div>
+      {/* ======================================================
+          FOOTBALL ACADEMY GRAPHIC
+      ====================================================== */}
 
-          <div className="max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              Puna e përditshme
-            </p>
+      <section className="relative z-10 px-5 py-20 sm:px-6 sm:py-24 lg:py-28">
+        <div className="mx-auto max-w-[1140px]">
+          <div className="grid gap-10 lg:grid-cols-[1.02fr_.98fr] lg:items-center">
+            <div data-reveal>
+              <span className="inline-flex rounded-full bg-[#bdf1de] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#187b55]">
+                Akademi futbolli
+              </span>
 
-            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Më pak kohë me administrimin.
-            </h2>
+              <h2 className="mt-5 text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] text-[#171d3a] sm:text-4xl lg:text-5xl">
+                Gjithçka e organizuar për zhvillimin e ekipit.
+              </h2>
 
-            <p className="mt-5 text-base leading-7 text-slate-600">
-              Organizimi i akademisë nuk duhet të varet nga tabela, mesazhe dhe
-              dokumente të shpërndara. Mbaji proceset në një vend të vetëm dhe
-              jepi stafit qartësi.
-            </p>
+              <p className="mt-5 max-w-xl text-base leading-7 text-[#5a6285]">
+                Ndërto një rrjedhë pune të qartë për stërvitjet, ndeshjet,
+                sportistët dhe stafin. Platforma i jep akademisë kontroll dhe
+                qartësi në punën e përditshme.
+              </p>
 
-            <div className="mt-7 space-y-4">
-              {[
-                "Role dhe akses sipas stafit",
-                "Planifikim i stërvitjeve dhe ambienteve",
-                "Të dhënat e sportistit në një profil",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                    <Check size={14} />
-                  </span>
-                  <span className="text-sm font-medium text-slate-700">
-                    {item}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <Link
-              href="/apliko"
-              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-blue-600"
-            >
-              Apliko
-              <ArrowRight size={15} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white px-5 py-16 sm:py-20 lg:px-8 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="max-w-xl lg:order-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              Multi-sport
-            </p>
-
-            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Një platformë për akademi sportive.
-            </h2>
-
-            <p className="mt-5 text-base leading-7 text-slate-600">
-              Struktura e platformës është ndërtuar për ekipe, akademi dhe
-              programe sportive me nevoja të ndryshme.
-            </p>
-
-            <div className="mt-8 grid grid-cols-2 gap-3">
-              {["Performancë", "Mjekësore", "Skautim", "Taktika"].map(
-                (item) => (
+              <div className="mt-8 space-y-3">
+                {[
+                  "Planifikim i stërvitjeve dhe seancave",
+                  "Profili i sportistit me progres dhe prezencë",
+                  "Menaxhim i ekipeve, ndeshjeve dhe roleve",
+                  "Komunikim më i qartë me stafin",
+                ].map((item, index) => (
                   <div
                     key={item}
-                    className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+                    className="flex items-center gap-3 rounded-[20px] border border-slate-200 bg-white px-4 py-3 shadow-sm"
                   >
-                    {item}
+                    <span
+                      className={[
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        index % 2 === 0
+                          ? "bg-[#bdf1de] text-[#187b55]"
+                          : "bg-[#dce9ff] text-[#3552ff]",
+                      ].join(" ")}
+                    >
+                      <Check size={14} strokeWidth={2.5} />
+                    </span>
+
+                    <span className="text-sm font-semibold text-[#39405f]">
+                      {item}
+                    </span>
                   </div>
-                ),
-              )}
+                ))}
+              </div>
+
+              <Link
+                href="/apliko"
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#3552ff] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(53,82,255,.55)] transition hover:-translate-y-0.5 hover:bg-[#2945ef]"
+              >
+                Apliko
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {/* FOOTBALL FIELD GRAPHIC */}
+
+            <div
+              data-reveal
+              data-tilt-card
+              className="overflow-hidden rounded-[34px_34px_92px_34px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-38px_rgba(23,29,58,.32)]"
+            >
+              <div className="rounded-[28px] border border-slate-200 bg-[#f7f9fe] p-4">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#3552ff]">
+                      Pamje sportive
+                    </p>
+
+                    <h3 className="mt-1 text-xl font-bold tracking-[-0.03em] text-[#171d3a]">
+                      Qendra e aktivitetit
+                    </h3>
+                  </div>
+
+                  <span className="rounded-full bg-[#bdf1de] px-3 py-1 text-xs font-semibold text-[#187b55]">
+                    Live
+                  </span>
+                </div>
+
+                <div className="relative h-[380px] overflow-hidden rounded-[26px] bg-[linear-gradient(180deg,#73ce91_0%,#269d61_100%)]">
+                  <div className="absolute inset-[18px] rounded-[22px] border-2 border-white/65" />
+
+                  <div className="absolute left-1/2 top-[18px] h-[344px] -translate-x-1/2 border-l-2 border-white/55" />
+
+                  <div className="absolute left-1/2 top-1/2 h-[86px] w-[86px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/65" />
+
+                  <div className="absolute left-1/2 top-[18px] h-[92px] w-[180px] -translate-x-1/2 border-x-2 border-b-2 border-white/60" />
+
+                  <div className="absolute bottom-[18px] left-1/2 h-[92px] w-[180px] -translate-x-1/2 border-x-2 border-t-2 border-white/60" />
+
+                  {[
+                    ["GK", "left-[47%] top-[9%]", "bg-white"],
+                    ["LB", "left-[19%] top-[30%]", "bg-[#dce9ff]"],
+                    ["CB", "left-[43%] top-[31%]", "bg-[#dce9ff]"],
+                    ["RB", "right-[19%] top-[30%]", "bg-[#dce9ff]"],
+                    ["CM", "left-[38%] top-[50%]", "bg-[#dccfff]"],
+                    ["AM", "right-[30%] top-[51%]", "bg-[#ffd5c0]"],
+                    ["ST", "left-[47%] top-[70%]", "bg-white"],
+                  ].map(([label, position, tone]) => (
+                    <span
+                      key={label}
+                      className={[
+                        "absolute flex h-10 w-10 items-center justify-center rounded-full text-[10px] font-extrabold text-[#171d3a] shadow-lg",
+                        position,
+                        tone,
+                      ].join(" ")}
+                    >
+                      {label}
+                    </span>
+                  ))}
+
+                  <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-3">
+                    {[
+                      ["Seanca", "36"],
+                      ["Ndeshje", "12"],
+                      ["Sportistë", "128"],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="rounded-[18px] border border-white bg-white p-3 shadow-sm"
+                      >
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#7b82a2]">
+                          {label}
+                        </p>
+
+                        <p className="mt-1 text-lg font-extrabold text-[#171d3a]">
+                          {value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="relative min-h-[420px] overflow-hidden rounded-[28px] shadow-sm sm:min-h-[500px] lg:order-2">
-            <Image
-              src="/home/basketball.webp"
-              alt="Basketboll në akademi sportive"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 ease-out hover:scale-[1.025]"
-            />
+          {/* MODULE CARDS */}
+
+          <div className="mt-14 grid gap-5 md:grid-cols-3">
+            {footballModules.map((module, index) => (
+              <article
+                key={module.title}
+                data-reveal
+                data-tilt-card
+                className={[
+                  "border border-slate-200 bg-white p-6 shadow-[0_20px_45px_-34px_rgba(23,29,58,.24)]",
+                  index === 0
+                    ? "rounded-[28px_28px_78px_28px]"
+                    : index === 1
+                      ? "rounded-[78px_28px_28px_28px]"
+                      : "rounded-[28px_78px_28px_28px]",
+                ].join(" ")}
+              >
+                <span
+                  className={[
+                    "block h-2.5 w-10 rounded-full",
+                    module.accent,
+                  ].join(" ")}
+                />
+
+                <span className="mt-5 inline-flex rounded-full bg-[#f3f5fb] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3552ff]">
+                  Modul
+                </span>
+
+                <h3 className="mt-5 text-xl font-bold tracking-[-0.03em] text-[#171d3a]">
+                  {module.title}
+                </h3>
+
+                <p className="mt-3 text-sm leading-6 text-[#5a6285]">
+                  {module.description}
+                </p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* ======================================================
+          PRICING - REAL DATABASE DATA
+      ====================================================== */}
+
       <PublicPricingPlans />
-<section className="bg-white px-5 py-16 sm:py-20 lg:px-8">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-50 to-sky-100 px-6 py-12 sm:px-10 lg:flex lg:items-center lg:justify-between lg:px-14">
-          <div className="max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              Apliko sot
-            </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
-              Organizimi i akademisë mund të jetë më i thjeshtë.
-            </h2>
+      {/* ======================================================
+          FINAL CTA
+      ====================================================== */}
 
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              Krijo llogarinë dhe provo funksionet PRO për 7 ditë.
-            </p>
-          </div>
+      <PublicFinalCta />
 
-          <Link
-            href="/apliko"
-            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 lg:mt-0"
-          >
-            Apliko
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
+      {/* ======================================================
+          FOOTER
+      ====================================================== */}
 
-      <footer className="border-t border-slate-200 bg-white px-5 py-10 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-7 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
-              <Dumbbell size={16} />
-            </span>
+      <footer className="relative z-10 px-5 pb-10 pt-4 sm:px-6">
+        <div className="mx-auto max-w-[1140px] rounded-[30px] border border-slate-200 bg-white px-6 py-8 shadow-[0_18px_45px_-34px_rgba(23,29,58,.18)]">
+          <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#3552ff] text-white shadow-[0_10px_25px_-12px_rgba(53,82,255,.6)]">
+                <Dumbbell size={17} />
+              </span>
 
-            <div>
-              <p className="text-sm font-bold">Akademia Sportive</p>
-              <p className="text-xs text-slate-400">Platforma e menaxhimit</p>
+              <div>
+                <p className="text-sm font-extrabold tracking-[-0.02em] text-[#171d3a]">
+                  Akademia Sportive
+                </p>
+
+                <p className="text-xs text-[#7b82a2]">
+                  Platforma e menaxhimit
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-5 text-sm font-medium text-[#5a6285]">
+              <a
+                href="#platforma"
+                className="transition hover:text-[#3552ff]"
+              >
+                Platforma
+              </a>
+
+              <a
+                href="#funksionet"
+                className="transition hover:text-[#3552ff]"
+              >
+                Funksionet
+              </a>
+
+              <a
+                href="#planet"
+                className="transition hover:text-[#3552ff]"
+              >
+                Planet
+              </a>
+
+              <Link
+                href="/hyrje"
+                className="transition hover:text-[#3552ff]"
+              >
+                Hyr
+              </Link>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-5 text-sm text-slate-500">
-            <a href="#platforma" className="hover:text-blue-600">
-              Platforma
-            </a>
-            <a href="#funksionet" className="hover:text-blue-600">
-              Funksionet
-            </a>
-            <a href="#planet" className="hover:text-blue-600">
-              Planet
-            </a>
-            <Link href="/hyrje" className="hover:text-blue-600">
-              Hyr
-            </Link>
+          <div className="mt-8 border-t border-slate-200 pt-6 text-xs text-[#8b91ad]">
+            © {new Date().getFullYear()} Akademia Sportive. Të gjitha të
+            drejtat e rezervuara.
           </div>
-        </div>
-
-        <div className="mx-auto mt-8 max-w-7xl border-t border-slate-100 pt-6 text-xs text-slate-400">
-          © {new Date().getFullYear()} Akademia Sportive. Të gjitha të drejtat e
-          rezervuara.
         </div>
       </footer>
     </main>
