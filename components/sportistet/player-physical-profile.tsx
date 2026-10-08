@@ -613,8 +613,8 @@ export default function PlayerPhysicalProfile({
                     <MeasurementInput
                       label="Gjatësia (cm)"
                       value={heightCm}
-                      min="0.1"
-                      max="300"
+                      min="80"
+                      max="250"
                       onChange={
                         setHeightCm
                       }
@@ -623,8 +623,8 @@ export default function PlayerPhysicalProfile({
                     <MeasurementInput
                       label="Pesha (kg)"
                       value={weightKg}
-                      min="0.1"
-                      max="500"
+                      min="20"
+                      max="300"
                       onChange={
                         setWeightKg
                       }
@@ -633,8 +633,8 @@ export default function PlayerPhysicalProfile({
                     <MeasurementInput
                       label="Yndyra trupore (%)"
                       value={bodyFatPercent}
-                      min="0"
-                      max="100"
+                      min="1"
+                      max="70"
                       onChange={
                         setBodyFatPercent
                       }
@@ -643,8 +643,8 @@ export default function PlayerPhysicalProfile({
                     <MeasurementInput
                       label="Masa muskulore (kg)"
                       value={muscleMassKg}
-                      min="0.1"
-                      max="300"
+                      min="5"
+                      max="200"
                       onChange={
                         setMuscleMassKg
                       }
