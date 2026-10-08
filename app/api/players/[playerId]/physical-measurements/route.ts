@@ -9,27 +9,10 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/permissions";
+import {
+  validatePhysicalMeasurementInput,
+} from "@/lib/physical-measurement-validation";
 import { prisma } from "@/lib/prisma";
-
-function parseOptionalNumber(
-  value: unknown
-): number | null | undefined {
-  if (
-    value === undefined ||
-    value === null ||
-    value === ""
-  ) {
-    return null;
-  }
-
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed)) {
-    return undefined;
-  }
-
-  return parsed;
-}
 
 export async function GET(
   _request: Request,
@@ -216,36 +199,21 @@ export async function POST(
     );
   }
 
-  const heightCm =
-    parseOptionalNumber(
-      body.heightCm
-    );
+  const measurementValidation =
+    validatePhysicalMeasurementInput({
+      heightCm: body.heightCm,
+      weightKg: body.weightKg,
+      bodyFatPercent:
+        body.bodyFatPercent,
+      muscleMassKg:
+        body.muscleMassKg,
+    });
 
-  const weightKg =
-    parseOptionalNumber(
-      body.weightKg
-    );
-
-  const bodyFatPercent =
-    parseOptionalNumber(
-      body.bodyFatPercent
-    );
-
-  const muscleMassKg =
-    parseOptionalNumber(
-      body.muscleMassKg
-    );
-
-  if (
-    heightCm === undefined ||
-    weightKg === undefined ||
-    bodyFatPercent === undefined ||
-    muscleMassKg === undefined
-  ) {
+  if (!measurementValidation.ok) {
     return NextResponse.json(
       {
         error:
-          "Një ose më shumë matje nuk janë të vlefshme.",
+          measurementValidation.error,
       },
       {
         status: 400,
@@ -253,94 +221,12 @@ export async function POST(
     );
   }
 
-  if (
-    heightCm !== null &&
-    (
-      heightCm <= 0 ||
-      heightCm > 300
-    )
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Gjatësia duhet të jetë mes 0 dhe 300 cm.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (
-    weightKg !== null &&
-    (
-      weightKg <= 0 ||
-      weightKg > 500
-    )
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Pesha duhet të jetë mes 0 dhe 500 kg.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (
-    bodyFatPercent !== null &&
-    (
-      bodyFatPercent < 0 ||
-      bodyFatPercent > 100
-    )
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Yndyra trupore duhet të jetë mes 0 dhe 100%.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (
-    muscleMassKg !== null &&
-    (
-      muscleMassKg <= 0 ||
-      muscleMassKg > 300
-    )
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Masa muskulore nuk është e vlefshme.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (
-    heightCm === null &&
-    weightKg === null &&
-    bodyFatPercent === null &&
-    muscleMassKg === null
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Vendos të paktën një matje fizike.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
+  const {
+    heightCm,
+    weightKg,
+    bodyFatPercent,
+    muscleMassKg,
+  } = measurementValidation.values;
 
   const notes =
     String(
