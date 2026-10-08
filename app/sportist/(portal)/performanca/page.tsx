@@ -103,95 +103,124 @@ export default async function AthletePerformancePage() {
       ({ team }) => team.id
     );
 
+  const completedMatchScope = {
+    academyId: access.academyId,
+
+    teamId: {
+      in: activeTeamIds,
+    },
+
+    status: "COMPLETED" as const,
+  };
+
   const [
-    matchPlayers,
-    events,
-    performances,
+    appearanceCount,
+    starts,
+    minutesAggregate,
+    eventCounts,
+    performanceAggregate,
+    recentPerformances,
+    recentRatings,
   ] = await Promise.all([
-    prisma.matchPlayer.findMany({
+    prisma.matchPlayer.count({
       where: {
-        playerId:
-          access.playerId,
+        playerId: access.playerId,
 
-        match: {
-          academyId:
-            access.academyId,
-
-          teamId: {
-            in: activeTeamIds,
+        OR: [
+          {
+            role: "STARTER",
           },
-
-          status:
-            "COMPLETED",
-        },
-      },
-
-      select: {
-        matchId: true,
-        role: true,
-        minutesPlayed: true,
-
-        match: {
-          select: {
-            id: true,
-            startsAt: true,
-            opponentName: true,
-            isHome: true,
-            ourScore: true,
-            opponentScore: true,
-            competitionName: true,
-
-            team: {
-              select: {
-                name: true,
-              },
+          {
+            minutesPlayed: {
+              gt: 0,
             },
           },
-        },
+        ],
+
+        match: completedMatchScope,
       },
     }),
 
-    prisma.matchEvent.findMany({
+    prisma.matchPlayer.count({
       where: {
-        playerId:
-          access.playerId,
+        playerId: access.playerId,
+        role: "STARTER",
+        match: completedMatchScope,
+      },
+    }),
 
-        match: {
-          academyId:
-            access.academyId,
-
-          teamId: {
-            in: activeTeamIds,
-          },
-
-          status:
-            "COMPLETED",
-        },
+    prisma.matchPlayer.aggregate({
+      where: {
+        playerId: access.playerId,
+        match: completedMatchScope,
       },
 
-      select: {
-        matchId: true,
-        type: true,
+      _sum: {
+        minutesPlayed: true,
+      },
+    }),
+
+    prisma.matchEvent.groupBy({
+      by: [
+        "type",
+      ],
+
+      where: {
+        playerId: access.playerId,
+
+        type: {
+          in: [
+            "GOAL",
+            "ASSIST",
+          ],
+        },
+
+        match: completedMatchScope,
+      },
+
+      _count: {
+        _all: true,
+      },
+    }),
+
+    prisma.playerMatchPerformance.aggregate({
+      where: {
+        playerId: access.playerId,
+        match: completedMatchScope,
+      },
+
+      _sum: {
+        shots: true,
+        shotsOnTarget: true,
+        passesAttempted: true,
+        passesCompleted: true,
+        dribblesAttempted: true,
+        dribblesCompleted: true,
+        duelsWon: true,
+        tackles: true,
+        interceptions: true,
+        foulsCommitted: true,
+        foulsWon: true,
+      },
+
+      _avg: {
+        coachRating: true,
       },
     }),
 
     prisma.playerMatchPerformance.findMany({
       where: {
-        playerId:
-          access.playerId,
+        playerId: access.playerId,
+        match: completedMatchScope,
+      },
 
+      orderBy: {
         match: {
-          academyId:
-            access.academyId,
-
-          teamId: {
-            in: activeTeamIds,
-          },
-
-          status:
-            "COMPLETED",
+          startsAt: "desc",
         },
       },
+
+      take: 8,
 
       select: {
         matchId: true,
@@ -227,172 +256,135 @@ export default async function AthletePerformancePage() {
         },
       },
     }),
+
+    prisma.playerMatchPerformance.findMany({
+      where: {
+        playerId: access.playerId,
+
+        coachRating: {
+          not: null,
+        },
+
+        match: completedMatchScope,
+      },
+
+      orderBy: {
+        match: {
+          startsAt: "desc",
+        },
+      },
+
+      take: 6,
+
+      select: {
+        matchId: true,
+        coachRating: true,
+
+        match: {
+          select: {
+            startsAt: true,
+            opponentName: true,
+          },
+        },
+      },
+    }),
   ]);
 
-  const appearances =
-    matchPlayers.filter(
-      (item) =>
-        item.role === "STARTER" ||
-        item.minutesPlayed > 0
-    );
-
-  const starts =
-    matchPlayers.filter(
-      (item) =>
-        item.role === "STARTER"
-    ).length;
-
   const totalMinutes =
-    matchPlayers.reduce(
-      (sum, item) =>
-        sum + item.minutesPlayed,
-      0
-    );
+    minutesAggregate._sum.minutesPlayed ?? 0;
 
   const goals =
-    events.filter(
+    eventCounts.find(
       (event) =>
-        event.type === "GOAL"
-    ).length;
+        event.type === "GOAL",
+    )?._count._all ?? 0;
 
   const assists =
-    events.filter(
+    eventCounts.find(
       (event) =>
-        event.type === "ASSIST"
-    ).length;
-
-  const ratings =
-    performances
-      .map((item) =>
-        item.coachRating === null
-          ? null
-          : Number(
-              item.coachRating
-            )
-      )
-      .filter(
-        (
-          value
-        ): value is number =>
-          value !== null &&
-          Number.isFinite(value)
-      );
+        event.type === "ASSIST",
+    )?._count._all ?? 0;
 
   const averageRating =
-    ratings.length === 0
+    performanceAggregate._avg.coachRating === null
       ? null
-      : ratings.reduce(
-          (sum, value) =>
-            sum + value,
-          0
-        ) / ratings.length;
+      : Number(
+          performanceAggregate._avg.coachRating,
+        );
 
-  const totals =
-    performances.reduce(
-      (acc, item) => ({
-        shots:
-          acc.shots +
-          item.shots,
+  const totals = {
+    shots:
+      performanceAggregate._sum.shots ?? 0,
 
-        shotsOnTarget:
-          acc.shotsOnTarget +
-          item.shotsOnTarget,
+    shotsOnTarget:
+      performanceAggregate._sum.shotsOnTarget ?? 0,
 
-        passesAttempted:
-          acc.passesAttempted +
-          item.passesAttempted,
+    passesAttempted:
+      performanceAggregate._sum.passesAttempted ?? 0,
 
-        passesCompleted:
-          acc.passesCompleted +
-          item.passesCompleted,
+    passesCompleted:
+      performanceAggregate._sum.passesCompleted ?? 0,
 
-        dribblesAttempted:
-          acc.dribblesAttempted +
-          item.dribblesAttempted,
+    dribblesAttempted:
+      performanceAggregate._sum.dribblesAttempted ?? 0,
 
-        dribblesCompleted:
-          acc.dribblesCompleted +
-          item.dribblesCompleted,
+    dribblesCompleted:
+      performanceAggregate._sum.dribblesCompleted ?? 0,
 
-        duelsWon:
-          acc.duelsWon +
-          item.duelsWon,
+    duelsWon:
+      performanceAggregate._sum.duelsWon ?? 0,
 
-        tackles:
-          acc.tackles +
-          item.tackles,
+    tackles:
+      performanceAggregate._sum.tackles ?? 0,
 
-        interceptions:
-          acc.interceptions +
-          item.interceptions,
+    interceptions:
+      performanceAggregate._sum.interceptions ?? 0,
 
-        foulsCommitted:
-          acc.foulsCommitted +
-          item.foulsCommitted,
+    foulsCommitted:
+      performanceAggregate._sum.foulsCommitted ?? 0,
 
-        foulsWon:
-          acc.foulsWon +
-          item.foulsWon,
-      }),
-
-      {
-        shots: 0,
-        shotsOnTarget: 0,
-        passesAttempted: 0,
-        passesCompleted: 0,
-        dribblesAttempted: 0,
-        dribblesCompleted: 0,
-        duelsWon: 0,
-        tackles: 0,
-        interceptions: 0,
-        foulsCommitted: 0,
-        foulsWon: 0,
-      }
-    );
+    foulsWon:
+      performanceAggregate._sum.foulsWon ?? 0,
+  };
 
   const passAccuracy =
     percentage(
       totals.passesCompleted,
-      totals.passesAttempted
+      totals.passesAttempted,
     );
 
   const dribbleAccuracy =
     percentage(
       totals.dribblesCompleted,
-      totals.dribblesAttempted
+      totals.dribblesAttempted,
     );
 
   const shotAccuracy =
     percentage(
       totals.shotsOnTarget,
-      totals.shots
+      totals.shots,
     );
 
   const sortedPerformances =
-    [...performances].sort(
-      (left, right) =>
-        right.match.startsAt.getTime() -
-        left.match.startsAt.getTime()
-    );
+    recentPerformances;
 
   const ratingTrend =
-    sortedPerformances
+    recentRatings
       .flatMap((item) => {
         if (
-          item.coachRating ===
-          null
+          item.coachRating === null
         ) {
           return [];
         }
 
         const rating =
           Number(
-            item.coachRating
+            item.coachRating,
           );
 
         if (
           !Number.isFinite(
-            rating
+            rating,
           )
         ) {
           return [];
@@ -415,9 +407,7 @@ export default async function AthletePerformancePage() {
           },
         ];
       })
-      .slice(0, 6)
       .reverse();
-
   const athleteName =
     `${player.firstName} ${player.lastName}`.trim();
 
@@ -475,7 +465,7 @@ export default async function AthletePerformancePage() {
           </span>
 
           <p className="mt-5 text-3xl font-black text-slate-950">
-            {appearances.length}
+            {appearanceCount}
           </p>
 
           <p className="mt-1 text-sm font-semibold text-slate-700">
@@ -501,12 +491,12 @@ export default async function AthletePerformancePage() {
           </p>
 
           <p className="mt-1 text-xs text-slate-500">
-            {appearances.length ===
+            {appearanceCount ===
             0
               ? "—"
               : `${(
                   totalMinutes /
-                  appearances.length
+                  appearanceCount
                 ).toFixed(
                   1
                 )} min / ndeshje`}

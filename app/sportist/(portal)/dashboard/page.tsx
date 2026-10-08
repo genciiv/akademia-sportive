@@ -155,146 +155,134 @@ export default async function AthleteDashboardPage() {
 
   const now = new Date();
 
-  const [upcomingSessions, upcomingMatches, recentAttendances] =
-    await Promise.all([
-      prisma.trainingSession.findMany({
-        where: {
+  const [
+    upcomingSessions,
+    upcomingMatches,
+    recentAttendances,
+    academyUpdates,
+    completedMatchPlayers,
+    athleteEvents,
+    athletePerformances,
+    attendanceByStatus,
+  ] = await Promise.all([
+    prisma.trainingSession.findMany({
+      where: {
+        academyId: access.academyId,
+        teamId: {
+          in: activeTeamIds,
+        },
+        startsAt: {
+          gte: now,
+        },
+        status: "SCHEDULED",
+      },
+      orderBy: {
+        startsAt: "asc",
+      },
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        startsAt: true,
+        endsAt: true,
+        location: true,
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        branch: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    }),
+
+    prisma.match.findMany({
+      where: {
+        academyId: access.academyId,
+        teamId: {
+          in: activeTeamIds,
+        },
+        startsAt: {
+          gte: now,
+        },
+        status: "SCHEDULED",
+      },
+      orderBy: {
+        startsAt: "asc",
+      },
+      take: 3,
+      select: {
+        id: true,
+        opponentName: true,
+        startsAt: true,
+        location: true,
+        isHome: true,
+        competitionName: true,
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    }),
+
+    prisma.trainingAttendance.findMany({
+      where: {
+        playerId: access.playerId,
+        trainingSession: {
           academyId: access.academyId,
           teamId: {
             in: activeTeamIds,
           },
-          startsAt: {
-            gte: now,
-          },
-          status: "SCHEDULED",
         },
-
-        orderBy: {
-          startsAt: "asc",
+      },
+      orderBy: {
+        trainingSession: {
+          startsAt: "desc",
         },
-
-        take: 3,
-
-        select: {
-          id: true,
-          title: true,
-          startsAt: true,
-          endsAt: true,
-          location: true,
-
-          team: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-
-          facility: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-
-          branch: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      }),
-
-      prisma.match.findMany({
-        where: {
-          academyId: access.academyId,
-          teamId: {
-            in: activeTeamIds,
-          },
-          startsAt: {
-            gte: now,
-          },
-          status: "SCHEDULED",
-        },
-
-        orderBy: {
-          startsAt: "asc",
-        },
-
-        take: 3,
-
-        select: {
-          id: true,
-          opponentName: true,
-          startsAt: true,
-          location: true,
-          isHome: true,
-          competitionName: true,
-
-          team: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-
-          facility: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      }),
-
-      prisma.trainingAttendance.findMany({
-        where: {
-          playerId: access.playerId,
-
-          trainingSession: {
-            academyId: access.academyId,
-            teamId: {
-              in: activeTeamIds,
-            },
-          },
-        },
-
-        orderBy: {
-          trainingSession: {
-            startsAt: "desc",
-          },
-        },
-
-        take: 5,
-
-        select: {
-          id: true,
-          status: true,
-
-          trainingSession: {
-            select: {
-              id: true,
-              title: true,
-              startsAt: true,
-
-              team: {
-                select: {
-                  id: true,
-                  name: true,
-                },
+      },
+      take: 5,
+      select: {
+        id: true,
+        status: true,
+        trainingSession: {
+          select: {
+            id: true,
+            title: true,
+            startsAt: true,
+            team: {
+              select: {
+                id: true,
+                name: true,
               },
             },
           },
         },
-      }),
-    ]);
+      },
+    }),
 
-  const academyUpdates =
-    await prisma.notification.findMany({
+    prisma.notification.findMany({
       where: {
         academyId: access.academyId,
         status: "ACTIVE",
-
         AND: [
           {
             OR: [
@@ -323,13 +311,10 @@ export default async function AthleteDashboardPage() {
           },
         ],
       },
-
       orderBy: {
         publishedAt: "desc",
       },
-
       take: 5,
-
       select: {
         id: true,
         title: true,
@@ -339,68 +324,75 @@ export default async function AthleteDashboardPage() {
         priority: true,
         publishedAt: true,
         expiresAt: true,
-
         team: {
           select: {
             id: true,
             name: true,
           },
         },
-
         notificationReads: {
           where: {
             userId: access.userId,
           },
-
           select: {
             id: true,
           },
         },
       },
-    });
+    }),
 
-  const [
-    completedMatchPlayers,
-    athleteEvents,
-    athletePerformances,
-  ] = await Promise.all([
     prisma.matchPlayer.findMany({
       where: {
         playerId: access.playerId,
-
         match: {
           academyId: access.academyId,
-
           teamId: {
             in: activeTeamIds,
           },
-
           status: "COMPLETED",
         },
       },
-
+      orderBy: {
+        match: {
+          startsAt: "desc",
+        },
+      },
       select: {
+        id: true,
         matchId: true,
         role: true,
         minutesPlayed: true,
+        match: {
+          select: {
+            id: true,
+            startsAt: true,
+            opponentName: true,
+            isHome: true,
+            ourScore: true,
+            opponentScore: true,
+            competitionName: true,
+            team: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     }),
 
     prisma.matchEvent.findMany({
       where: {
         playerId: access.playerId,
-
         match: {
           academyId: access.academyId,
-
           teamId: {
             in: activeTeamIds,
           },
-
           status: "COMPLETED",
         },
       },
-
       select: {
         matchId: true,
         type: true,
@@ -410,18 +402,14 @@ export default async function AthleteDashboardPage() {
     prisma.playerMatchPerformance.findMany({
       where: {
         playerId: access.playerId,
-
         match: {
           academyId: access.academyId,
-
           teamId: {
             in: activeTeamIds,
           },
-
           status: "COMPLETED",
         },
       },
-
       select: {
         matchId: true,
         shots: true,
@@ -436,7 +424,6 @@ export default async function AthleteDashboardPage() {
         foulsCommitted: true,
         foulsWon: true,
         coachRating: true,
-
         match: {
           select: {
             startsAt: true,
@@ -445,8 +432,20 @@ export default async function AthleteDashboardPage() {
         },
       },
     }),
-  ]);
 
+    prisma.trainingAttendance.groupBy({
+      by: ["status"],
+      where: {
+        playerId: access.playerId,
+        trainingSession: {
+          academyId: access.academyId,
+        },
+      },
+      _count: {
+        _all: true,
+      },
+    }),
+  ]);
   const appearanceMatchIds =
     new Set(
       completedMatchPlayers
@@ -556,100 +555,40 @@ export default async function AthleteDashboardPage() {
     .slice(0, 5)
     .reverse();
 
-  const [
-    attendanceHistory,
-    recentAppearances,
-  ] = await Promise.all([
-    prisma.trainingAttendance.findMany({
-      where: {
-        playerId: access.playerId,
+  const recentAppearances =
+    completedMatchPlayers
+      .filter(
+        (matchPlayer) =>
+          matchPlayer.role === "STARTER" ||
+          matchPlayer.minutesPlayed > 0,
+      )
+      .slice(0, 5);
 
-        trainingSession: {
-          academyId: access.academyId,
-        },
-      },
-
-      select: {
-        status: true,
-      },
-    }),
-
-    prisma.matchPlayer.findMany({
-      where: {
-        playerId: access.playerId,
-
-        OR: [
-          {
-            role: "STARTER",
-          },
-          {
-            minutesPlayed: {
-              gt: 0,
-            },
-          },
-        ],
-
-        match: {
-          academyId: access.academyId,
-
-          teamId: {
-            in: activeTeamIds,
-          },
-          status: "COMPLETED",
-        },
-      },
-
-      orderBy: {
-        match: {
-          startsAt: "desc",
-        },
-      },
-
-      take: 5,
-
-      select: {
-        id: true,
-        role: true,
-        minutesPlayed: true,
-
-        match: {
-          select: {
-            id: true,
-            startsAt: true,
-            opponentName: true,
-            isHome: true,
-            ourScore: true,
-            opponentScore: true,
-            competitionName: true,
-
-            team: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-      },
-    }),
-  ]);
+  const attendanceTotal =
+    attendanceByStatus.reduce(
+      (total, attendance) =>
+        total + attendance._count._all,
+      0,
+    );
 
   const attendedSessions =
-    attendanceHistory.filter(
-      (attendance) =>
+    attendanceByStatus.reduce(
+      (total, attendance) =>
         attendance.status === "PRESENT" ||
-        attendance.status === "LATE",
-    ).length;
+        attendance.status === "LATE"
+          ? total + attendance._count._all
+          : total,
+      0,
+    );
 
   const attendanceRate =
-    attendanceHistory.length === 0
+    attendanceTotal === 0
       ? null
       : Math.round(
           (attendedSessions /
-            attendanceHistory.length) *
+            attendanceTotal) *
             100,
         );
-
   const nextMatch =
     upcomingMatches[0] ?? null;
 

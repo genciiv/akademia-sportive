@@ -150,7 +150,12 @@ assert.match(
 test("professional athlete dashboard calculates attendance rate for the linked athlete", () => {
   assert.match(
     dashboard,
-    /attendanceHistory/
+    /attendanceByStatus/
+  );
+
+  assert.match(
+    dashboard,
+    /prisma\.trainingAttendance\.groupBy/
   );
 
   assert.match(
@@ -189,19 +194,25 @@ test("professional athlete dashboard exposes the next scheduled match", () => {
 test("professional athlete dashboard exposes the last five appearances", () => {
   assert.match(
     dashboard,
-    /recentAppearances/
+    /const recentAppearances\s*=\s*completedMatchPlayers/
   );
 
   assert.match(
     dashboard,
-    /take:\s*5/
+    /matchPlayer\.role === "STARTER"/
   );
 
   assert.match(
     dashboard,
-    /minutesPlayed:\s*\{\s*gt:\s*0/
+    /matchPlayer\.minutesPlayed > 0/
   );
-assert.match(
+
+  assert.match(
+    dashboard,
+    /\.slice\(0,\s*5\)/
+  );
+
+  assert.match(
     dashboard,
     /appearance\.outcome/
   );
