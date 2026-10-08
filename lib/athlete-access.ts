@@ -114,6 +114,27 @@ export async function requireAthleteAccess(): Promise<AthleteAccessResult> {
     };
   }
   if (
+    athleteAccount.player.status === "INACTIVE" ||
+    athleteAccount.player.status === "SUSPENDED" ||
+    athleteAccount.player.status === "LEFT"
+  ) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error:
+            "Profili i sportistit nuk është aktiv dhe portali nuk është i disponueshëm.",
+          reason:
+            "ATHLETE_INACTIVE",
+        },
+        {
+          status: 403,
+        }
+      ),
+    };
+  }
+
+  if (
     athleteAccount.academy.status === "SUSPENDED" ||
     athleteAccount.academy.status === "CANCELLED"
   ) {
