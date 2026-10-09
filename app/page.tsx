@@ -1,624 +1,109 @@
+import type { Metadata } from "next";
+import { Barlow_Condensed, Inter } from "next/font/google";
 import Link from "next/link";
-import {
-  ArrowRight,
-  BarChart3,
-  Building2,
-  CalendarDays,
-  Check,
-  Dumbbell,
-  HeartPulse,
-  Target,
-  UsersRound,
-} from "lucide-react";
 
-import { PublicFinalCta } from "@/components/public-final-cta";
-import { PublicHome3DScene } from "@/components/public-home-3d-scene";
-import { PublicHomeMotion } from "@/components/public-home-motion";
+import { PublicHomeFX } from "@/components/public-home-fx";
 import { PublicHomeNav } from "@/components/public-home-nav";
 import { PublicPricingPlans } from "@/components/public-pricing-plans";
 
-const features = [
-  {
-    icon: UsersRound,
-    title: "Sportistët & ekipet",
-    description:
-      "Menaxho sportistët, ekipet dhe strukturën sportive nga një vend.",
-    tone: "bg-[#bdf1de] text-[#187b55]",
-  },
-  {
-    icon: CalendarDays,
-    title: "Kalendari & stërvitjet",
-    description:
-      "Planifiko seanca, ndeshje, ambiente dhe aktivitetet e akademisë.",
-    tone: "bg-[#dce9ff] text-[#3552ff]",
-  },
-  {
-    icon: BarChart3,
-    title: "Performanca",
-    description:
-      "Ndiq progresin dhe të dhënat sportive me një pamje të qartë.",
-    tone: "bg-[#dccfff] text-[#6354bd]",
-  },
-  {
-    icon: HeartPulse,
-    title: "Profili fizik & mjekësor",
-    description:
-      "Mbaj informacionin fizik dhe mjekësor të lidhur me sportistin.",
-    tone: "bg-[#ffd5c0] text-[#a45e3d]",
-  },
-  {
-    icon: Target,
-    title: "Taktika & skautim",
-    description:
-      "Organizo vlerësimet, kandidatët dhe punën taktike të stafit.",
-    tone: "bg-[#dce9ff] text-[#3552ff]",
-  },
-  {
-    icon: Building2,
-    title: "Administrimi",
-    description:
-      "Menaxho ambientet, stafin, financat dhe proceset e përditshme.",
-    tone: "bg-[#bdf1de] text-[#187b55]",
-  },
-];
+import "./public-home.css";
 
-const footballModules = [
-  {
-    title: "Stërvitje të planifikuara",
-    description:
-      "Organizo seanca, ambiente dhe grupet pa rrëmujë.",
-    accent: "bg-[#bdf1de]",
-  },
-  {
-    title: "Ndeshje dhe rezultate",
-    description:
-      "Mbaj historikun e ndeshjeve dhe informacionin e ekipit.",
-    accent: "bg-[#dce9ff]",
-  },
-  {
-    title: "Zhvillimi i sportistit",
-    description:
-      "Shiko prezencën, performancën dhe progresin fizik në kohë.",
-    accent: "bg-[#dccfff]",
-  },
-];
+const display = Barlow_Condensed({
+  subsets: ["latin", "latin-ext"],
+  weight: ["700", "800"],
+  style: "italic",
+  variable: "--font-display",
+  display: "swap",
+});
+
+const body = Inter({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Akademia Sportive | Menaxhim SaaS për akademi sportive",
+  description:
+    "Një platformë e vetme për sportistët, ekipet, trajnerët, stërvitjet, performancën dhe financat e akademisë. Fillo me 7 ditë PRO falas.",
+};
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen overflow-x-clip bg-[#eef3fb] text-[#171d3a]">
-      <PublicHomeMotion />
+    <main className={`ph ${display.variable} ${body.variable}`}>
+      <PublicHomeFX />
+      <div className="prog"></div><div className="cur"></div>
       <PublicHomeNav />
 
-      <PublicHome3DScene />
 
-      {/* ======================================================
-          HERO
-      ====================================================== */}
+      <section className="hero" data-hero>
+      <div className="hero-bg" data-p=".18"><img data-depth="-14" src="/home/football.webp" alt="" /></div><div className="spot"></div><div className="gl"></div>
+      <div className="c hero-g"><div>
+      <span className="pill">7 ditë PRO falas për çdo akademi të re</span>
+      <h1 className="hl"><span className="w w1"><i>Drejto</i></span> <span className="w w2"><i>akademinë.</i></span><br /><span className="w w3 acc"><i>Zhvillo</i></span> <span className="w w4 acc"><i>sportistët.</i></span></h1>
+      <p className="lead">Një platformë e vetme për sportistët, ekipet, trajnerët, stërvitjet, performancën, financat dhe punën e përditshme të akademisë.</p>
+      <div className="cta-r"><Link className="btn p mag" href="/apliko?plan=STARTER">Fillo me 7 ditë falas <span data-ic="arrow"></span></Link><a className="btn g mag" href="#platforma">Shiko si funksionon</a></div>
+      <div className="ticks"><span><i data-ic="check"></i>Pa kartë pagese</span><span><i data-ic="check"></i>Role &amp; akses të kontrolluar</span><span><i data-ic="check"></i>Për akademi futbolli</span></div>
+      </div>
+      <div className="stage">
+      <div className="lay l1" data-depth="26"><div className="glass fl"><div className="gh"><div><p className="gk">Akademia Sportive</p><p className="gt">Paneli i sotëm</p></div><span className="live">Live</span></div>
+      <div className="kp"><div><small>Sportistë</small><b data-count="128">0</b></div><div><small>Ekipe</small><b data-count="12">0</b></div></div>
+      <div className="bars" data-bars="46,72,58,88,66,94,82"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+      <div className="lay l2" data-depth="48"><div className="glass fl"><div className="av">AK</div><p className="gt mt">Profili i sportistit</p><p className="gk">U15 · Mesfushor</p>
+      <div className="pb" data-pb data-w="87%"><i></i></div><div className="row"><span>Rating</span><b>87</b></div><div className="row"><span>Prezenca</span><b>94%</b></div></div></div>
+      <div className="lay l3" data-depth="14"><div className="glass fl"><p className="gk">Seanca e radhës</p><p className="gt">17:30 · U15 · Fusha 2</p><div className="pb" data-pb data-w="68%"><i></i></div><div className="row"><span>Pjesëmarrja</span><b>17 / 22</b></div></div></div>
+      <div className="lay l4" data-depth="38"><div className="glass fl tc"><div className="ring" data-ring="94"><b>94%</b></div><p className="gk mt">Prezenca javore</p></div></div>
+      </div></div><div className="scroll"></div></section>
 
-      <section className="relative z-10 overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -left-52 bottom-[-160px] h-[520px] w-[520px] rounded-full bg-[#bdf1de]/45 blur-[110px]" />
-          <div className="absolute -right-44 top-[-180px] h-[520px] w-[520px] rounded-full bg-[#dccfff]/40 blur-[110px]" />
-          <div className="absolute bottom-[-160px] right-[-80px] h-[400px] w-[400px] rounded-full bg-[#ffd5c0]/38 blur-[110px]" />
-        </div>
+      <div className="mq"><div><span>Futboll</span><span>Stërvitje</span><span>Ndeshje</span><span>Taktika</span><span>Skautim</span><span>Prezenca</span><span>Performanca</span><span>Akademi</span></div></div>
 
-        <div className="mx-auto grid min-h-[720px] max-w-[1140px] items-center gap-14 px-5 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.04fr_.96fr] lg:py-24">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-[#3552ff] shadow-sm">
-              <span className="h-2 w-2 rounded-full bg-[#3552ff]" />
-              7 ditë PRO falas për çdo akademi të re
-            </div>
+      <section className="sec"><div className="c"><div className="stats" data-r>
+      <div className="st"><b data-count="7">0</b><span>ditë PRO falas për akademinë e re</span></div>
+      <div className="st"><b data-count="9" data-s="+">0</b><span>module sportive dhe administrative</span></div>
+      <div className="st"><b data-count="4">0</b><span>plane për çdo fazë të akademisë</span></div>
+      <div className="st"><b>1<em>×</em></b><span>platformë për gjithë akademinë</span></div></div></div></section>
 
-            <h1 className="mt-7 text-[clamp(2.8rem,6vw,5rem)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[#171d3a]">
-              Drejto akademinë.
-              <span className="block text-[#3552ff]">
-                Zhvillo sportistët.
-              </span>
-            </h1>
+      <section className="sec pt0" id="sportet"><div className="c">
+      <div data-r><span className="ey">Futboll</span><h2 className="h2">Një platformë.<br /><em>Çdo ekip.</em></h2><p className="lead">Ndërto një rrjedhë pune të qartë për stërvitjet, ndeshjet, sportistët dhe stafin e akademisë së futbollit.</p></div>
+      <div className="sports">
+      <article className="sc" data-r><img data-p=".12" src="/home/football.webp" alt="Stërvitje futbolli" />
+      <div className="sc-m"><p className="gk">Ndeshja e fundit · U15</p><div className="score"><span>Ne</span><b>2</b><i>:</i><b>1</b><span>Kundër</span></div><div className="row"><span>Prezenca</span><b>94%</b></div></div>
+      <div className="sc-in"><span className="no">Akademi futbolli</span><h3>Futboll</h3><div className="chips"><span>Formacione</span><span>Ndeshje</span><span>Prezenca</span><span>Skautim</span><span>Performanca</span><span>Kalendari</span></div></div></article>
+      </div></div></section>
 
-            <p className="mt-6 max-w-[620px] text-base leading-7 text-[#5a6285] sm:text-lg sm:leading-8">
-              Një platformë e vetme për sportistët, ekipet, trajnerët,
-              stërvitjet, performancën, financat dhe punën e përditshme të
-              akademisë.
-            </p>
+      <section className="sec" id="platforma"><div className="c">
+      <div data-r><span className="ey">Platforma</span><h2 className="h2">Gjithçka që i duhet <em>akademisë.</em></h2><p className="lead">Një sistem i organizuar për punën sportive dhe administrative, nga fusha deri te zyra.</p></div>
+      <div className="bento" id="funksionet">
+      <div className="f big" data-r><div className="fi" data-tilt data-sp><span className="ic"><i data-ic="users"></i></span><h3>Sportistët &amp; ekipet</h3><p>Menaxho sportistët, ekipet dhe strukturën sportive nga një vend.</p><div className="stack"><i>AK</i><i>LM</i><i>ER</i><i>DB</i><i>+24</i></div></div></div>
+      <div className="f" data-r data-d="1"><div className="fi" data-tilt data-sp><span className="ic"><i data-ic="calendar"></i></span><h3>Kalendari &amp; stërvitjet</h3><p>Planifiko seanca, ndeshje, ambiente dhe aktivitetet e akademisë.</p></div></div>
+      <div className="f" data-r><div className="fi" data-tilt data-sp><span className="ic"><i data-ic="chart"></i></span><h3>Performanca</h3><p>Ndiq progresin dhe të dhënat sportive me një pamje të qartë.</p><div className="spark" data-bars="30,48,40,66,58,82,96"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+      <div className="f big" data-r data-d="1"><div className="fi" data-tilt data-sp><span className="ic"><i data-ic="heart"></i></span><h3>Profili fizik &amp; mjekësor</h3><p>Mbaj informacionin fizik dhe mjekësor të lidhur me sportistin.</p><div className="tags"><span>Gjatësia</span><span>Pesha</span><span>Dokumente</span><span>Historiku</span></div></div></div>
+      <div className="f big" data-r data-d="2"><div className="fi" data-tilt data-sp><span className="ic"><i data-ic="target"></i></span><h3>Taktika &amp; skautim</h3><p>Organizo vlerësimet, kandidatët dhe punën taktike të stafit.</p><div className="tags"><span>4-3-3</span><span>Skautim</span><span>Vlerësime</span><span>Kandidatë</span></div></div></div>
+      <div className="f" data-r><div className="fi" data-tilt data-sp><span className="ic"><i data-ic="building"></i></span><h3>Administrimi</h3><p>Menaxho ambientet, stafin, financat dhe proceset e përditshme.</p></div></div>
+      </div></div></section>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/apliko?plan=STARTER"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#3552ff] px-7 py-4 text-sm font-semibold text-white shadow-[0_12px_32px_-12px_rgba(53,82,255,.58)] transition hover:-translate-y-0.5 hover:bg-[#2945ef] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#3552ff]/25"
-              >
-                Fillo me 7 ditë falas
-                <ArrowRight size={16} />
-              </Link>
+      <section className="sec alt" id="taktika"><div className="c tac">
+      <div data-r><span className="ey">Taktika</span><h2 className="h2">Taktika që lëviz <em>bashkë me ty.</em></h2><p className="lead">Planifiko formacionin, ndërro skemën me një klikim dhe ndaje me stafin dhe sportistët para çdo ndeshjeje.</p>
+      <div className="fm"><button className="a" data-f="4-3-3">4-3-3</button><button data-f="4-4-2">4-4-2</button><button data-f="3-5-2">3-5-2</button></div></div>
+      <div data-r data-d="2"><div className="pw" data-tilt><div className="pitch" data-pitch><b className="pm"></b><b className="ph-h"></b><b className="pc"></b><b className="bx1"></b><b className="bx2"></b></div></div></div>
+      </div></section>
 
-              <a
-                href="#platforma"
-                className="inline-flex items-center justify-center rounded-full border-[1.5px] border-[#171d3a]/65 bg-white px-7 py-4 text-sm font-semibold text-[#171d3a] transition hover:-translate-y-0.5 hover:bg-[#f7f9fe]"
-              >
-                Shiko si funksionon
-              </a>
-            </div>
-
-            <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#687095]">
-              {[
-                "Pa kartë pagese",
-                "Role & akses të kontrolluar",
-                "Multi-sport",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#dce9ff] text-[#3552ff]">
-                    <Check size={13} strokeWidth={2.5} />
-                  </span>
-
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* HERO DASHBOARD */}
-
-          <div className="relative mx-auto w-full max-w-[520px]">
-            <div className="absolute -left-8 top-14 z-20 hidden w-48 rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_20px_55px_-28px_rgba(23,29,58,.35)] lg:block">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#3552ff]">
-                Sot
-              </p>
-
-              <p className="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#171d3a]">
-                6
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-[#687095]">
-                aktivitete të planifikuara
-              </p>
-            </div>
-
-            <div className="relative overflow-hidden rounded-[30px_30px_86px_30px] border border-slate-200 bg-white p-3 shadow-[0_32px_80px_-38px_rgba(23,29,58,.4)]">
-              <div className="rounded-[24px_24px_76px_24px] bg-[#f7f9fe] p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-[#8b91ad]">
-                      Akademia Sportive
-                    </p>
-
-                    <p className="mt-1 text-base font-bold text-[#171d3a]">
-                      Paneli i sotëm
-                    </p>
-                  </div>
-
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#3552ff] text-white shadow-[0_12px_24px_-12px_rgba(53,82,255,.55)]">
-                    <BarChart3 size={19} />
-                  </span>
-                </div>
-
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  {[
-                    ["Sportistë", "128", "bg-[#bdf1de]"],
-                    ["Ekipe", "12", "bg-[#dce9ff]"],
-                    ["Trajnerë", "14", "bg-[#dccfff]"],
-                    ["Seanca", "36", "bg-[#ffd5c0]"],
-                  ].map(([label, value, tone]) => (
-                    <div
-                      key={label}
-                      className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm"
-                    >
-                      <div
-                        className={`mb-3 h-2.5 w-8 rounded-full ${tone}`}
-                      />
-
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8b91ad]">
-                        {label}
-                      </p>
-
-                      <p className="mt-1 text-2xl font-extrabold tracking-[-0.035em] text-[#171d3a]">
-                        {value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-3 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-[#8b91ad]">
-                        Aktiviteti i javës
-                      </p>
-
-                      <p className="mt-1 text-sm font-semibold text-[#171d3a]">
-                        Ecuria e akademisë
-                      </p>
-                    </div>
-
-                    <span className="rounded-full bg-[#dce9ff] px-3 py-1 text-[11px] font-semibold text-[#3552ff]">
-                      +18%
-                    </span>
-                  </div>
-
-                  <div className="mt-6 flex h-28 items-end gap-2">
-                    {[46, 72, 58, 88, 66, 94, 82].map((height, index) => (
-                      <div
-                        key={index}
-                        className="flex-1 rounded-full bg-gradient-to-t from-[#3552ff] to-[#93a5ff]"
-                        style={{ height: `${height}%` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute -bottom-8 right-6 hidden w-60 rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_20px_55px_-28px_rgba(23,29,58,.35)] lg:block">
-              <p className="text-xs font-semibold text-[#3552ff]">
-                Nga zyra te fusha
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-[#687095]">
-                Të dhënat sportive dhe administrative në të njëjtin sistem.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================================
-          QUICK BENEFITS
-      ====================================================== */}
-
-      <section className="relative z-10 px-5 py-8 sm:px-6">
-        <div className="mx-auto grid max-w-[1140px] grid-cols-2 gap-3 rounded-[30px] border border-slate-200 bg-white p-4 shadow-[0_20px_45px_-34px_rgba(23,29,58,.2)] sm:grid-cols-4 sm:gap-4 sm:p-5">
-          {[
-            ["1 platformë", "Për gjithë akademinë", "bg-[#bdf1de]"],
-            ["Çdo ekip", "Në të njëjtin sistem", "bg-[#dccfff]"],
-            ["Çdo trajner", "Me akses të kontrolluar", "bg-[#dce9ff]"],
-            ["Çdo të dhënë", "Kur të duhet", "bg-[#ffd5c0]"],
-          ].map(([title, subtitle, tone]) => (
-            <div
-              key={title}
-              className="rounded-[22px] border border-slate-200 bg-white px-4 py-5 text-center"
-            >
-              <span
-                className={`mx-auto mb-3 block h-2.5 w-8 rounded-full ${tone}`}
-              />
-
-              <p className="text-sm font-bold text-[#171d3a]">
-                {title}
-              </p>
-
-              <p className="mt-1 text-xs text-[#707897]">
-                {subtitle}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ======================================================
-          PLATFORM / FEATURES
-      ====================================================== */}
-
-      <section
-        id="platforma"
-        className="relative z-10 px-5 py-20 sm:px-6 sm:py-24 lg:py-28"
-      >
-        <div className="mx-auto max-w-[1140px]">
-          <div className="mx-auto max-w-2xl text-center" data-reveal>
-            <span className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#3552ff]">
-              Platforma
-            </span>
-
-            <h2 className="mt-5 text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] text-[#171d3a] sm:text-4xl lg:text-5xl">
-              Gjithçka që i duhet akademisë.
-            </h2>
-
-            <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#5a6285]">
-              Një sistem i organizuar për punën sportive dhe administrative,
-              nga fusha deri te zyra.
-            </p>
-          </div>
-
-          <div
-            id="funksionet"
-            className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-
-              const radiusClasses = [
-                "rounded-[28px_28px_78px_28px]",
-                "rounded-[28px_78px_28px_28px]",
-                "rounded-[78px_28px_28px_28px]",
-                "rounded-[28px_28px_28px_78px]",
-                "rounded-[28px_78px_28px_28px]",
-                "rounded-[78px_28px_28px_28px]",
-              ];
-
-              return (
-                <article
-                  key={feature.title}
-                  data-reveal
-                  data-tilt-card
-                  className={[
-                    "min-h-[230px] border border-slate-200 bg-white p-7 shadow-[0_20px_45px_-34px_rgba(23,29,58,.24)] transition hover:-translate-y-1 hover:shadow-[0_28px_55px_-34px_rgba(23,29,58,.28)]",
-                    radiusClasses[index % radiusClasses.length],
-                  ].join(" ")}
-                >
-                  <span
-                    className={[
-                      "flex h-[52px] w-[52px] items-center justify-center rounded-[18px]",
-                      feature.tone,
-                    ].join(" ")}
-                  >
-                    <Icon size={20} strokeWidth={1.9} />
-                  </span>
-
-                  <h3 className="mt-6 text-xl font-bold tracking-[-0.025em] text-[#171d3a]">
-                    {feature.title}
-                  </h3>
-
-                  <p className="mt-3 text-sm leading-6 text-[#5a6285]">
-                    {feature.description}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================================
-          FOOTBALL ACADEMY GRAPHIC
-      ====================================================== */}
-
-      <section className="relative z-10 px-5 py-20 sm:px-6 sm:py-24 lg:py-28">
-        <div className="mx-auto max-w-[1140px]">
-          <div className="grid gap-10 lg:grid-cols-[1.02fr_.98fr] lg:items-center">
-            <div data-reveal>
-              <span className="inline-flex rounded-full bg-[#bdf1de] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#187b55]">
-                Akademi futbolli
-              </span>
-
-              <h2 className="mt-5 text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] text-[#171d3a] sm:text-4xl lg:text-5xl">
-                Gjithçka e organizuar për zhvillimin e ekipit.
-              </h2>
-
-              <p className="mt-5 max-w-xl text-base leading-7 text-[#5a6285]">
-                Ndërto një rrjedhë pune të qartë për stërvitjet, ndeshjet,
-                sportistët dhe stafin. Platforma i jep akademisë kontroll dhe
-                qartësi në punën e përditshme.
-              </p>
-
-              <div className="mt-8 space-y-3">
-                {[
-                  "Planifikim i stërvitjeve dhe seancave",
-                  "Profili i sportistit me progres dhe prezencë",
-                  "Menaxhim i ekipeve, ndeshjeve dhe roleve",
-                  "Komunikim më i qartë me stafin",
-                ].map((item, index) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 rounded-[20px] border border-slate-200 bg-white px-4 py-3 shadow-sm"
-                  >
-                    <span
-                      className={[
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                        index % 2 === 0
-                          ? "bg-[#bdf1de] text-[#187b55]"
-                          : "bg-[#dce9ff] text-[#3552ff]",
-                      ].join(" ")}
-                    >
-                      <Check size={14} strokeWidth={2.5} />
-                    </span>
-
-                    <span className="text-sm font-semibold text-[#39405f]">
-                      {item}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <Link
-                href="/apliko"
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#3552ff] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(53,82,255,.55)] transition hover:-translate-y-0.5 hover:bg-[#2945ef]"
-              >
-                Apliko
-                <ArrowRight size={15} />
-              </Link>
-            </div>
-
-            {/* FOOTBALL FIELD GRAPHIC */}
-
-            <div
-              data-reveal
-              data-tilt-card
-              className="overflow-hidden rounded-[34px_34px_92px_34px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-38px_rgba(23,29,58,.32)]"
-            >
-              <div className="rounded-[28px] border border-slate-200 bg-[#f7f9fe] p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#3552ff]">
-                      Pamje sportive
-                    </p>
-
-                    <h3 className="mt-1 text-xl font-bold tracking-[-0.03em] text-[#171d3a]">
-                      Qendra e aktivitetit
-                    </h3>
-                  </div>
-
-                  <span className="rounded-full bg-[#bdf1de] px-3 py-1 text-xs font-semibold text-[#187b55]">
-                    Live
-                  </span>
-                </div>
-
-                <div className="relative h-[380px] overflow-hidden rounded-[26px] bg-[linear-gradient(180deg,#73ce91_0%,#269d61_100%)]">
-                  <div className="absolute inset-[18px] rounded-[22px] border-2 border-white/65" />
-
-                  <div className="absolute left-1/2 top-[18px] h-[344px] -translate-x-1/2 border-l-2 border-white/55" />
-
-                  <div className="absolute left-1/2 top-1/2 h-[86px] w-[86px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/65" />
-
-                  <div className="absolute left-1/2 top-[18px] h-[92px] w-[180px] -translate-x-1/2 border-x-2 border-b-2 border-white/60" />
-
-                  <div className="absolute bottom-[18px] left-1/2 h-[92px] w-[180px] -translate-x-1/2 border-x-2 border-t-2 border-white/60" />
-
-                  {[
-                    ["GK", "left-[47%] top-[9%]", "bg-white"],
-                    ["LB", "left-[19%] top-[30%]", "bg-[#dce9ff]"],
-                    ["CB", "left-[43%] top-[31%]", "bg-[#dce9ff]"],
-                    ["RB", "right-[19%] top-[30%]", "bg-[#dce9ff]"],
-                    ["CM", "left-[38%] top-[50%]", "bg-[#dccfff]"],
-                    ["AM", "right-[30%] top-[51%]", "bg-[#ffd5c0]"],
-                    ["ST", "left-[47%] top-[70%]", "bg-white"],
-                  ].map(([label, position, tone]) => (
-                    <span
-                      key={label}
-                      className={[
-                        "absolute flex h-10 w-10 items-center justify-center rounded-full text-[10px] font-extrabold text-[#171d3a] shadow-lg",
-                        position,
-                        tone,
-                      ].join(" ")}
-                    >
-                      {label}
-                    </span>
-                  ))}
-
-                  <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-3">
-                    {[
-                      ["Seanca", "36"],
-                      ["Ndeshje", "12"],
-                      ["Sportistë", "128"],
-                    ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="rounded-[18px] border border-white bg-white p-3 shadow-sm"
-                      >
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#7b82a2]">
-                          {label}
-                        </p>
-
-                        <p className="mt-1 text-lg font-extrabold text-[#171d3a]">
-                          {value}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* MODULE CARDS */}
-
-          <div className="mt-14 grid gap-5 md:grid-cols-3">
-            {footballModules.map((module, index) => (
-              <article
-                key={module.title}
-                data-reveal
-                data-tilt-card
-                className={[
-                  "border border-slate-200 bg-white p-6 shadow-[0_20px_45px_-34px_rgba(23,29,58,.24)]",
-                  index === 0
-                    ? "rounded-[28px_28px_78px_28px]"
-                    : index === 1
-                      ? "rounded-[78px_28px_28px_28px]"
-                      : "rounded-[28px_78px_28px_28px]",
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "block h-2.5 w-10 rounded-full",
-                    module.accent,
-                  ].join(" ")}
-                />
-
-                <span className="mt-5 inline-flex rounded-full bg-[#f3f5fb] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#3552ff]">
-                  Modul
-                </span>
-
-                <h3 className="mt-5 text-xl font-bold tracking-[-0.03em] text-[#171d3a]">
-                  {module.title}
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-[#5a6285]">
-                  {module.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================================
-          PRICING - REAL DATABASE DATA
-      ====================================================== */}
+      <section className="sec"><div className="c">
+      <div data-r><span className="ey">Si funksionon</span><h2 className="h2">Gati për <em>3 hapa.</em></h2></div>
+      <div className="steps" data-steps>
+      <div className="step" data-r><b>1</b><h3>Apliko &amp; provo</h3><p>Krijo llogarinë dhe provo funksionet PRO për 7 ditë, pa kartë pagese.</p></div>
+      <div className="step" data-r data-d="2"><b>2</b><h3>Ndërto akademinë</h3><p>Shto ekipet, trajnerët dhe sportistët, pastaj cakto rolet dhe aksesin.</p></div>
+      <div className="step" data-r data-d="4"><b>3</b><h3>Menaxho çdo ditë</h3><p>Stërvitje, ndeshje, prezencë, pagesa dhe komunikim në një sistem të vetëm.</p></div>
+      </div></div></section>
 
       <PublicPricingPlans />
 
-      {/* ======================================================
-          FINAL CTA
-      ====================================================== */}
+      <section className="fin"><img data-p=".1" src="/home/football.webp" alt="" /><div className="c" data-r><span className="ey">Apliko sot</span><h2 className="h2">Gati të <em>fillosh?</em></h2><p className="lead lt">Krijo llogarinë, provo funksionet PRO për 7 ditë dhe menaxho sportistët, ekipet, stërvitjet dhe pagesat në një sistem të vetëm.</p>
+      <div className="cta-r"><Link className="btn p mag" href="/apliko">Apliko tani <span data-ic="arrow"></span></Link><a className="btn g mag" href="#planet">Shiko planet</a></div></div></section>
 
-      <PublicFinalCta />
-
-      {/* ======================================================
-          FOOTER
-      ====================================================== */}
-
-      <footer className="relative z-10 px-5 pb-10 pt-4 sm:px-6">
-        <div className="mx-auto max-w-[1140px] rounded-[30px] border border-slate-200 bg-white px-6 py-8 shadow-[0_18px_45px_-34px_rgba(23,29,58,.18)]">
-          <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#3552ff] text-white shadow-[0_10px_25px_-12px_rgba(53,82,255,.6)]">
-                <Dumbbell size={17} />
-              </span>
-
-              <div>
-                <p className="text-sm font-extrabold tracking-[-0.02em] text-[#171d3a]">
-                  Akademia Sportive
-                </p>
-
-                <p className="text-xs text-[#7b82a2]">
-                  Platforma e menaxhimit
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-5 text-sm font-medium text-[#5a6285]">
-              <a
-                href="#platforma"
-                className="transition hover:text-[#3552ff]"
-              >
-                Platforma
-              </a>
-
-              <a
-                href="#funksionet"
-                className="transition hover:text-[#3552ff]"
-              >
-                Funksionet
-              </a>
-
-              <a
-                href="#planet"
-                className="transition hover:text-[#3552ff]"
-              >
-                Planet
-              </a>
-
-              <Link
-                href="/hyrje"
-                className="transition hover:text-[#3552ff]"
-              >
-                Hyr
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-8 border-t border-slate-200 pt-6 text-xs text-[#8b91ad]">
-            © {new Date().getFullYear()} Akademia Sportive. Të gjitha të
-            drejtat e rezervuara.
-          </div>
-        </div>
-      </footer>
+      <footer><div className="c"><div className="ft"><Link className="logo" href="/"><i data-ic="bolt"></i><span><b>Akademia Sportive</b><small>Platforma e menaxhimit</small></span></Link>
+      <div className="fl2"><a href="#platforma">Platforma</a><a href="#taktika">Taktika</a><a href="#planet">Planet</a><Link href="/hyrje">Hyr</Link></div></div>
+      <p className="cp">© 2026 Akademia Sportive. Të gjitha të drejtat e rezervuara.</p></div></footer>
     </main>
   );
 }
