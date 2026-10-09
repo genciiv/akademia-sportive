@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   BookOpen,
+  BriefcaseBusiness,
   Building2,
   CalendarDays,
   CircleDollarSign,
@@ -98,6 +99,18 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    title: "SHËRBIMET",
+    items: [
+      {
+        label: "Shërbimet",
+        href: "/sherbimet",
+        icon: BriefcaseBusiness,
+        permissions: [
+          PERMISSIONS.DASHBOARD_VIEW,
+        ],
+      },
+    ],
+  },  {
     title: "MENAXHIMI SPORTIV",
     items: [
       {
